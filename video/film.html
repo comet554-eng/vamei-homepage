@@ -24,7 +24,7 @@
  */
 (() => {
 'use strict';
-const FPS = 30, DUR = 32, W = 1080, H = 1920, S = W / 405;
+const FPS = 30, DUR = 50, W = 1080, H = 1920, S = W / 405;
 const RENDER = /render/.test(location.search);
 if (RENDER) document.body.classList.add('render');
 const cv = document.getElementById('c'), ctx = cv.getContext('2d');
@@ -52,55 +52,60 @@ function kf(list, t) {
 }
 
 /* ───────── 时间轴 ───────── */
+// 关键节点（秒）
+const M = { SONG: 6.9, SCENT: 11.3, DREAM: 15.4, RUSH: 18.6, STALL: 21.6, FAIL: 25.0, LIST: [26.8, 27.9, 29.0, 30.1, 31.2], LIST_OUT: 33.0, MORPH: 33.6, SKY: 45.6 };
 // 删除进度
 const PROG = [
-  [0, 0], [1.15, 0], [2.5, .63, 'in'], [2.95, .41, 'out'], [3.05, .41], [5.5, .52],
-  [5.8, .36, 'out'], [7.95, .36], [8.65, .62, 'in'], [8.95, .42, 'out'], [10.25, .42],
-  [13.0, .99, 'io'], [17.6, .99], [18.0, .66, 'out'], [18.6, .66], [19.0, .33, 'out'],
-  [19.6, .33], [20.2, 0, 'out'], [40, 0]
+  [0, 0], [1.5, 0], [3.2, .63, 'in'], [3.7, .41, 'out'], [3.9, .41], [6.9, .52],
+  [7.3, .36, 'out'], [10.4, .36], [11.3, .62, 'in'], [11.7, .42, 'out'], [14.6, .42],
+  [15.4, .66, 'in'], [15.9, .44, 'out'], [18.6, .44], [21.6, .99, 'io'],
+  [26.8, .99], [27.2, .8, 'out'], [27.9, .8], [28.3, .6, 'out'], [29.0, .6], [29.4, .4, 'out'],
+  [30.1, .4], [30.5, .2, 'out'], [31.2, .2], [31.8, 0, 'out'], [99, 0]
 ];
 // 手指按住的时间段
-const HOLDS = [[1.15, 2.5], [3.05, 5.5], [7.95, 8.65], [10.25, 16.0]];
+const HOLDS = [[1.5, 3.2], [3.9, 6.9], [10.4, 11.3], [14.6, 15.4], [18.6, 25.0]];
 const holdAt = t => HOLDS.some(([a, b]) => t >= a && t < b);
 // 心跳（也是剪辑节拍）
-const BEATS = [3.95, 4.8];
-{ let bt = 10.25, iv = .62; while (bt < 15.97) { BEATS.push(+bt.toFixed(3)); bt += iv; iv = Math.max(.36, iv * .95); } }
+const BEATS = [5.2, 6.1, 15.4, 16.4];
+{ let bt = M.RUSH, iv = .7; while (bt < M.FAIL - .03) { BEATS.push(+bt.toFixed(3)); bt += iv; iv = Math.max(.38, iv * .95); } }
 // 快速闪回的记忆（每条踩一拍）
 const MONTAGE_TEXT = ['凌晨两点的语音', '那把偏向我的伞', '第 1,314 条聊天记录', '你说“到家了告诉我”', '最后一次见面，你没有回头'];
 const MONTAGE = [];
-{ const bs = BEATS.filter(b => b >= 10.2 && b < 13.05); MONTAGE_TEXT.forEach((text, i) => { if (bs[i] != null) MONTAGE.push({ t: bs[i], end: bs[i + 1] || bs[i] + .5, text, burnt: false }); }); }
+{ const bs = BEATS.filter(b => b >= M.RUSH - .01 && b < M.STALL + .3); MONTAGE_TEXT.forEach((text, i) => { if (bs[i] != null) MONTAGE.push({ t: bs[i], end: bs[i + 1] || bs[i] + .6, text, burnt: false }); }); }
 
+const LINKS = ['你爱喝的冰美式，是 TA 爱喝的', '你说晚安前，总会停顿一下', '你终于不吃香菜了', '你听到那首歌，会下意识切走', '你变得温柔的语气'];
 const TX = [
-  { in: -.4, out: 2.35, text: '我想把一个人，\n从脑子里删掉。', y: .2, size: 84, w: 600, st: .028 },
-  { in: 2.55, out: 5.35, text: '可我越想删，\nTA 越清楚。', y: .2, size: 84, w: 600, st: .035, glitch: 1 },
-  { in: 3.9, out: 7.4, text: '※ 白熊效应：越压抑的念头，越会冒出来', y: .705, size: 34, w: 400, st: .012, note: 1 },
-  { in: 5.6, out: 7.9, text: '街角，\n响起了那首歌。', y: .2, size: 84, w: 600, st: .05, glitch: 1, warm: 1 },
-  { in: 8.2, out: 10.25, text: '擦肩而过的人，\n用着 TA 的香水。', y: .2, size: 84, w: 600, st: .04, glitch: 1, warm: 1 },
-  { in: 8.85, out: 12.2, text: '※ 气味几乎直通大脑的情绪与记忆中枢', y: .705, size: 34, w: 400, st: .012, note: 1 },
-  { in: 13.2, out: 15.9, text: '只剩最后一条了。', y: .2, size: 84, w: 600, st: .07 },
-  { in: 17.6, out: 21.7, text: '你爱喝的冰美式，是 TA 爱喝的', y: .62, size: 46, w: 400, st: .022 },
-  { in: 18.6, out: 21.7, text: '你说晚安前，总会停顿一下', y: .665, size: 46, w: 400, st: .022 },
-  { in: 19.6, out: 21.7, text: '你终于不吃香菜了', y: .71, size: 46, w: 400, st: .03 },
-  { in: 22.3, out: 23.75, text: 'TA 早就不是\n一段记忆了。', y: .2, size: 84, w: 600, st: .035 },
-  { in: 23.85, out: 25.4, text: 'TA 成了\n你的一部分。', y: .2, size: 96, w: 600, st: .08, warm: 1 },
-  { in: 23.4, out: 26.6, text: '※ 习惯和口味，比具体的事更难遗忘', y: .705, size: 34, w: 400, st: .012, note: 1 },
-  { in: 25.6, out: 27.3, text: '人不会真的\n忘掉一个人。', y: .2, size: 84, w: 600, st: .045 },
-  { in: 27.45, out: 29.3, text: '只是有一天，想起 TA，\n不再疼了。', y: .2, size: 76, w: 600, st: .04, lineDelay: [0, .75] },
-  { in: 29.6, out: 99, text: '你有\n删不掉的人吗？', y: .42, size: 100, w: 600, st: .08 },
-  { in: 30.5, out: 99, text: '评论区，说说 TA', y: .535, size: 38, w: 400, st: .04, note: 1 }
+  { in: -.4, out: 2.95, text: '我想把一个人，\n从脑子里删掉。', y: .2, size: 84, w: 600, st: .045 },
+  { in: 3.4, out: 6.6, text: '可我越想删，\nTA 越清楚。', y: .2, size: 84, w: 600, st: .05, glitch: 1 },
+  { in: 4.6, out: 9.6, text: '※ 白熊效应：越压抑的念头，越会冒出来', y: .705, size: 34, w: 400, st: .015, note: 1 },
+  { in: 7.1, out: 10.1, text: '街角，\n响起了那首歌。', y: .2, size: 84, w: 600, st: .06, glitch: 1, warm: 1 },
+  { in: 11.5, out: 14.3, text: '擦肩而过的人，\n用着 TA 的香水。', y: .2, size: 84, w: 600, st: .05, glitch: 1, warm: 1 },
+  { in: 12.1, out: 17.6, text: '※ 气味几乎直通大脑的情绪与记忆中枢', y: .705, size: 34, w: 400, st: .015, note: 1 },
+  { in: 15.6, out: 18.3, text: '凌晨三点，\n你又梦见了 TA。', y: .2, size: 84, w: 600, st: .06, glitch: 1, warm: 1 },
+  { in: 22.0, out: 24.8, text: '只剩最后一条了。', y: .2, size: 84, w: 600, st: .09 },
+  ...LINKS.map((text, i) => ({ in: M.LIST[i], out: M.LIST_OUT, text, y: .58 + i * .042, size: 44, w: 400, st: .03 })),
+  { in: 34.0, out: 36.3, text: 'TA 早就不是\n一段记忆了。', y: .2, size: 84, w: 600, st: .05 },
+  { in: 36.6, out: 39.2, text: 'TA 成了\n你的一部分。', y: .2, size: 96, w: 600, st: .1, warm: 1 },
+  { in: 36.2, out: 40.6, text: '※ 习惯和口味，比具体的事更难遗忘', y: .705, size: 34, w: 400, st: .015, note: 1 },
+  { in: 39.6, out: 42.2, text: '人不会真的\n忘掉一个人。', y: .2, size: 84, w: 600, st: .06 },
+  { in: 42.5, out: 45.4, text: '只是有一天，想起 TA，\n不再疼了。', y: .2, size: 76, w: 600, st: .05, lineDelay: [0, 1.2] },
+  { in: 46.0, out: 99, text: '你有\n删不掉的人吗？', y: .42, size: 100, w: 600, st: .1 },
+  { in: 47.2, out: 99, text: '评论区，说说 TA', y: .535, size: 38, w: 400, st: .05, note: 1 }
 ];
 
 // 视觉事件
 const EV = [
   { t: 0, k: 'flash', c: '255,200,170', a: .12 },
-  { t: 2.5, k: 'glitch', a: 1 }, { t: 2.5, k: 'shake', a: 1 }, { t: 2.5, k: 'zoom', a: .07 },
-  { t: 5.5, k: 'glitch', a: .9 }, { t: 5.5, k: 'zoom', a: .05 }, { t: 5.5, k: 'wave', x: .16, y: .6, c: '255,214,180', n: 4 },
-  { t: 8.65, k: 'glitch', a: .9 }, { t: 8.65, k: 'zoom', a: .05 }, { t: 8.65, k: 'flash', c: '255,140,180', a: .22 },
-  { t: 8.65, k: 'wave', x: .84, y: .32, c: '255,160,190', n: 3 },
-  { t: 16.0, k: 'flash', c: '229,60,50', a: .8 }, { t: 16.0, k: 'glitch', a: 1.4 }, { t: 16.0, k: 'shake', a: 1.6 },
-  { t: 17.6, k: 'zoom', a: .025 }, { t: 18.6, k: 'zoom', a: .025 }, { t: 19.6, k: 'zoom', a: .025 },
-  { t: 22.0, k: 'shape', v: 'me' }, { t: 22.0, k: 'swirl' }, { t: 22.0, k: 'flash', c: '255,179,122', a: .4 }, { t: 22.0, k: 'shake', a: .7 },
-  { t: 29.3, k: 'shape', v: 'sky' }
+  { t: 3.2, k: 'glitch', a: 1 }, { t: 3.2, k: 'shake', a: 1 }, { t: 3.2, k: 'zoom', a: .07 },
+  { t: M.SONG, k: 'glitch', a: .9 }, { t: M.SONG, k: 'zoom', a: .05 }, { t: M.SONG, k: 'wave', x: .16, y: .6, c: '255,214,180', n: 4 },
+  { t: M.SCENT, k: 'glitch', a: .9 }, { t: M.SCENT, k: 'zoom', a: .05 }, { t: M.SCENT, k: 'flash', c: '255,140,180', a: .22 },
+  { t: M.SCENT, k: 'wave', x: .84, y: .32, c: '255,160,190', n: 3 },
+  { t: M.DREAM, k: 'glitch', a: .7 }, { t: M.DREAM, k: 'zoom', a: .06 }, { t: M.DREAM, k: 'flash', c: '70,90,170', a: .3 },
+  { t: M.DREAM, k: 'wave', x: .5, y: .43, c: '255,90,70', n: 2 },
+  { t: M.FAIL, k: 'flash', c: '229,60,50', a: .8 }, { t: M.FAIL, k: 'glitch', a: 1.4 }, { t: M.FAIL, k: 'shake', a: 1.6 },
+  ...M.LIST.map(t => ({ t, k: 'zoom', a: .025 })),
+  { t: M.MORPH, k: 'shape', v: 'me' }, { t: M.MORPH, k: 'swirl' }, { t: M.MORPH, k: 'flash', c: '255,179,122', a: .4 }, { t: M.MORPH, k: 'shake', a: .7 },
+  { t: M.SKY, k: 'shape', v: 'sky' }
 ];
 BEATS.forEach(b => EV.push({ t: b, k: 'beat' }));
 EV.sort((a, b) => a.t - b.t);
@@ -283,13 +288,13 @@ function drawScene(t) {
   ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; ctx.filter = 'none';
   ctx.drawImage(BG, 0, 0);
 
-  const stall = t >= 13 && t < 16;
-  let shake = imp(shakeImp, t, 3) + (stall ? .15 + (t - 13) * .3 : 0);
+  const stall = t >= M.STALL && t < M.FAIL;
+  let shake = imp(shakeImp, t, 3) + (stall ? .15 + (t - M.STALL) * .27 : 0);
   const sx = shake ? rand(-1, 1) * shake * 14 : 0, sy = shake ? rand(-1, 1) * shake * 14 : 0;
-  let zoom = kf([[0, 1.1], [1.0, 1.0, 'out'], [13, 1.0], [16, 1.2, 'in'], [16.01, 1.0], [25.5, 1.0], [29.3, 1.06], [32, .94, 'io']], t) + imp(zoomImp, t, 5);
+  let zoom = kf([[0, 1.1], [1.0, 1.0, 'out'], [M.STALL, 1.0], [M.FAIL, 1.2, 'in'], [M.FAIL + .01, 1.0], [39.6, 1.0], [M.SKY, 1.06], [DUR, .94, 'io']], t) + imp(zoomImp, t, 5);
   ctx.translate(CX + sx, CY + sy); ctx.scale(zoom, zoom); ctx.rotate(Math.sin(t * .23) * .008); ctx.translate(-CX, -CY);
 
-  const fadeFrags = t > 29.3 ? Math.max(0, 1 - (t - 29.3) / 1.2) : 1;
+  const fadeFrags = t > M.SKY ? Math.max(0, 1 - (t - M.SKY) / 1.2) : 1;
   // 记忆之间的线
   ctx.lineWidth = 1.2;
   for (const fr of frags) {
@@ -333,18 +338,23 @@ function drawScene(t) {
   }
   for (const e of embers) { const s = e.s * 2.4 * S * .8; ctx.globalAlpha = e.life * .9; ctx.drawImage(SPR.ember, e.x - s, e.y - s, s * 2, s * 2); }
   // 香水的雾
-  if (t > 8.6 && t < 10.8) {
-    const k = t < 8.9 ? (t - 8.6) / .3 : 1 - (t - 8.9) / 1.9;
+  if (t > M.SCENT - .05 && t < M.SCENT + 2.6) {
+    const k = t < M.SCENT + .25 ? (t - M.SCENT + .05) / .3 : 1 - (t - M.SCENT - .25) / 2.35;
     for (let i = 0; i < 3; i++) {
-      const mx = W * (.9 - (t - 8.6) * .35 - i * .18), my = H * (.3 + i * .09), r = 380 + i * 90;
+      const mx = W * (.9 - (t - M.SCENT + .05) * .3 - i * .18), my = H * (.3 + i * .09), r = 380 + i * 90;
       ctx.globalAlpha = clamp(k, 0, 1) * .32; ctx.drawImage(SPR.pink, mx - r, my - r, r * 2, r * 2);
     }
   }
   ctx.globalAlpha = 1;
   for (const w of waves) { if (w.r <= 0) continue; ctx.strokeStyle = `rgba(${w.c},${w.life * .55})`; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.arc(w.x, w.y, w.r, 0, Math.PI * 2); ctx.stroke(); }
 
-  // 故障切片
+  // 梦：整个画面短暂失焦
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalCompositeOperation = 'source-over';
+  if (t >= M.DREAM && t < M.DREAM + 1.8) {
+    const k = 1 - (t - M.DREAM) / 1.8;
+    ctx.filter = `blur(${(14 * k).toFixed(1)}px)`; ctx.globalAlpha = .85 * k; ctx.drawImage(cv, 0, 0); ctx.filter = 'none'; ctx.globalAlpha = 1;
+  }
+  // 故障切片
   const glitch = imp(glitchImp, t, 2.6);
   if (glitch > .03) {
     const n = 2 + (Math.min(1.4, glitch) * 7 | 0);
@@ -431,10 +441,10 @@ function drawUI(t, glitch) {
   }
 
   // 删除失败
-  if (t >= 16 && t < 21.95) {
-    const lt = t - 16, mv = EASE.io(clamp((t - 17.25) / .4, 0, 1));
+  if (t >= M.FAIL && t < M.LIST_OUT + .25) {
+    const lt = t - M.FAIL, mv = EASE.io(clamp((t - M.FAIL - 1.4) / .45, 0, 1));
     const y = lerp(CY, H * .2, mv), size = lerp(170, 104, mv);
-    const al = t > 21.6 ? 1 - (t - 21.6) / .35 : 1, sc = 1 + .4 * Math.exp(-lt * 12);
+    const al = t > M.LIST_OUT - .1 ? 1 - (t - M.LIST_OUT + .1) / .35 : 1, sc = 1 + .4 * Math.exp(-lt * 12);
     ctx.save(); ctx.translate(CX + (lt < .5 ? rand(-1, 1) * 14 * (1 - lt * 2) : 0), y); ctx.scale(sc, sc);
     ctx.globalAlpha = al; ctx.shadowColor = 'rgba(229,60,50,.7)'; ctx.shadowBlur = 50;
     centerText('删除失败', 0, 0, size, 900, '#e9473d', size * .08);
@@ -444,14 +454,15 @@ function drawUI(t, glitch) {
   }
 
   // 删除进度
-  if (t >= 1.15 && t < 16) {
+  if (t >= HOLDS[0][0] && t < M.FAIL) {
     const p = progress, back = progress < prevProgress - 1e-4;
     let s;
-    if (t < 13) s = Math.round(p * 100) + '%';
-    else s = t < 13.4 ? '99%' : t < 14.1 ? '99.9%' : t < 14.8 ? '99.99%' : t < 15.4 ? '99.999%' : '99.9999%';
-    const red = back || t >= 13.4;
-    const a = Math.min(1, (t - 1.15) / .2);
-    const j = t >= 13.4 ? rand(-1, 1) * (t - 13) * 3 : 0;
+    const st = t - M.STALL;
+    if (st < 0) s = Math.round(p * 100) + '%';
+    else s = st < .5 ? '99%' : st < 1.3 ? '99.9%' : st < 2.2 ? '99.99%' : st < 3.0 ? '99.999%' : '99.9999%';
+    const red = back || st >= .5;
+    const a = Math.min(1, (t - HOLDS[0][0]) / .2);
+    const j = st >= .5 ? rand(-1, 1) * st * 3 : 0;
     ctx.globalAlpha = a;
     if (red) { ctx.shadowColor = 'rgba(229,60,50,.7)'; ctx.shadowBlur = 30; }
     centerText(s, CX + j, H * .622, 112, 300, red ? '#ff5a4e' : '#f6ecdc', 2);
@@ -471,7 +482,7 @@ function drawUI(t, glitch) {
     ctx.globalCompositeOperation = 'lighter'; ctx.drawImage(SPR.warm, fx - r * 1.4, fy - r * 1.4, r * 2.8, r * 2.8);
     ctx.globalCompositeOperation = 'source-over';
     ctx.strokeStyle = 'rgba(243,233,216,.35)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(fx, fy, r, 0, Math.PI * 2); ctx.stroke();
-    ctx.strokeStyle = t >= 13 ? '#ff5a4e' : '#f6ecdc'; ctx.lineWidth = 4; ctx.lineCap = 'round';
+    ctx.strokeStyle = t >= M.STALL ? '#ff5a4e' : '#f6ecdc'; ctx.lineWidth = 4; ctx.lineCap = 'round';
     ctx.beginPath(); ctx.arc(fx, fy, r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * clamp(progress, 0, 1)); ctx.stroke();
     if (press > .02) { ctx.strokeStyle = `rgba(243,233,216,${press * .6})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(fx, fy, r * (1 + (1 - press) * 1.2), 0, Math.PI * 2); ctx.stroke(); }
     ctx.globalAlpha = 1;
@@ -482,7 +493,7 @@ function drawUI(t, glitch) {
 }
 
 let coverSnap = null;
-const COVER_T = 11.0;
+const COVER_T = 19.4;
 function drawFrame(i) {
   const t = i / FPS;
   const glitch = drawScene(t);
@@ -526,16 +537,16 @@ async function renderAudio() {
 
   // 低频氛围
   const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 3;
-  lp.frequency.setValueAtTime(240, 0); lp.frequency.setValueAtTime(240, 13); lp.frequency.linearRampToValueAtTime(650, 15.98); lp.frequency.setValueAtTime(240, 16.02);
+  lp.frequency.setValueAtTime(240, 0); lp.frequency.setValueAtTime(240, M.STALL); lp.frequency.linearRampToValueAtTime(650, M.FAIL - .02); lp.frequency.setValueAtTime(240, M.FAIL + .02);
   const dg = c.createGain(); lp.connect(dg); dg.connect(out); dg.connect(rv);
   [[55, 'sawtooth', .45], [55.35, 'sawtooth', .45], [82.41, 'triangle', .22], [110.3, 'triangle', .22]].forEach(([f, ty, v]) => {
     const o = c.createOscillator(); o.type = ty; o.frequency.value = f; const g = c.createGain(); g.gain.value = v; o.connect(g); g.connect(lp); o.start(0);
   });
   const lfo = c.createOscillator(); lfo.frequency.value = .07; const lg = c.createGain(); lg.gain.value = 110; lfo.connect(lg); lg.connect(lp.frequency); lfo.start(0);
   const dgv = dg.gain;
-  dgv.setValueAtTime(0, 0); dgv.linearRampToValueAtTime(.15, 1.4); dgv.setValueAtTime(.15, 10); dgv.linearRampToValueAtTime(.22, 13);
-  dgv.linearRampToValueAtTime(.28, 15.98); dgv.setValueAtTime(0, 16.02); dgv.setValueAtTime(0, 17.4); dgv.linearRampToValueAtTime(.12, 19.5);
-  dgv.linearRampToValueAtTime(.17, 22.5); dgv.setValueAtTime(.17, 26); dgv.linearRampToValueAtTime(.1, 30); dgv.linearRampToValueAtTime(0, DUR);
+  dgv.setValueAtTime(0, 0); dgv.linearRampToValueAtTime(.15, 1.4); dgv.setValueAtTime(.15, M.RUSH); dgv.linearRampToValueAtTime(.22, M.STALL);
+  dgv.linearRampToValueAtTime(.28, M.FAIL - .02); dgv.setValueAtTime(0, M.FAIL + .02); dgv.setValueAtTime(0, M.LIST[0] - .2); dgv.linearRampToValueAtTime(.12, M.LIST[2]);
+  dgv.linearRampToValueAtTime(.17, M.MORPH + .5); dgv.setValueAtTime(.17, 40); dgv.linearRampToValueAtTime(.1, 46); dgv.linearRampToValueAtTime(0, DUR);
 
   // 删除时的沙沙声：跟着进度和手指走
   const ns = c.createBufferSource(); ns.buffer = nb; ns.loop = true;
@@ -591,18 +602,20 @@ async function renderAudio() {
   };
 
   boom(0.0, .9); tone(659.25, .05, 2.5, .05);
-  glitch(2.5); tone(110, 2.5, 2.5, .08);
-  BEATS.forEach((b, i) => beat(b, b < 10 ? .75 : .75 + Math.min(.3, (b - 10) * .05)));
-  glitch(5.5); motif(5.55, 4, .13);
-  glitch(8.65); [1318.5, 1568, 1975.5, 2637, 3136].forEach((f, i) => tone(f, 8.7 + i * .08, 2.4, .03));
-  swell(14.2, 16.0, .18);
-  boom(16.0, 1.1); glitch(16.0);
-  tone(4186, 16.25, 1.4, .006); // 短暂的耳鸣
-  [[329.63, 17.6], [392, 18.6], [440, 19.6]].forEach(([f, t0]) => { tone(f, t0, 3.6, .1); tone(f / 2, t0, 3.6, .04); });
-  swell(20.6, 22.0, .12);
-  boom(22.0, .8); [220, 261.63, 329.63, 440, 523.25].forEach((f, i) => tone(f, 22.0 + i * .07, 6, .055)); tone(55, 22, 7, .12);
-  motif(25.3, 8, .1); tone(110, 25.3, 5, .07); tone(87.31, 27.4, 5, .07);
-  tone(220, 29.5, 4, .06); tone(659.25, 29.5, 4, .04); tone(1318.5, 30.4, 2.5, .02);
+  glitch(3.2); tone(110, 3.2, 2.5, .08);
+  BEATS.forEach(b => beat(b, b < M.RUSH ? .75 : .75 + Math.min(.3, (b - M.RUSH) * .05)));
+  glitch(M.SONG); motif(M.SONG + .05, 4, .13);
+  glitch(M.SCENT); [1318.5, 1568, 1975.5, 2637, 3136].forEach((f, i) => tone(f, M.SCENT + .05 + i * .08, 2.4, .03));
+  swell(M.DREAM - .6, M.DREAM, .08); boom(M.DREAM, .5); tone(110, M.DREAM, 4, .12); tone(82.41, M.DREAM, 4, .08);
+  swell(M.FAIL - 2.4, M.FAIL, .18);
+  boom(M.FAIL, 1.1); glitch(M.FAIL);
+  tone(4186, M.FAIL + .25, 1.4, .006); // 短暂的耳鸣
+  [329.63, 392, 440, 523.25, 587.33].forEach((f, i) => { const t0 = M.LIST[i]; tone(f, t0, 3.6, .1); tone(f / 2, t0, 3.6, .04); });
+  swell(M.MORPH - 1.4, M.MORPH, .12);
+  boom(M.MORPH, .8); [220, 261.63, 329.63, 440, 523.25].forEach((f, i) => tone(f, M.MORPH + i * .07, 6, .055)); tone(55, M.MORPH, 7, .12);
+  motif(39.3, 8, .1); tone(110, 39.3, 5, .07); tone(87.31, 41.4, 5, .07);
+  tone(523.25, 43.7, 4, .05); tone(659.25, 43.75, 4, .04); tone(130.81, 43.7, 5, .06);
+  tone(220, 46, 5, .06); tone(659.25, 46, 4, .04); tone(1318.5, 47.2, 2.5, .02);
 
   const buf = await c.startRendering();
   return wavBase64(buf);
