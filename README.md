@@ -15,9 +15,11 @@
 - 导出：`node video/render.js [输出目录]`，生成 `video.mp4` 和封面 `cover.jpg`（需要 playwright 与 ffmpeg）。
 - 画面和声音由同一条时间轴驱动，改 `film.html` 顶部的 `M`（关键节点）/ `PROG` / `TX` / `EV` 即可调整节奏与文案。
 
-## 滑雪不难（双板教学系列）
+## 滑雪不难（教学系列）
 
 - EP.01《为什么你一害怕就往后坐》：`video/ski-ep01.html`，约 2 分 26 秒，明亮的线条动画风格。
 - 导出：`node video/render.js video/ski-ep01.html [输出目录]`。每集在页面里用 `FILM.encode` 指定码率，导出脚本自动采用。
 - 画面是时间的纯函数，每个场景是 `S` 数组里的一个函数，场景起止时间在 `T`，字幕在 `TX`。
 - 封面：`node video/covers.js video/ski-ep01.html video/滑雪不难EP01-封面`，一次生成竖版 9:16、3:4 和横版 16:9、4:3 四个尺寸。
+- EP.02《摔倒也是一门技术》（单板）：`video/ski-ep02.html`，约 2 分 25 秒。
+- EP.02 起各集共用 `video/snowkit.js`（字幕、雪景、配乐、转场、导出与封面接口），每集只写自己的场景、字幕、音效和封面排版，最后调用 `kitRun(...)`。
