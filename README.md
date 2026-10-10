@@ -20,3 +20,4 @@
 - EP.01《为什么你一害怕就往后坐》：`video/ski-ep01.html`，约 2 分 26 秒，明亮的线条动画风格。
 - 导出：`node video/render.js video/ski-ep01.html [输出目录]`。每集在页面里用 `FILM.encode` 指定码率，导出脚本自动采用。
 - 画面是时间的纯函数，每个场景是 `S` 数组里的一个函数，场景起止时间在 `T`，字幕在 `TX`。
+- 封面：`node video/covers.js video/ski-ep01.html video/滑雪不难EP01-封面`，一次生成竖版 9:16、3:4 和横版 16:9、4:3 四个尺寸。

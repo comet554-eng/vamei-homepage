@@ -25,7 +25,8 @@
  */
 (() => {
 'use strict';
-const FPS = 30, W = 1080, H = 1920, CX = W / 2;
+const FPS = 30;
+let W = 1080, H = 1920, CX = W / 2; // 只有画封面时会临时改成别的尺寸
 const RENDER = /render/.test(location.search);
 if (RENDER) document.body.classList.add('render');
 const cv = document.getElementById('c'), ctx = cv.getContext('2d');
@@ -774,22 +775,42 @@ function drawFrame(t) {
   if (t > DUR - .4) { ctx.globalAlpha = (t - (DUR - .4)) / .4; ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
 }
 
-/* 封面 */
-function drawCover() {
-  g = ctx; ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1;
-  drawSky(0); drawSnowfall(3, .7);
-  const th = 24, F = [CX + 10, H * .74];
-  drawSlope(F, th, 0);
-  const J = drawSkier(F, th, POSES.back, 150);
-  drawBalance(J, 1, false);
-  markX(J.Hd[0] + 130, J.Hd[1] + 10, 46);
-  pill('滑雪不难 · EP.01', CX, H * .17, 44, COL.amber, '#fff');
-  label('一害怕', CX, H * .27, 170, COL.ink, 900);
-  g.font = `900 170px ${SANS}`; const w1 = g.measureText('就').width, w2 = g.measureText('往后坐').width, w3 = g.measureText('？').width, x0 = CX - (w1 + w2 + w3) / 2;
-  label('就', x0 + w1 / 2, H * .365, 170, COL.ink, 900); label('往后坐', x0 + w1 + w2 / 2, H * .365, 170, COL.red, 900); label('？', x0 + w1 + w2 + w3 / 2, H * .365, 170, COL.ink, 900);
-  label('新手最常见的问题，一次讲清楚', CX, H * .44, 44, COL.sub, 700);
-  return cv.toDataURL('image/jpeg', .95);
+/* 封面：同一套元素，按画幅重新排版 */
+const COVER_SIZES = { '9x16': [1080, 1920], '3x4': [1080, 1440], '16x9': [1920, 1080], '4x3': [1440, 1080] };
+function coverTitle(cx, y1, y2, size, subY, subSize, pillY, pillSize) {
+  pill('滑雪不难 · EP.01', cx, pillY, pillSize, COL.amber, '#fff');
+  label('一害怕', cx, y1, size, COL.ink, 900);
+  g.font = `900 ${size}px ${SANS}`;
+  const w1 = g.measureText('就').width, w2 = g.measureText('往后坐').width, w3 = g.measureText('？').width, x0 = cx - (w1 + w2 + w3) / 2;
+  label('就', x0 + w1 / 2, y2, size, COL.ink, 900); label('往后坐', x0 + w1 + w2 / 2, y2, size, COL.red, 900); label('？', x0 + w1 + w2 + w3 / 2, y2, size, COL.ink, 900);
+  label('新手最常见的问题，一次讲清楚', cx, subY, subSize, COL.sub, 700);
 }
+function coverSkier(F, th, u) {
+  drawSlope(F, th, 0, { noProps: true });
+  const J = drawSkier(F, th, POSES.back, u);
+  drawBalance(J, 1, false);
+  markX(J.Hd[0] + u * .9, J.Hd[1] + u * .05, u * .3);
+}
+function drawCoverAt(key) {
+  const [w, h] = COVER_SIZES[key], saved = [W, H, CX];
+  W = w; H = h; CX = w / 2;
+  const c = document.createElement('canvas'); c.width = w; c.height = h; g = c.getContext('2d');
+  drawSky(0); drawSnowfall(3, .7);
+  if (key === '9x16') { coverSkier([CX + 10, H * .74], 24, 150); coverTitle(CX, H * .27, H * .365, 170, H * .44, 44, H * .17, 44); }
+  else if (key === '3x4') { coverSkier([CX + 10, H * .9], 24, 135); coverTitle(CX, H * .25, H * .375, 170, H * .475, 44, H * .11, 42); }
+  else {
+    const k = w / 1920, tx = w * .29;
+    // 左侧文字区垫一层淡白，避免压在雪道纹理上
+    coverSkier([w * .74, h * .83], 22, 175 * Math.max(k, .85));
+    const fade = g.createLinearGradient(0, 0, w * .62, 0); fade.addColorStop(0, 'rgba(248,251,253,.92)'); fade.addColorStop(.75, 'rgba(248,251,253,.75)'); fade.addColorStop(1, 'rgba(248,251,253,0)');
+    g.fillStyle = fade; g.fillRect(0, 0, w * .62, h);
+    const size = key === '16x9' ? 150 : 128;
+    coverTitle(tx, h * .42, h * .58, size, h * .71, key === '16x9' ? 42 : 38, h * .25, key === '16x9' ? 40 : 36);
+  }
+  W = saved[0]; H = saved[1]; CX = saved[2]; g = ctx;
+  return c.toDataURL('image/jpeg', .95);
+}
+const drawCover = () => drawCoverAt('9x16');
 
 /* ───────── 声音：离线合成 ───────── */
 async function renderAudio() {
@@ -924,6 +945,7 @@ async function boot() {
     fontStatus: () => [400, 500, 700, 900].map(w => w + ':' + document.fonts.check(`${w} 64px "Noto Sans SC"`, '滑雪往后坐')).join(' '),
     render(i, q = .93) { drawFrame(i / FPS); return cv.toDataURL('image/jpeg', q); },
     cover: drawCover,
+    covers: () => Object.fromEntries(Object.keys(COVER_SIZES).map(k => [k, drawCoverAt(k)])),
     poseInfo: (th = 20) => Object.fromEntries(Object.entries(POSES).map(([k, p]) => [k, +joints([0, 0], th, p, 1).comS.toFixed(2)]).concat([['plumb', +joints([0, 0], th, plumb(th), 1).comS.toFixed(2)]])),
     renderAudio
   };
