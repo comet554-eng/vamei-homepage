@@ -23,3 +23,4 @@
 - 封面：`node video/covers.js video/ski-ep01.html video/滑雪不难EP01-封面`，一次生成竖版 9:16、3:4 和横版 16:9、4:3 四个尺寸。
 - EP.02《摔倒也是一门技术》（单板）：`video/ski-ep02.html`，约 2 分 25 秒。
 - EP.02 起各集共用 `video/snowkit.js`（字幕、雪景、配乐、转场、导出与封面接口），每集只写自己的场景、字幕、音效和封面排版，最后调用 `kitRun(...)`。
+- EP.01 单板版：`video/ski-ep01-sb.html`，侧面视角（整块板沿坡、前脚在山下），结构与双板版一致。
