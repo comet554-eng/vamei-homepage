@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>大脑没有删除键</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600;900&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#000;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;aspect-ratio:9/16;max-width:100vw;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;aspect-ratio:auto;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script>
+/*
+ * 《大脑没有删除键》短视频版（约 32 秒，1080×1920，30fps）
+ * - 打开本页：点击播放，实时预览（含声音）
+ * - ?render：供 render.js 逐帧导出，画面与声音都由同一条时间轴驱动
+ */
+(() => {
+'use strict';
+const FPS = 30, DUR = 32, W = 1080, H = 1920, S = W / 405;
+const RENDER = /render/.test(location.search);
+if (RENDER) document.body.classList.add('render');
+const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+const SERIF = '"Noto Serif SC","Source Han Serif SC","Songti SC",serif';
+
+/* 可复现的随机数 */
+function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+let R = mulberry32(20261010);
+const rand = (a, b) => a + R() * (b - a);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, k) => a + (b - a) * k;
+const EASE = {
+  lin: x => x,
+  in: x => x * x,
+  out: x => 1 - (1 - x) * (1 - x),
+  io: x => x < .5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2
+};
+function kf(list, t) {
+  if (t <= list[0][0]) return list[0][1];
+  for (let i = 1; i < list.length; i++) {
+    const [t1, v1, e] = list[i];
+    if (t <= t1) { const [t0, v0] = list[i - 1]; const k = (t - t0) / (t1 - t0 || 1); return lerp(v0, v1, EASE[e || 'lin'](k)); }
+  }
+  return list[list.length - 1][1];
+}
+
+/* ───────── 时间轴 ───────── */
+// 删除进度
+const PROG = [
+  [0, 0], [1.15, 0], [2.5, .63, 'in'], [2.95, .41, 'out'], [3.05, .41], [5.5, .52],
+  [5.8, .36, 'out'], [7.95, .36], [8.65, .62, 'in'], [8.95, .42, 'out'], [10.25, .42],
+  [13.0, .99, 'io'], [17.6, .99], [18.0, .66, 'out'], [18.6, .66], [19.0, .33, 'out'],
+  [19.6, .33], [20.2, 0, 'out'], [40, 0]
+];
+// 手指按住的时间段
+const HOLDS = [[1.15, 2.5], [3.05, 5.5], [7.95, 8.65], [10.25, 16.0]];
+const holdAt = t => HOLDS.some(([a, b]) => t >= a && t < b);
+// 心跳（也是剪辑节拍）
+const BEATS = [3.95, 4.8];
+{ let bt = 10.25, iv = .62; while (bt < 15.97) { BEATS.push(+bt.toFixed(3)); bt += iv; iv = Math.max(.36, iv * .95); } }
+// 快速闪回的记忆（每条踩一拍）
+const MONTAGE_TEXT = ['凌晨两点的语音', '那把偏向我的伞', '第 1,314 条聊天记录', '你说“到家了告诉我”', '最后一次见面，你没有回头'];
+const MONTAGE = [];
+{ const bs = BEATS.filter(b => b >= 10.2 && b < 13.05); MONTAGE_TEXT.forEach((text, i) => { if (bs[i] != null) MONTAGE.push({ t: bs[i], end: bs[i + 1] || bs[i] + .5, text, burnt: false }); }); }
+
+const TX = [
+  { in: -.4, out: 2.35, text: '我想把一个人，\n从脑子里删掉。', y: .2, size: 84, w: 600, st: .028 },
+  { in: 2.55, out: 5.35, text: '可我越想删，\nTA 越清楚。', y: .2, size: 84, w: 600, st: .035, glitch: 1 },
+  { in: 3.9, out: 7.4, text: '※ 白熊效应：越压抑的念头，越会冒出来', y: .705, size: 34, w: 400, st: .012, note: 1 },
+  { in: 5.6, out: 7.9, text: '街角，\n响起了那首歌。', y: .2, size: 84, w: 600, st: .05, glitch: 1, warm: 1 },
+  { in: 8.2, out: 10.25, text: '擦肩而过的人，\n用着 TA 的香水。', y: .2, size: 84, w: 600, st: .04, glitch: 1, warm: 1 },
+  { in: 8.85, out: 12.2, text: '※ 气味几乎直通大脑的情绪与记忆中枢', y: .705, size: 34, w: 400, st: .012, note: 1 },
+  { in: 13.2, out: 15.9, text: '只剩最后一条了。', y: .2, size: 84, w: 600, st: .07 },
+  { in: 17.6, out: 21.7, text: '你爱喝的冰美式，是 TA 爱喝的', y: .62, size: 46, w: 400, st: .022 },
+  { in: 18.6, out: 21.7, text: '你说晚安前，总会停顿一下', y: .665, size: 46, w: 400, st: .022 },
+  { in: 19.6, out: 21.7, text: '你终于不吃香菜了', y: .71, size: 46, w: 400, st: .03 },
+  { in: 22.3, out: 23.75, text: 'TA 早就不是\n一段记忆了。', y: .2, size: 84, w: 600, st: .035 },
+  { in: 23.85, out: 25.4, text: 'TA 成了\n你的一部分。', y: .2, size: 96, w: 600, st: .08, warm: 1 },
+  { in: 23.4, out: 26.6, text: '※ 习惯和口味，比具体的事更难遗忘', y: .705, size: 34, w: 400, st: .012, note: 1 },
+  { in: 25.6, out: 27.3, text: '人不会真的\n忘掉一个人。', y: .2, size: 84, w: 600, st: .045 },
+  { in: 27.45, out: 29.3, text: '只是有一天，想起 TA，\n不再疼了。', y: .2, size: 76, w: 600, st: .04, lineDelay: [0, .75] },
+  { in: 29.6, out: 99, text: '你有\n删不掉的人吗？', y: .42, size: 100, w: 600, st: .08 },
+  { in: 30.5, out: 99, text: '评论区，说说 TA', y: .535, size: 38, w: 400, st: .04, note: 1 }
+];
+
+// 视觉事件
+const EV = [
+  { t: 0, k: 'flash', c: '255,200,170', a: .12 },
+  { t: 2.5, k: 'glitch', a: 1 }, { t: 2.5, k: 'shake', a: 1 }, { t: 2.5, k: 'zoom', a: .07 },
+  { t: 5.5, k: 'glitch', a: .9 }, { t: 5.5, k: 'zoom', a: .05 }, { t: 5.5, k: 'wave', x: .16, y: .6, c: '255,214,180', n: 4 },
+  { t: 8.65, k: 'glitch', a: .9 }, { t: 8.65, k: 'zoom', a: .05 }, { t: 8.65, k: 'flash', c: '255,140,180', a: .22 },
+  { t: 8.65, k: 'wave', x: .84, y: .32, c: '255,160,190', n: 3 },
+  { t: 16.0, k: 'flash', c: '229,60,50', a: .8 }, { t: 16.0, k: 'glitch', a: 1.4 }, { t: 16.0, k: 'shake', a: 1.6 },
+  { t: 17.6, k: 'zoom', a: .025 }, { t: 18.6, k: 'zoom', a: .025 }, { t: 19.6, k: 'zoom', a: .025 },
+  { t: 22.0, k: 'shape', v: 'me' }, { t: 22.0, k: 'swirl' }, { t: 22.0, k: 'flash', c: '255,179,122', a: .4 }, { t: 22.0, k: 'shake', a: .7 },
+  { t: 29.3, k: 'shape', v: 'sky' }
+];
+BEATS.forEach(b => EV.push({ t: b, k: 'beat' }));
+EV.sort((a, b) => a.t - b.t);
+
+/* ───────── 内容：漂浮的记忆碎片 ───────── */
+const FRAGS = ['再聊五分钟', '偏向我的那把伞', '最后一份关东煮', '二号线第三节车厢', '你给我的备注', '那首歌的前奏',
+  '洗衣液的味道', '说好要去的海', '到家了告诉我', '没发出去的消息', '你先眯眼再笑', '车站的风很大'];
+
+/* ───────── 预渲染素材 ───────── */
+function sprite(r, g, b) {
+  const c = document.createElement('canvas'); c.width = c.height = 64; const x = c.getContext('2d');
+  const gr = x.createRadialGradient(32, 32, 0, 32, 32, 32);
+  gr.addColorStop(0, `rgba(${r},${g},${b},1)`); gr.addColorStop(.2, `rgba(${r},${g},${b},.6)`); gr.addColorStop(1, `rgba(${r},${g},${b},0)`);
+  x.fillStyle = gr; x.fillRect(0, 0, 64, 64); return c;
+}
+const SPR = { warm: sprite(255, 238, 218), amber: sprite(255, 182, 112), red: sprite(255, 66, 54), ash: sprite(160, 152, 146), ember: sprite(255, 132, 60), pink: sprite(255, 150, 185) };
+const BG = (() => {
+  const c = document.createElement('canvas'); c.width = W; c.height = H; const b = c.getContext('2d');
+  b.fillStyle = '#060505'; b.fillRect(0, 0, W, H);
+  const g = b.createRadialGradient(W / 2, H * .43, 0, W / 2, H * .43, H * .62);
+  g.addColorStop(0, 'rgba(84,44,28,.42)'); g.addColorStop(.5, 'rgba(36,18,12,.2)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+  b.fillStyle = g; b.fillRect(0, 0, W, H);
+  const r = mulberry32(7);
+  for (let i = 0; i < 420; i++) { b.fillStyle = `rgba(243,233,216,${r() * .22})`; b.fillRect(r() * W, r() * H, 1 + r() * 2, 1 + r() * 2); }
+  return c;
+})();
+const VIG = (() => {
+  const c = document.createElement('canvas'); c.width = W; c.height = H; const b = c.getContext('2d');
+  const g = b.createRadialGradient(W / 2, H * .45, H * .22, W / 2, H * .45, H * .72);
+  g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(.7, 'rgba(0,0,0,.45)'); g.addColorStop(1, 'rgba(0,0,0,.88)');
+  b.fillStyle = g; b.fillRect(0, 0, W, H); return c;
+})();
+const HALO = (() => {
+  const c = document.createElement('canvas'); c.width = 520; c.height = 150; const b = c.getContext('2d');
+  const g = b.createRadialGradient(260, 260, 0, 260, 260, 260); g.addColorStop(0, 'rgba(0,0,0,.85)'); g.addColorStop(.6, 'rgba(0,0,0,.5)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+  b.setTransform(1, 0, 0, 150 / 520, 0, 75 - 260 * 150 / 520); b.fillStyle = g; b.fillRect(0, 0, 520, 520); return c;
+})();
+const GRAIN = (() => {
+  const c = document.createElement('canvas'); c.width = c.height = 256; const x = c.getContext('2d');
+  const id = x.createImageData(256, 256), r = mulberry32(3);
+  for (let i = 0; i < id.data.length; i += 4) { id.data[i] = id.data[i + 1] = id.data[i + 2] = 255; id.data[i + 3] = r() < .5 ? r() * 255 : 0; }
+  x.putImageData(id, 0, 0); return ctx.createPattern(c, 'repeat');
+})();
+
+/* ───────── 粒子形状 ───────── */
+const CX = W / 2, CY = H * .43;
+function sampleText(str, sizeFrac, n) {
+  const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d', { willReadFrequently: true });
+  let fs = H * sizeFrac; g.font = `900 ${fs}px ${SERIF}`;
+  const mw = g.measureText(str).width; if (mw > W * .8) { fs *= W * .8 / mw; g.font = `900 ${fs}px ${SERIF}`; }
+  g.fillStyle = '#fff'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(str, CX, CY);
+  const d = g.getImageData(0, 0, W, H).data, pts = [], step = 6;
+  for (let y = 0; y < H; y += step) for (let x = 0; x < W; x += step) if (d[(y * W + x) * 4 + 3] > 140) pts.push([x, y]);
+  for (let i = pts.length - 1; i > 0; i--) { const j = R() * (i + 1) | 0; [pts[i], pts[j]] = [pts[j], pts[i]]; }
+  let mx = 0, my = 0; pts.forEach(p => { mx += p[0]; my += p[1]; }); mx /= pts.length; my /= pts.length;
+  let md = 1; pts.forEach(p => { md = Math.max(md, Math.hypot(p[0] - mx, p[1] - my)); });
+  const out = [];
+  for (let i = 0; i < n; i++) { const p = pts[i % pts.length]; out.push([p[0] + rand(-3.5, 3.5), p[1] + rand(-3.5, 3.5), .5 * (1 - Math.hypot(p[0] - mx, p[1] - my) / md)]); }
+  return out;
+}
+
+/* ───────── 模拟状态 ───────── */
+const N = 3000;
+let particles = [], frags = [], embers = [], waves = [];
+let shape = 'ta', T = { ta: null, me: null };
+let glitchImp = [], shakeImp = [], zoomImp = [], flashes = [], swirl = 0, corePulse = 0;
+let progress = 0, prevProgress = 0, evIdx = 0, cur = -1;
+
+function applyTargets(name, stagger) {
+  const tg = T[name];
+  particles.forEach((p, i) => { p.tx = tg[i][0]; p.ty = tg[i][1]; p.ord = p.core ? 2 : (tg[i][2] + .5 * p.rnd) * .975; if (stagger) p.delay = rand(0, stagger); });
+  shape = name;
+}
+function spawnEmber(x, y, n = 1) {
+  for (let i = 0; i < n && embers.length < 900; i++)
+    embers.push({ x: x + rand(-6, 6), y: y + rand(-5, 5), vx: rand(-.6, .6) * S, vy: rand(-1.8, -.4) * S, life: 1, dec: rand(.45, 1), s: rand(1, 2.6) });
+}
+function init() {
+  R = mulberry32(20261010);
+  particles = [];
+  for (let i = 0; i < N; i++) {
+    const a = rand(0, Math.PI * 2), sp = rand(3, 24) * S;
+    particles.push({
+      x: CX + rand(-6, 6), y: CY + rand(-6, 6), vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, tx: CX, ty: CY,
+      ord: 2, rnd: R(), core: R() < .022, ash: false, flash: 0, delay: 0,
+      ph: rand(0, 6.28), s: rand(.55, 1.7), hue: R(), a0: a, r0: Math.pow(R(), .5) * W * .85
+    });
+  }
+  T.ta = sampleText('TA', .25, N);
+  T.me = sampleText('我', .3, N);
+  applyTargets('ta', 0);
+  const ords = FRAGS.map((_, i) => .05 + i / FRAGS.length * .88);
+  for (let i = ords.length - 1; i > 0; i--) { const j = R() * (i + 1) | 0; [ords[i], ords[j]] = [ords[j], ords[i]]; }
+  frags = FRAGS.map((text, i) => ({
+    text, u: (i & 1 ? .79 : .21) + rand(-.035, .035), v: .31 + (i >> 1) * .056 + rand(-.008, .008), z: rand(.4, 1),
+    ord: ords[i], ash: false, burn: 0, rev: 0, ph: rand(0, 6.28), anchor: R() * N | 0
+  }));
+  embers = []; waves = []; glitchImp = []; shakeImp = []; zoomImp = []; flashes = [];
+  swirl = 0; corePulse = 0; progress = 0; prevProgress = 0; evIdx = 0; cur = -1; shape = 'ta';
+  MONTAGE.forEach(m => m.burnt = false);
+  // 预卷：第 0 帧就已经是"炸开"的瞬间
+  for (let i = 0; i < 3; i++) physics(1 / 60, 0);
+}
+
+function fire(e) {
+  switch (e.k) {
+    case 'flash': flashes.push({ t: e.t, c: e.c, a: e.a }); break;
+    case 'glitch': glitchImp.push({ t: e.t, a: e.a }); break;
+    case 'shake': shakeImp.push({ t: e.t, a: e.a }); break;
+    case 'zoom': zoomImp.push({ t: e.t, a: e.a }); break;
+    case 'wave': for (let i = 0; i < e.n; i++) waves.push({ x: e.x * W, y: e.y * H, r: -i * 70, max: W * 1.3, c: e.c, life: 1 }); break;
+    case 'shape': if (e.v === 'sky') { shape = 'sky'; particles.forEach(p => { p.delay = rand(0, 1.2); }); } else { applyTargets(e.v, .5); } break;
+    case 'swirl': swirl = 1; break;
+    case 'beat': corePulse = 1; zoomImp.push({ t: e.t, a: .012 }); break;
+  }
+}
+const imp = (list, t, rate) => list.reduce((s, i) => t >= i.t ? s + i.a * Math.exp(-(t - i.t) * rate) : s, 0);
+
+function physics(dt, t) {
+  const f = dt * 60, live = shape === 'ta' || shape === 'me';
+  for (const p of particles) {
+    if (p.delay > 0) p.delay -= dt;
+    const ash = live && progress > p.ord;
+    if (ash !== p.ash) {
+      if (ash) { p.vx += rand(-1.4, 1.4) * S; p.vy += rand(-3, -.6) * S; if (R() < .16) spawnEmber(p.x, p.y); }
+      else p.flash = 1;
+      p.ash = ash;
+    }
+    if (p.ash) {
+      p.vx += Math.sin(p.y * .005 + t * .7 + p.ph) * .03 * S * f;
+      p.vy -= .007 * S * f;
+      if (p.y < H * (.06 + p.rnd * .3)) p.vy += .02 * S * f;
+      if (p.x < 0) p.vx += .05 * S * f; else if (p.x > W) p.vx -= .05 * S * f;
+      const d = Math.pow(.975, f); p.vx *= d; p.vy *= d;
+    } else if (p.delay <= 0) {
+      let tx, ty, k;
+      if (shape === 'sky') { const a = p.a0 + t * .03; tx = CX + Math.cos(a) * p.r0; ty = CY + Math.sin(a) * p.r0 * 1.25; k = .004; }
+      else { tx = p.tx + Math.sin(t * .9 + p.ph) * 2.5; ty = p.ty + Math.cos(t * .7 + p.ph) * 2.5; k = .018; }
+      p.vx += (tx - p.x) * k * f; p.vy += (ty - p.y) * k * f;
+      if (swirl > 0) { const dx = p.x - CX, dy = p.y - CY; p.vx += -dy * .0035 * swirl * f; p.vy += dx * .0035 * swirl * f; }
+      const d = Math.pow(.86, f); p.vx *= d; p.vy *= d;
+    }
+    p.x += p.vx * f; p.y += p.vy * f;
+    if (p.flash > 0) p.flash = Math.max(0, p.flash - dt * .8);
+  }
+}
+
+function step(t) {
+  const dt = 1 / FPS;
+  while (evIdx < EV.length && EV[evIdx].t <= t + 1e-6) fire(EV[evIdx++]);
+  prevProgress = progress;
+  const target = kf(PROG, t);
+  for (let s = 0; s < 2; s++) { progress = lerp(prevProgress, target, (s + 1) / 2); physics(dt / 2, t); }
+  const live = shape === 'ta' || shape === 'me';
+  for (const fr of frags) {
+    const ash = live && progress > fr.ord;
+    if (ash !== fr.ash) {
+      fr.ash = ash;
+      if (ash) { for (let i = 0; i < 12; i++) spawnEmber(fr.u * W + rand(-90, 90), fr.v * H); }
+      else fr.rev = 1;
+    }
+    fr.burn = fr.ash ? Math.min(1, fr.burn + dt * .9) : Math.max(0, fr.burn - dt * 2.5);
+    fr.rev = Math.max(0, fr.rev - dt * .7);
+  }
+  for (const m of MONTAGE) if (!m.burnt && t >= m.end - .12) { m.burnt = true; for (let i = 0; i < 40; i++) spawnEmber(CX + rand(-260, 260), CY + rand(-30, 30)); }
+  for (let i = embers.length - 1; i >= 0; i--) {
+    const e = embers[i]; e.vx += Math.sin(e.y * .012 + t) * .02 * S; e.vy -= .01 * S;
+    e.x += e.vx; e.y += e.vy; e.life -= dt * e.dec; if (e.life <= 0) embers.splice(i, 1);
+  }
+  for (let i = waves.length - 1; i >= 0; i--) { const w = waves[i]; w.r += dt * W * .5; w.life = 1 - Math.max(0, w.r) / w.max; if (w.life <= 0) waves.splice(i, 1); }
+  corePulse = Math.max(0, corePulse - dt * 2.4);
+  swirl = Math.max(0, swirl - dt * .55);
+}
+
+function advanceTo(i) { while (cur < i) { cur++; step(cur / FPS); } }
+
+/* ───────── 绘制 ───────── */
+function drawScene(t) {
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; ctx.filter = 'none';
+  ctx.drawImage(BG, 0, 0);
+
+  const stall = t >= 13 && t < 16;
+  let shake = imp(shakeImp, t, 3) + (stall ? .15 + (t - 13) * .3 : 0);
+  const sx = shake ? rand(-1, 1) * shake * 14 : 0, sy = shake ? rand(-1, 1) * shake * 14 : 0;
+  let zoom = kf([[0, 1.1], [1.0, 1.0, 'out'], [13, 1.0], [16, 1.2, 'in'], [16.01, 1.0], [25.5, 1.0], [29.3, 1.06], [32, .94, 'io']], t) + imp(zoomImp, t, 5);
+  ctx.translate(CX + sx, CY + sy); ctx.scale(zoom, zoom); ctx.rotate(Math.sin(t * .23) * .008); ctx.translate(-CX, -CY);
+
+  const fadeFrags = t > 29.3 ? Math.max(0, 1 - (t - 29.3) / 1.2) : 1;
+  // 记忆之间的线
+  ctx.lineWidth = 1.2;
+  for (const fr of frags) {
+    const a = particles[fr.anchor];
+    const x = fr.u * W + Math.sin(t * .3 + fr.ph) * 12, y = fr.v * H + Math.cos(t * .25 + fr.ph) * 9;
+    const al = ((1 - fr.burn) * .08 + fr.rev * .5) * fadeFrags; if (al < .005) continue;
+    ctx.strokeStyle = fr.rev > .05 ? `rgba(255,90,70,${al})` : `rgba(243,220,200,${al})`;
+    ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo((x + a.x) / 2 + Math.sin(t + fr.ph) * 40, (y + a.y) / 2 - 40, a.x, a.y); ctx.stroke();
+  }
+  // 记忆碎片
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  for (const fr of frags) {
+    const x = fr.u * W + Math.sin(t * .3 + fr.ph) * 12, b = fr.burn;
+    const y = fr.v * H + Math.cos(t * .25 + fr.ph) * 9 - b * 50;
+    const al = (.2 + fr.z * .36) * (1 - b * .94) * fadeFrags * Math.min(1, t / .8);
+    ctx.font = `${fr.z > .7 ? 400 : 300} ${30 + fr.z * 9}px ${SERIF}`;
+    const r = 243 + 12 * b, g = 233 - 120 * b, bl = 216 - 170 * b;
+    ctx.fillStyle = `rgba(${r | 0},${g | 0},${bl | 0},${al})`;
+    ctx.fillText(fr.text, x + (b > 0 && b < 1 ? rand(-2, 2) : 0), y);
+    if (fr.rev > 0) {
+      const o = fr.rev * 10; ctx.globalCompositeOperation = 'lighter';
+      ctx.fillStyle = `rgba(255,50,50,${fr.rev * .8})`; ctx.fillText(fr.text, x - o, y);
+      ctx.fillStyle = `rgba(60,210,255,${fr.rev * .6})`; ctx.fillText(fr.text, x + o, y);
+      ctx.fillStyle = `rgba(255,255,255,${fr.rev * .7})`; ctx.fillText(fr.text, x, y);
+      ctx.globalCompositeOperation = 'source-over';
+    }
+  }
+
+  // 粒子
+  ctx.globalCompositeOperation = 'lighter';
+  const dim = shape === 'sky' ? .55 : 1;
+  for (const p of particles) {
+    let spr, a, sz;
+    if (p.ash) { spr = SPR.ash; a = .26 * clamp(p.y / (H * .35), .12, 1); sz = p.s * 2.2 * S * .8; }
+    else {
+      spr = p.hue < .72 ? SPR.warm : SPR.amber; a = .64 * dim; sz = p.s * 3 * S * .8;
+      if (stall && p.core) { spr = SPR.red; a = 1; sz *= 1.6 + corePulse * 2.2; }
+    }
+    ctx.globalAlpha = a; ctx.drawImage(spr, p.x - sz, p.y - sz, sz * 2, sz * 2);
+    if (p.flash > 0) { const f2 = sz * (1 + 2.5 * p.flash); ctx.globalAlpha = p.flash * .9; ctx.drawImage(SPR.red, p.x - f2, p.y - f2, f2 * 2, f2 * 2); }
+  }
+  for (const e of embers) { const s = e.s * 2.4 * S * .8; ctx.globalAlpha = e.life * .9; ctx.drawImage(SPR.ember, e.x - s, e.y - s, s * 2, s * 2); }
+  // 香水的雾
+  if (t > 8.6 && t < 10.8) {
+    const k = t < 8.9 ? (t - 8.6) / .3 : 1 - (t - 8.9) / 1.9;
+    for (let i = 0; i < 3; i++) {
+      const mx = W * (.9 - (t - 8.6) * .35 - i * .18), my = H * (.3 + i * .09), r = 380 + i * 90;
+      ctx.globalAlpha = clamp(k, 0, 1) * .32; ctx.drawImage(SPR.pink, mx - r, my - r, r * 2, r * 2);
+    }
+  }
+  ctx.globalAlpha = 1;
+  for (const w of waves) { if (w.r <= 0) continue; ctx.strokeStyle = `rgba(${w.c},${w.life * .55})`; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.arc(w.x, w.y, w.r, 0, Math.PI * 2); ctx.stroke(); }
+
+  // 故障切片
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalCompositeOperation = 'source-over';
+  const glitch = imp(glitchImp, t, 2.6);
+  if (glitch > .03) {
+    const n = 2 + (Math.min(1.4, glitch) * 7 | 0);
+    for (let i = 0; i < n; i++) {
+      const y = R() * H, h = rand(6, 80) * glitch, dx = rand(-90, 90) * glitch;
+      ctx.drawImage(cv, 0, y, W, Math.max(1, h), dx, y, W, Math.max(1, h));
+    }
+    ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = Math.min(1, glitch) * .14; ctx.fillStyle = '#ff2a2a';
+    ctx.fillRect(0, rand(0, H), W, rand(4, 140) * glitch); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+  }
+  // 闪光
+  ctx.globalCompositeOperation = 'screen';
+  for (const fl of flashes) { if (t < fl.t) continue; const a = fl.a * Math.exp(-(t - fl.t) * 2.4); if (a < .005) continue; ctx.globalAlpha = a; ctx.fillStyle = `rgb(${fl.c})`; ctx.fillRect(0, 0, W, H); }
+  ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+  ctx.drawImage(VIG, 0, 0);
+  // 胶片颗粒
+  ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = .055;
+  ctx.save(); ctx.translate(-rand(0, 256), -rand(0, 256)); ctx.fillStyle = GRAIN; ctx.fillRect(0, 0, W + 256, H + 256); ctx.restore();
+  ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+  return glitch;
+}
+
+// 逐字显影
+function drawBlock(b, t, glitch) {
+  const lt = t - b.in; if (lt < 0 || t > b.out + .35) return;
+  const outK = t > b.out ? 1 - (t - b.out) / .35 : 1;
+  const size = b.size, lineH = size * 1.45, ls = size * (b.note ? .1 : .06);
+  ctx.font = `${b.w} ${size}px ${SERIF}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const lines = b.text.split('\n'), y0 = b.y * H - (lines.length - 1) * lineH / 2;
+  const color = b.note ? 'rgba(243,233,216,.72)' : (b.warm ? '#ffe2cc' : '#f6ecdc');
+  const dur = b.note ? .3 : .42, blurMax = b.note ? 6 : 14;
+  const jx = glitch > .05 && !b.note ? rand(-1, 1) * glitch * 6 : 0;
+  if (!b.note) { ctx.shadowColor = b.warm ? 'rgba(255,150,90,.45)' : 'rgba(255,200,160,.3)'; ctx.shadowBlur = 30; }
+  let k = 0;
+  lines.forEach((line, li) => {
+    const chars = [...line], ws = chars.map(c => ctx.measureText(c).width);
+    const total = ws.reduce((s, v) => s + v + ls, 0) - ls;
+    let x = W / 2 - total / 2;
+    const ld = b.lineDelay ? b.lineDelay[li] || 0 : 0;
+    chars.forEach((ch, ci) => {
+      const ct = lt - ld - (k++) * b.st;
+      const cx = x + ws[ci] / 2; x += ws[ci] + ls;
+      if (ct < 0) return;
+      const e = EASE.out(clamp(ct / dur, 0, 1));
+      const al = e * outK; if (al < .01) return;
+      const blur = (1 - e) * blurMax + (1 - outK) * 10;
+      const y = y0 + li * lineH + (1 - e) * size * .2 - (1 - outK) * size * .15;
+      ctx.filter = blur > .4 ? `blur(${blur.toFixed(1)}px)` : 'none';
+      ctx.globalAlpha = al; ctx.fillStyle = color; ctx.fillText(ch, cx + jx, y);
+      if (b.glitch && ct < .35) {
+        const g = 1 - ct / .35, o = g * 9;
+        ctx.filter = 'none'; ctx.globalCompositeOperation = 'lighter';
+        ctx.globalAlpha = g * .8; ctx.fillStyle = '#ff3030'; ctx.fillText(ch, cx - o + jx, y);
+        ctx.fillStyle = '#30d0ff'; ctx.fillText(ch, cx + o + jx, y);
+        ctx.globalCompositeOperation = 'source-over';
+      }
+    });
+  });
+  ctx.filter = 'none'; ctx.globalAlpha = 1; ctx.shadowBlur = 0; ctx.shadowColor = 'transparent';
+}
+
+function centerText(str, x, y, size, w, color, ls = 0) {
+  ctx.font = `${w} ${size}px ${SERIF}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const chars = [...str], ws = chars.map(c => ctx.measureText(c).width), total = ws.reduce((s, v) => s + v + ls, 0) - ls;
+  let cx = x - total / 2; ctx.fillStyle = color;
+  chars.forEach((c, i) => { ctx.fillText(c, cx + ws[i] / 2, y); cx += ws[i] + ls; });
+}
+
+function drawUI(t, glitch) {
+  for (const b of TX) drawBlock(b, t, glitch);
+
+  // 快速闪回：每条记忆踩一拍
+  for (const m of MONTAGE) {
+    if (t < m.t || t >= m.end) continue;
+    const lt = t - m.t, len = m.end - m.t, k = lt / len;
+    const sc = 1 + .1 * Math.exp(-lt * 14), al = k > .7 ? 1 - (k - .7) / .3 : 1;
+    ctx.save(); ctx.translate(CX, CY - (k > .7 ? (k - .7) * 120 : 0)); ctx.scale(sc, sc);
+    ctx.globalAlpha = al * .75; ctx.drawImage(HALO, -520, -150, 1040, 300);
+    ctx.shadowColor = 'rgba(255,140,80,.6)'; ctx.shadowBlur = 36; ctx.globalAlpha = al;
+    centerText(m.text, 0, 0, 64, 600, k > .7 ? '#ffb98a' : '#fff4e6', 4);
+    ctx.shadowBlur = 0;
+    if (lt < .12) { ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = (1 - lt / .12) * .7; centerText(m.text, -10, 0, 64, 600, '#ff3030', 4); centerText(m.text, 10, 0, 64, 600, '#30d0ff', 4); }
+    ctx.restore(); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+  }
+
+  // 删除失败
+  if (t >= 16 && t < 21.95) {
+    const lt = t - 16, mv = EASE.io(clamp((t - 17.25) / .4, 0, 1));
+    const y = lerp(CY, H * .2, mv), size = lerp(170, 104, mv);
+    const al = t > 21.6 ? 1 - (t - 21.6) / .35 : 1, sc = 1 + .4 * Math.exp(-lt * 12);
+    ctx.save(); ctx.translate(CX + (lt < .5 ? rand(-1, 1) * 14 * (1 - lt * 2) : 0), y); ctx.scale(sc, sc);
+    ctx.globalAlpha = al; ctx.shadowColor = 'rgba(229,60,50,.7)'; ctx.shadowBlur = 50;
+    centerText('删除失败', 0, 0, size, 900, '#e9473d', size * .08);
+    ctx.shadowBlur = 0;
+    if (lt < .4) { ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = (1 - lt / .4) * .6; centerText('删除失败', -16, 0, size, 900, '#ff2020', size * .08); centerText('删除失败', 16, 0, size, 900, '#20d0ff', size * .08); }
+    ctx.restore(); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+  }
+
+  // 删除进度
+  if (t >= 1.15 && t < 16) {
+    const p = progress, back = progress < prevProgress - 1e-4;
+    let s;
+    if (t < 13) s = Math.round(p * 100) + '%';
+    else s = t < 13.4 ? '99%' : t < 14.1 ? '99.9%' : t < 14.8 ? '99.99%' : t < 15.4 ? '99.999%' : '99.9999%';
+    const red = back || t >= 13.4;
+    const a = Math.min(1, (t - 1.15) / .2);
+    const j = t >= 13.4 ? rand(-1, 1) * (t - 13) * 3 : 0;
+    ctx.globalAlpha = a;
+    if (red) { ctx.shadowColor = 'rgba(229,60,50,.7)'; ctx.shadowBlur = 30; }
+    centerText(s, CX + j, H * .622, 112, 300, red ? '#ff5a4e' : '#f6ecdc', 2);
+    ctx.shadowBlur = 0;
+    centerText(back ? '记 忆 回 流' : '删 除 进 度', CX, H * .662, 26, 400, back ? 'rgba(255,110,95,.85)' : 'rgba(243,233,216,.5)', 6);
+    ctx.globalAlpha = 1;
+  }
+
+  // 按住的手指
+  let fa = 0, press = 0;
+  for (const [a, b] of HOLDS) {
+    if (t >= a - .15 && t < b + .3) { fa = Math.max(fa, t < a ? 0 : t < b ? Math.min(1, (t - a) / .15) : 1 - (t - b) / .3); if (t >= a) press = Math.max(press, Math.exp(-(t - a) * 8)); }
+  }
+  if (fa > .01) {
+    const fx = CX, fy = H * .772, r = 46 * (1 + press * .35);
+    ctx.globalAlpha = fa;
+    ctx.globalCompositeOperation = 'lighter'; ctx.drawImage(SPR.warm, fx - r * 1.4, fy - r * 1.4, r * 2.8, r * 2.8);
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.strokeStyle = 'rgba(243,233,216,.35)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(fx, fy, r, 0, Math.PI * 2); ctx.stroke();
+    ctx.strokeStyle = t >= 13 ? '#ff5a4e' : '#f6ecdc'; ctx.lineWidth = 4; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.arc(fx, fy, r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * clamp(progress, 0, 1)); ctx.stroke();
+    if (press > .02) { ctx.strokeStyle = `rgba(243,233,216,${press * .6})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(fx, fy, r * (1 + (1 - press) * 1.2), 0, Math.PI * 2); ctx.stroke(); }
+    ctx.globalAlpha = 1;
+  }
+
+  // 结尾淡出
+  if (t > DUR - .5) { ctx.globalAlpha = (t - (DUR - .5)) / .5; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
+}
+
+let coverSnap = null;
+const COVER_T = 11.0;
+function drawFrame(i) {
+  const t = i / FPS;
+  const glitch = drawScene(t);
+  if (Math.abs(t - COVER_T) < 1e-6) { coverSnap = document.createElement('canvas'); coverSnap.width = W; coverSnap.height = H; coverSnap.getContext('2d').drawImage(cv, 0, 0); }
+  drawUI(t, glitch);
+}
+
+/* 封面：大脑没有删除键 */
+function drawCover() {
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.filter = 'none'; ctx.globalCompositeOperation = 'source-over';
+  if (coverSnap) ctx.drawImage(coverSnap, 0, 0); else { ctx.fillStyle = '#060505'; ctx.fillRect(0, 0, W, H); }
+  ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(0, 0, W, H);
+  ctx.shadowColor = 'rgba(229,60,50,.7)'; ctx.shadowBlur = 30;
+  centerText('删除进度 99.999%', CX, H * .275, 46, 400, '#ff5a4e', 6);
+  ctx.shadowColor = 'rgba(255,200,160,.35)'; ctx.shadowBlur = 40;
+  centerText('大脑没有', CX, H * .43, 196, 900, '#f6ecdc', 10);
+  ctx.globalCompositeOperation = 'lighter'; ctx.shadowBlur = 0; ctx.globalAlpha = .6;
+  centerText('删除键', CX - 7, H * .555, 196, 900, '#ff2a2a', 10);
+  centerText('删除键', CX + 7, H * .555, 196, 900, '#20c8ff', 10);
+  ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+  ctx.shadowColor = 'rgba(229,60,50,.6)'; ctx.shadowBlur = 40;
+  centerText('删除键', CX, H * .555, 196, 900, '#ffe9e2', 10);
+  ctx.shadowBlur = 0;
+  // 横向故障切片
+  const r = mulberry32(11);
+  for (let i = 0; i < 3; i++) { const y = H * (.525 + r() * .06), h = 4 + r() * 10, dx = (r() - .5) * 50; ctx.drawImage(cv, 0, y, W, h, dx, y, W, h); }
+  centerText('你真的能忘掉一个人吗？', CX, H * .67, 46, 400, 'rgba(243,233,216,.78)', 6);
+  return cv.toDataURL('image/jpeg', .95);
+}
+
+/* ───────── 声音：离线合成，与画面共用时间轴 ───────── */
+async function renderAudio() {
+  const SR = 48000, c = new OfflineAudioContext(2, SR * DUR, SR), ar = mulberry32(99), arand = (a, b) => a + ar() * (b - a);
+  const out = c.createGain(); out.gain.value = .6;
+  const comp = c.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 4; comp.attack.value = .005; comp.release.value = .2;
+  out.connect(comp); comp.connect(c.destination);
+  const ir = c.createBuffer(2, SR * 3.8 | 0, SR);
+  for (let ch = 0; ch < 2; ch++) { const d = ir.getChannelData(ch); for (let i = 0; i < d.length; i++) d[i] = (ar() * 2 - 1) * Math.pow(1 - i / d.length, 2.8); }
+  const conv = c.createConvolver(); conv.buffer = ir; const rv = c.createGain(); rv.gain.value = .55; rv.connect(conv); conv.connect(out);
+  const nb = c.createBuffer(1, SR * 2, SR); { const d = nb.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = ar() * 2 - 1; }
+
+  // 低频氛围
+  const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 3;
+  lp.frequency.setValueAtTime(240, 0); lp.frequency.setValueAtTime(240, 13); lp.frequency.linearRampToValueAtTime(650, 15.98); lp.frequency.setValueAtTime(240, 16.02);
+  const dg = c.createGain(); lp.connect(dg); dg.connect(out); dg.connect(rv);
+  [[55, 'sawtooth', .45], [55.35, 'sawtooth', .45], [82.41, 'triangle', .22], [110.3, 'triangle', .22]].forEach(([f, ty, v]) => {
+    const o = c.createOscillator(); o.type = ty; o.frequency.value = f; const g = c.createGain(); g.gain.value = v; o.connect(g); g.connect(lp); o.start(0);
+  });
+  const lfo = c.createOscillator(); lfo.frequency.value = .07; const lg = c.createGain(); lg.gain.value = 110; lfo.connect(lg); lg.connect(lp.frequency); lfo.start(0);
+  const dgv = dg.gain;
+  dgv.setValueAtTime(0, 0); dgv.linearRampToValueAtTime(.15, 1.4); dgv.setValueAtTime(.15, 10); dgv.linearRampToValueAtTime(.22, 13);
+  dgv.linearRampToValueAtTime(.28, 15.98); dgv.setValueAtTime(0, 16.02); dgv.setValueAtTime(0, 17.4); dgv.linearRampToValueAtTime(.12, 19.5);
+  dgv.linearRampToValueAtTime(.17, 22.5); dgv.setValueAtTime(.17, 26); dgv.linearRampToValueAtTime(.1, 30); dgv.linearRampToValueAtTime(0, DUR);
+
+  // 删除时的沙沙声：跟着进度和手指走
+  const ns = c.createBufferSource(); ns.buffer = nb; ns.loop = true;
+  const bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = .9;
+  const ng = c.createGain(); ng.gain.value = 0; ns.connect(bp); bp.connect(ng); ng.connect(out); ng.connect(rv); ns.start(0);
+  for (let i = 0; i <= DUR * 30; i++) {
+    const t = i / 30, p = kf(PROG, t), h = holdAt(t);
+    ng.gain.linearRampToValueAtTime(h ? .035 + Math.min(p, 1) * .15 : 0, t);
+    bp.frequency.linearRampToValueAtTime(220 + Math.min(p, 1) * 2400, t);
+  }
+  const noise = (t0, dur, vol, type, freq) => {
+    const s = c.createBufferSource(); s.buffer = nb; const f = c.createBiquadFilter(); f.type = type; f.frequency.value = freq;
+    const g = c.createGain(); g.gain.setValueAtTime(vol, t0); g.gain.exponentialRampToValueAtTime(.0008, t0 + dur);
+    s.connect(f); f.connect(g); g.connect(out); g.connect(rv); s.start(t0, ar() * 1.5); s.stop(t0 + dur + .05);
+  };
+  // 燃烧的噼啪声
+  for (const [a, b] of HOLDS) for (let t = a; t < b; t += arand(.03, .1)) noise(t, .02, arand(.02, .07) * (.4 + kf(PROG, t)), 'highpass', 3000);
+
+  const tone = (f, t0, dur = 3, vol = .1, type = 'sine') => {
+    const o = c.createOscillator(), o2 = c.createOscillator(), g = c.createGain(), g2 = c.createGain();
+    o.type = type; o.frequency.value = f; o2.frequency.value = f * 2.003; g2.gain.value = .16;
+    g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(vol, t0 + .012); g.gain.exponentialRampToValueAtTime(.0001, t0 + dur);
+    o.connect(g); o2.connect(g2); g2.connect(g); g.connect(out); g.connect(rv); o.start(t0); o2.start(t0); o.stop(t0 + dur + .1); o2.stop(t0 + dur + .1);
+  };
+  const beat = (t0, v) => [0, .19].forEach((w, i) => {
+    const o = c.createOscillator(), g = c.createGain(), s = t0 + w;
+    o.frequency.setValueAtTime(95, s); o.frequency.exponentialRampToValueAtTime(36, s + .2);
+    g.gain.setValueAtTime(0, s); g.gain.linearRampToValueAtTime(.7 * v * (i ? .55 : 1), s + .008); g.gain.exponentialRampToValueAtTime(.001, s + .32);
+    o.connect(g); g.connect(out); o.start(s); o.stop(s + .4);
+  });
+  const boom = (t0, v = 1) => {
+    const o = c.createOscillator(), g = c.createGain();
+    o.frequency.setValueAtTime(74, t0); o.frequency.exponentialRampToValueAtTime(26, t0 + 1.8);
+    g.gain.setValueAtTime(.95 * v, t0); g.gain.exponentialRampToValueAtTime(.001, t0 + 2.8);
+    o.connect(g); g.connect(out); g.connect(rv); o.start(t0); o.stop(t0 + 3);
+    noise(t0, 1.4, .4 * v, 'lowpass', 280);
+  };
+  const glitch = t0 => {
+    for (let i = 0; i < 9; i++) {
+      const s = t0 + i * .032 + arand(0, .02), o = c.createOscillator(), g = c.createGain();
+      o.type = 'square'; o.frequency.value = arand(70, 1900);
+      g.gain.setValueAtTime(.07, s); g.gain.setValueAtTime(0, s + .024); o.connect(g); g.connect(out); o.start(s); o.stop(s + .04);
+    }
+    noise(t0, .3, .25, 'highpass', 1800);
+  };
+  const MOTIF = [[659.25, 0], [523.25, .44], [587.33, .88], [440, 1.32], [392, 2.1], [440, 2.54], [523.25, 2.98], [493.88, 3.5]];
+  const motif = (t0, n, vol) => MOTIF.slice(0, n).forEach(([f, w]) => tone(f, t0 + w, 3.2, vol, 'triangle'));
+  const swell = (t0, t1, vol) => {
+    const s = c.createBufferSource(); s.buffer = nb; s.loop = true; const f = c.createBiquadFilter(); f.type = 'highpass';
+    f.frequency.setValueAtTime(400, t0); f.frequency.exponentialRampToValueAtTime(5000, t1);
+    const g = c.createGain(); g.gain.setValueAtTime(.0001, t0); g.gain.exponentialRampToValueAtTime(vol, t1 - .02); g.gain.linearRampToValueAtTime(0, t1);
+    s.connect(f); f.connect(g); g.connect(out); g.connect(rv); s.start(t0); s.stop(t1 + .05);
+  };
+
+  boom(0.0, .9); tone(659.25, .05, 2.5, .05);
+  glitch(2.5); tone(110, 2.5, 2.5, .08);
+  BEATS.forEach((b, i) => beat(b, b < 10 ? .75 : .75 + Math.min(.3, (b - 10) * .05)));
+  glitch(5.5); motif(5.55, 4, .13);
+  glitch(8.65); [1318.5, 1568, 1975.5, 2637, 3136].forEach((f, i) => tone(f, 8.7 + i * .08, 2.4, .03));
+  swell(14.2, 16.0, .18);
+  boom(16.0, 1.1); glitch(16.0);
+  tone(4186, 16.25, 1.4, .006); // 短暂的耳鸣
+  [[329.63, 17.6], [392, 18.6], [440, 19.6]].forEach(([f, t0]) => { tone(f, t0, 3.6, .1); tone(f / 2, t0, 3.6, .04); });
+  swell(20.6, 22.0, .12);
+  boom(22.0, .8); [220, 261.63, 329.63, 440, 523.25].forEach((f, i) => tone(f, 22.0 + i * .07, 6, .055)); tone(55, 22, 7, .12);
+  motif(25.3, 8, .1); tone(110, 25.3, 5, .07); tone(87.31, 27.4, 5, .07);
+  tone(220, 29.5, 4, .06); tone(659.25, 29.5, 4, .04); tone(1318.5, 30.4, 2.5, .02);
+
+  const buf = await c.startRendering();
+  return wavBase64(buf);
+}
+function wavBase64(buf) {
+  const ch = buf.numberOfChannels, len = buf.length, sr = buf.sampleRate, bytes = 44 + len * ch * 2;
+  const ab = new ArrayBuffer(bytes), v = new DataView(ab);
+  const str = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  str(0, 'RIFF'); v.setUint32(4, bytes - 8, true); str(8, 'WAVE'); str(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true);
+  v.setUint16(22, ch, true); v.setUint32(24, sr, true); v.setUint32(28, sr * ch * 2, true); v.setUint16(32, ch * 2, true); v.setUint16(34, 16, true);
+  str(36, 'data'); v.setUint32(40, len * ch * 2, true);
+  const data = []; for (let c = 0; c < ch; c++) data.push(buf.getChannelData(c));
+  let o = 44; for (let i = 0; i < len; i++) for (let c = 0; c < ch; c++) { v.setInt16(o, clamp(data[c][i], -1, 1) * 32767, true); o += 2; }
+  const u8 = new Uint8Array(ab); let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000));
+  return btoa(s);
+}
+
+/* ───────── 启动 ───────── */
+const ALL = TX.map(b => b.text).join('') + MONTAGE_TEXT.join('') + FRAGS.join('') + 'TA我删除失败进度记忆回流0123456789%.大脑没有键你真的能忘掉一个人吗？';
+async function boot() {
+  try {
+    await Promise.race([
+      Promise.all([300, 400, 600, 900].map(w => document.fonts.load(`${w} 64px "Noto Serif SC"`, ALL))),
+      new Promise(r => setTimeout(r, 20000))
+    ]);
+    await document.fonts.ready;
+  } catch (e) {}
+  init();
+  window.FILM = {
+    ready: true, frames: Math.round(DUR * FPS), fps: FPS, coverFrame: Math.round(COVER_T * FPS),
+    fontStatus: () => [300, 400, 600, 900].map(w => w + ':' + document.fonts.check(`${w} 64px "Noto Serif SC"`, '删除失败我')).join(' '),
+    render(i, q = .95) { if (i <= cur) init(); advanceTo(i); drawFrame(i); return cv.toDataURL('image/jpeg', q); },
+    cover: drawCover,
+    renderAudio
+  };
+  if (!RENDER) preview();
+}
+
+/* 浏览器里直接预览：点击播放（含声音） */
+function preview() {
+  advanceTo(0); drawFrame(0);
+  ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(0, 0, W, H);
+  centerText('▶  点击播放', CX, H * .5, 56, 400, '#f6ecdc', 8);
+  let playing = false;
+  cv.addEventListener('click', async () => {
+    if (playing) return; playing = true;
+    const ac = new (window.AudioContext || window.webkitAudioContext)();
+    const b64 = await renderAudio(), bin = atob(b64), u8 = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    const buf = await ac.decodeAudioData(u8.buffer);
+    init();
+    const src = ac.createBufferSource(); src.buffer = buf; src.connect(ac.destination);
+    const t0 = ac.currentTime + .1; src.start(t0);
+    (function loop() {
+      const i = Math.min(Math.round(DUR * FPS) - 1, Math.floor((ac.currentTime - t0) * FPS));
+      if (i >= 0) { advanceTo(i); drawFrame(i); }
+      if (i < DUR * FPS - 1) requestAnimationFrame(loop); else playing = false;
+    })();
+  });
+}
+boot();
+})();
+</script>
+</body>
+</html>
