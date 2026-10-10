@@ -25,3 +25,4 @@
 - EP.02 起各集共用 `video/snowkit.js`（字幕、雪景、配乐、转场、导出与封面接口），每集只写自己的场景、字幕、音效和封面排版，最后调用 `kitRun(...)`。
 - EP.01 单板版：`video/ski-ep01-sb.html`，侧面视角（整块板沿坡、前脚在山下），结构与双板版一致。
 - EP.02 双板版：`video/ski-ep02-ski.html`；双板侧面小人抽到了 `video/skirig.js`，正面小人在本页里。
+- EP.03 单板《落叶飘，到底在练什么》：`video/ski-ep03-sb.html`；单板两种视角的小人抽到了 `video/sbrig.js`。

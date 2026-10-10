@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>滑雪不难 EP.03 单板</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#000;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;aspect-ratio:9/16;max-width:100vw;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;aspect-ratio:auto;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="sbrig.js"></script>
+<script>
+/*
+ * 滑雪不难 EP.03 单板《落叶飘，到底在练什么》（约 2 分 17 秒）
+ * 三种视角：俯视（轨迹）、顺着板看（刃角）、从坡下往上看（前后脚重心，人面朝镜头、板横着）。
+ */
+(() => {
+'use strict';
+const T = [0, 8.0, 11.6, 26.0, 44.0, 62.0, 72.0, 80.0, 104.0, 114.0, 124.0, 131.0, 137.5];
+const YH = .135, YB = .745;
+
+const TX = [
+  { in: .15, out: 3.8, text: '一片叶子，\n是怎么落下来的？', y: YH, size: 84, w: 900, st: .06 },
+  { in: 4.0, out: 7.8, text: '单板新手练的{a}落叶飘{/}，\n就是在学这个。', y: YH, size: 80, w: 900 },
+  { in: 8.25, out: 11.35, text: '落叶飘，\n到底在练什么', y: .3, size: 104, w: 900, st: .06 },
+  { in: 9.0, out: 11.35, text: '从推坡到转弯之间的那座桥', y: .415, size: 42, w: 500, sub: 1 },
+  { in: 11.8, out: 18.6, text: '落叶飘：\n板一直{a}横在坡上{/}。', y: YH, size: 80, w: 900 },
+  { in: 12.6, out: 18.6, text: '始终踩着同一条刃，\n左右来回、斜着往下滑。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 18.8, out: 25.8, text: '它不是一个动作，\n是在同时练四件事。', y: YH, size: 80, w: 900 },
+  { in: 26.2, out: 34.8, text: '① 用刃控速', y: YH, size: 80, w: 900 },
+  { in: 27.0, out: 34.8, text: '脚尖抬高一点，刃立起来，就慢；\n放低一点，就往下滑。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 35.2, out: 43.8, text: '但别把板{r}放平{/}！', y: YH, size: 80, w: 900 },
+  { in: 36.0, out: 43.8, text: '山下那条刃一碰到雪，就会挂刃。\n上一集讲过。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 44.2, out: 52.8, text: '② 前脚压一点，\n板就往前走', y: YH, size: 80, w: 900 },
+  { in: 45.0, out: 52.8, text: '重心回到两脚中间，板就停下来，\n直着往下飘。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 53.2, out: 61.8, text: '后脚压一点，\n就往回走。', y: YH, size: 80, w: 900 },
+  { in: 54.0, out: 61.8, text: '前脚是方向盘，后脚也是。\n往哪边走，就压哪只脚。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 62.2, out: 71.8, text: '③ 两个方向都能滑', y: YH, size: 80, w: 900 },
+  { in: 63.0, out: 71.8, text: '往后脚那边走，其实就是在倒着滑。\n落叶飘让你两只脚都能当"前脚"。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 72.2, out: 79.8, text: '④ 看向要去的方向', y: YH, size: 80, w: 900 },
+  { in: 73.0, out: 79.8, text: '往哪边走，就先看哪边。\n前手指过去，身体会跟着走。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 80.2, out: 87.8, text: '常见错误一：\n用{r}肩膀{/}甩板', y: YH, size: 80, w: 900 },
+  { in: 81.0, out: 87.8, text: '肩膀甩来甩去，板会打转、乱跑。\n方向靠脚，不靠肩。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 88.2, out: 95.8, text: '常见错误二：\n往回走时{r}往后坐{/}', y: YH, size: 80, w: 900 },
+  { in: 89.0, out: 95.8, text: '一倒着滑就害怕、往后坐，\n这时的"前脚"就空了。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 96.2, out: 103.8, text: '常见错误三：\n一直{r}低头看板{/}', y: YH, size: 80, w: 900 },
+  { in: 97.0, out: 103.8, text: '眼睛盯着板，身体就跟着往下缩，\n越看越晃。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 104.2, out: 113.8, text: '先练{g}后刃{/}，\n再练前刃。', y: YH, size: 80, w: 900 },
+  { in: 105.0, out: 113.8, text: '后刃面朝山下，看得见路，更容易上手；\n前刃面朝山上，要更相信脚尖。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 114.2, out: 123.8, text: '落叶飘 + {g}换刃{/}\n= 转弯', y: YH, size: 88, w: 900 },
+  { in: 115.0, out: 123.8, text: '把两边的落叶飘连起来，中间换一次刃，\n就是你的第一个弯。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 131.2, out: 999, text: '你的落叶飘，\n卡在哪一步？', y: .37, size: 88, w: 900, st: .06 },
+  { in: 132.2, out: 999, text: '评论区说说', y: .465, size: 42, w: 500, sub: 1 }
+];
+const FOUR = ['① 用刃控速', '② 前后脚移重心', '③ 两个方向都能滑', '④ 看向要去的方向'];
+
+/* ───────── 俯视：叶子与落叶飘轨迹 ───────── */
+function leaf(x, y, ang, s, color) {
+  g.save(); g.translate(x, y); g.rotate(ang); g.scale(s, s);
+  g.fillStyle = color || '#f2a33a'; g.beginPath(); g.moveTo(-60, 0); g.quadraticCurveTo(0, -42, 60, 0); g.quadraticCurveTo(0, 42, -60, 0); g.fill();
+  g.strokeStyle = 'rgba(120,60,10,.5)'; g.lineWidth = 4; g.beginPath(); g.moveTo(-70, 0); g.lineTo(55, 0); g.stroke();
+  g.restore();
+}
+// 之字形：k∈[0,1]，n 段，宽 A
+const zig = (k, n, A) => { const p = k * n, i = Math.floor(p), f = p - i, dir = i % 2 ? -1 : 1, e = sm(f); return (dir === 1 ? -1 + 2 * e : 1 - 2 * e) * A; };
+function topBoardSB(x, y, ang, s, look) {
+  g.save(); g.translate(x, y); g.rotate(ang);
+  g.fillStyle = COL.board; rrect(-75 * s, -18 * s, 150 * s, 36 * s, 17 * s); g.fill();
+  g.fillStyle = '#2a2f3a'; rrect(-42 * s, -14 * s, 16 * s, 28 * s, 5 * s); g.fill(); rrect(26 * s, -14 * s, 16 * s, 28 * s, 5 * s); g.fill();
+  g.fillStyle = COL.jacket; g.beginPath(); g.ellipse(0, 0, 30 * s, 15 * s, 0, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#fff'; g.strokeStyle = COL.pants; g.lineWidth = 3 * s; g.beginPath(); g.arc(0, 0, 11 * s, 0, Math.PI * 2); g.fill(); g.stroke();
+  g.fillStyle = COL.amber; g.beginPath(); g.arc(0, 8 * s, 5 * s, 0, Math.PI * 2); g.fill(); // 护目镜：面朝山下
+  g.restore();
+}
+function slopeTop(lt, scroll) {
+  g.fillStyle = '#f7fafc'; g.fillRect(0, 0, W, H);
+  g.strokeStyle = '#e3ebf2'; g.lineWidth = 3; for (let x = 40; x < W; x += 34) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); }
+  for (let i = 0; i < 14; i++) { const side = i % 2 ? W - 36 : 36, y = ((i * 260 - (scroll || 0)) % (H + 200) + H + 200) % (H + 200) - 100; g.fillStyle = '#cddbe6'; g.beginPath(); g.arc(side, y, 22 + hash(i + 3) * 8, 0, Math.PI * 2); g.fill(); }
+}
+function zigPath(cx, y0, y1, A, n, k, color, dashed) {
+  g.save(); g.strokeStyle = color; g.lineWidth = 7; g.lineCap = 'round'; if (dashed) g.setLineDash([16, 14]);
+  g.beginPath(); for (let i = 0; i <= 200; i++) { const kk = k * i / 200, x = cx + zig(kk, n, A), y = lerp(y0, y1, kk); i ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke(); g.restore();
+}
+
+/* ───────── 坡下视角：人面朝镜头，板横着（sbRider 在平地上画） ───────── */
+const FW = { // hipS 正 = 重心往前脚（画面右边是板头）
+  mid: { hipS: .05, hipH: 1.42, lean: 4, armF: 112, armB: -118, look: .1 },
+  front: { hipS: .38, hipH: 1.38, lean: 10, armF: 100, armB: -125, look: 1 },
+  back: { hipS: -.3, hipH: 1.38, lean: -2, armF: 120, armB: -100, look: -1 },
+  backSit: { hipS: -.62, hipH: 1.25, lean: -20, armF: 70, armB: -150, look: -.4 },
+  hunch: { hipS: .05, hipH: 1.2, lean: 28, armF: 150, armB: -150, look: .1 },
+  twistA: { hipS: .05, hipH: 1.42, lean: -14, armF: 60, armB: -170, look: -.6 },
+  twistB: { hipS: .05, hipH: 1.42, lean: 18, armF: 170, armB: -60, look: .9 }
+};
+function uphillBg(scrollX) {
+  const gr = g.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, '#e9f1f8'); gr.addColorStop(1, '#ffffff'); g.fillStyle = gr; g.fillRect(0, 0, W, H);
+  // 坡往画面上方升高：远处的树和雪道杆随横移视差
+  for (let i = -2; i < 9; i++) {
+    const x = ((i * 260 - scrollX * .5) % (W + 260) + W + 260) % (W + 260) - 130, y = H * .3 + (i % 3) * 30;
+    g.fillStyle = '#c3d4e2'; for (let j = 0; j < 3; j++) { const w = 46 - j * 11, yy = y - j * 34; g.beginPath(); g.moveTo(x, yy - 54); g.lineTo(x - w, yy); g.lineTo(x + w, yy); g.closePath(); g.fill(); }
+  }
+  g.strokeStyle = '#dfe8f0'; g.lineWidth = 4;
+  for (let i = 0; i < 40; i++) { const x = ((i * 137 - scrollX) % (W + 200) + W + 200) % (W + 200) - 100, y = H * .4 + (i * 53) % (H * .45); g.beginPath(); g.moveTo(x, y); g.lineTo(x + 50, y); g.stroke(); }
+  const py = H * .62; for (let i = 0; i < 6; i++) { const x = ((i * 400 - scrollX) % 2400 + 2400) % 2400 - 200; g.strokeStyle = COL.amber; g.lineWidth = 9; g.beginPath(); g.moveTo(x, py + 40); g.lineTo(x, py - 70); g.stroke(); }
+}
+function weightArrows(J, front, a, extra) {
+  [[.55, front], [-.55, 100 - front]].forEach(([fs, v]) => {
+    const len = .2 + v / 100 * .9, p1 = J.P(fs, -.12), p2 = J.P(fs, -.12 - len), lp = J.P(fs, -.12 - len - .38);
+    g.save(); g.globalAlpha = a; arrow(p1[0], p1[1], p2[0], p2[1], COL.green, 6 + v / 10, 26); label(`${v}%`, lp[0], lp[1], 50, COL.green, 900); g.restore();
+  });
+}
+function inset(x, y, k, dir) { // 小俯视图：显示当前往哪边走
+  g.save(); g.fillStyle = 'rgba(255,255,255,.92)'; g.shadowColor = 'rgba(27,40,56,.12)'; g.shadowBlur = 24; rrect(x - 130, y - 150, 260, 300, 26); g.fill(); g.shadowBlur = 0;
+  label('俯视', x, y - 120, 28, COL.sub, 700);
+  g.strokeStyle = '#d6e2ed'; g.lineWidth = 4; g.setLineDash([10, 10]); g.beginPath(); g.moveTo(x - 90, y - 60); g.lineTo(x + 90, y + 10); g.lineTo(x - 90, y + 80); g.stroke(); g.setLineDash([]);
+  topBoardSB(x + dir * 40, y + 10, 0, .7);
+  if (dir) arrow(x + dir * 70, y + 50, x + dir * 115, y + 75, COL.green, 5, 18);
+  g.restore();
+}
+
+/* ───────── 场景 ───────── */
+const S = [];
+// A 钩子：叶子 → 雪板
+S.push(lt => {
+  const morph = sm((lt - 3.6) / 1.2);
+  const sky = g.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, '#dcebf6'); sky.addColorStop(1, '#f6fafc'); g.fillStyle = sky; g.fillRect(0, 0, W, H);
+  if (morph > 0) { g.save(); g.globalAlpha = morph; slopeTop(lt, lt * 60); g.restore(); }
+  const k = clamp(lt / 7.6, 0, 1), cx = CX, y0 = H * .26, y1 = H * .76, A = 230, n = 5;
+  zigPath(cx, y0, y1, A, n, k, morph > .5 ? COL.board : 'rgba(242,163,58,.6)', true);
+  const x = cx + zig(k, n, A), y = lerp(y0, y1, k), dx = zig(Math.min(1, k + .005), n, A) - zig(k, n, A);
+  if (morph < 1) { g.save(); g.globalAlpha = 1 - morph; leaf(x, y, dx * .03 + Math.sin(lt * 3) * .15, 1.1); g.restore(); }
+  if (morph > 0) { g.save(); g.globalAlpha = morph; topBoardSB(x, y, dx * .004, 1.25); g.restore(); }
+  if (morph > .5) { g.save(); g.globalAlpha = morph; arrow(W * .1, H * .3, W * .1, H * .42, '#b7c6d4', 6, 22); label('下坡', W * .1, H * .445, 30, '#9aabbb'); g.restore(); }
+});
+// B 标题
+S.push(lt => {
+  slopeTop(lt + 8, 0);
+  g.fillStyle = 'rgba(247,250,252,.7)'; g.fillRect(0, 0, W, H);
+  pill('滑雪不难 · EP.03 · 单板', CX, H * .19, 40, COL.amber, '#fff', eout(lt / .3));
+  const k = clamp(lt / 3.4, 0, 1);
+  zigPath(CX, H * .5, H * .78, 200, 3, 1, 'rgba(106,92,255,.25)', true);
+  topBoardSB(CX + zig(k, 3, 200), lerp(H * .5, H * .78, k), 0, 1.15);
+  leaf(W * .82, H * .47, -.5, .7);
+});
+// C 是什么 + 四件事
+S.push(lt => {
+  const y0 = H * .28, y1 = H * .66, A = 260, n = 4, k = clamp(lt / 7, 0, 1);
+  slopeTop(lt + 11.6, lt * 40);
+  arrow(W * .1, H * .3, W * .1, H * .42, '#b7c6d4', 6, 22); label('下坡', W * .1, H * .445, 30, '#9aabbb');
+  zigPath(CX, y0, y1, A, n, k, 'rgba(106,92,255,.45)', false);
+  const x = CX + zig(k, n, A), y = lerp(y0, y1, k);
+  topBoardSB(x, y, 0, 1.3);
+  if (lt > 1.4 && lt < 7.2) { const a = win(lt, 1.4, 7.0, .3, .3); g.save(); g.globalAlpha = a; g.setLineDash([10, 8]); g.strokeStyle = COL.amber; g.lineWidth = 4; g.beginPath(); g.moveTo(x - 140, y); g.lineTo(x + 140, y); g.stroke(); g.setLineDash([]); label('板一直横着', x, y - 70, 36, COL.amber, 900); g.restore(); }
+  if (lt > 7.2) {
+    const a = eout((lt - 7.2) / .4);
+    g.save(); g.globalAlpha = a; g.fillStyle = 'rgba(247,250,252,.88)'; g.fillRect(0, H * .22, W, H * .5); g.restore();
+    FOUR.forEach((t, i) => {
+      const ka = pop(lt - 7.8 - i * .6); if (ka <= 0) return;
+      const yy = H * (.3 + i * .095);
+      g.save(); g.translate(CX, yy); g.scale(ka, ka); g.fillStyle = '#fff'; g.shadowColor = 'rgba(27,40,56,.12)'; g.shadowBlur = 24; rrect(-360, -60, 720, 120, 60); g.fill(); g.shadowBlur = 0;
+      label(t, 0, 2, 52, COL.ink, 900); g.restore();
+    });
+  }
+});
+// D ① 用刃控速（顺着板看），再演示放平挂刃
+const edgeAt = lt => kfLite([[0, 18], [2.0, 18], [3.4, 5], [5.6, 5], [6.6, 18], [9.0, 18], [10.2, 0]], lt);
+function kfLite(list, t) { if (t <= list[0][0]) return list[0][1]; for (let i = 1; i < list.length; i++) if (t <= list[i][0]) { const k = sm((t - list[i - 1][0]) / (list[i][0] - list[i - 1][0])); return lerp(list[i - 1][1], list[i][1], k); } return list[list.length - 1][1]; }
+const dV = lt => lt > 10.2 ? 0 : Math.max(0, 14 - edgeAt(lt)) * 55;
+const dScroll = makeScroll(dV, 0, 19);
+S.push(lt => {
+  const th = 16, F = [CX - 60, H * .6], sc = dScroll(lt);
+  drawSky(sc); drawSnowfall(lt + 26, .4); drawSlope(F, th, sc, { noProps: true });
+  const e = edgeAt(lt), catchK = clamp((lt - 10.3) / .6, 0, 1);
+  let J;
+  if (lt < 10.3) J = rider(F, th, RP.ride, 170, { rot: -e, pivot: 'heel' });
+  else J = rider(F, th, lerpPose(RP.ride, RP.fallFwd, sm(catchK * 1.5)), 170, { rot: 80 * ein(catchK), pivot: 'toe' });
+  if (lt < 10.3) {
+    const hp = J.heelEdge, fr = frameOf(th);
+    g.save(); g.strokeStyle = COL.amber; g.lineWidth = 5; const a0 = Math.atan2(fr.d[1], fr.d[0]); g.beginPath(); g.arc(hp[0], hp[1], 130, a0 - e * D2R, a0); g.stroke();
+    label(`${Math.round(e)}°`, hp[0] + 175, hp[1] - 40, 46, COL.amber, 900); g.restore();
+    const moving = dV(lt) > 60;
+    pill(moving ? '刃放低：往下滑' : '刃立起来：停住', CX, H * .69, 38, moving ? '#fff1db' : '#dcf5ec', moving ? COL.amber : COL.green);
+    speedLines(F, th, lt, clamp(dV(lt) / 700, 0, 1) * .6);
+  } else {
+    if (lt < 10.9) { const a = Math.max(0, 1 - (lt - 10.3) / .5), p = J.toeEdge; g.save(); g.globalAlpha = a; g.strokeStyle = COL.red; g.lineWidth = 6; for (let i = 0; i < 8; i++) { const an = i / 8 * Math.PI * 2; g.beginPath(); g.moveTo(p[0] + Math.cos(an) * 20, p[1] + Math.sin(an) * 20); g.lineTo(p[0] + Math.cos(an) * 60, p[1] + Math.sin(an) * 60); g.stroke(); } g.restore(); }
+    burst(...J.tf(J.Hd), lt - 10.9, 36, .7);
+    g.save(); g.globalAlpha = win(lt, 10.4, 99, .2, .3); const p = J.toeEdge; label('挂刃！', p[0] + 60, p[1] + 110, 52, COL.red, 900); g.restore();
+  }
+});
+// E ② 前后脚移重心（坡下视角）
+const eHip = lt => kfLite([[0, .05], [2.2, .05], [3.2, .38], [6.6, .38], [7.6, .05], [9.6, .05], [10.6, -.3], [15, -.3], [16, .05]], lt);
+const eV = lt => (eHip(lt) - .05) * 700;
+const eScroll = makeScroll(eV, 0, 19);
+S.push(lt => {
+  const sc = eScroll(lt); uphillBg(sc);
+  const h = eHip(lt), base = h >= .05 ? lerpPose(FW.mid, FW.front, (h - .05) / .33) : lerpPose(FW.mid, FW.back, (.05 - h) / .35);
+  const F = [CX, H * .56], J = sbRider(F, 0, base, 165);
+  const front = Math.round(lerp(50, 70, clamp((h - .05) / .33, 0, 1)) - lerp(0, 20, clamp((.05 - h) / .35, 0, 1)));
+  weightArrows(J, front, win(lt, 1.0, 99, .3, .3));
+  const dir = Math.abs(eV(lt)) > 30 ? Math.sign(eV(lt)) : 0;
+  inset(W * .8, H * .3, 0, dir);
+  label('板头', J.P(1.75, .6)[0], J.P(1.75, .6)[1] - 30, 30, COL.sub, 700); label('板尾', J.P(-1.75, .6)[0], J.P(-1.75, .6)[1] - 30, 30, COL.sub, 700);
+  if (dir) { const y = H * .43; g.save(); g.globalAlpha = .8; arrow(CX - dir * 120, y, CX + dir * 180, y, COL.green, 8, 30); g.restore(); }
+});
+// F ③ 两个方向
+S.push(lt => {
+  const y0 = H * .27, y1 = H * .66, A = 280, n = 4, k = clamp(lt / 8.8, 0, 1);
+  slopeTop(lt + 62, lt * 40);
+  zigPath(CX, y0, y1, A, n, 1, 'rgba(106,92,255,.18)', true);
+  zigPath(CX, y0, y1, A, n, k, 'rgba(106,92,255,.6)', false);
+  const x = CX + zig(k, n, A), y = lerp(y0, y1, k); topBoardSB(x, y, 0, 1.3);
+  for (let i = 0; i < n; i++) {
+    const kk = (i + .5) / n, xx = CX + zig(kk, n, A), yy = lerp(y0, y1, kk), fwd = i % 2 === 0;
+    const a = eout((lt - i * 2.2) / .4); if (a <= 0) continue;
+    g.save(); g.globalAlpha = a; pill(fwd ? '正着滑 · 前脚领' : '倒着滑 · 后脚领', xx + (fwd ? 150 : -150), yy, 30, fwd ? '#e7e4ff' : '#fff1db', fwd ? COL.boardDark : COL.amber); g.restore();
+  }
+});
+// G ④ 看方向
+S.push(lt => {
+  const v = lt < 1 ? 0 : 260, sc = lt < 1 ? 0 : (lt - 1) * 260; uphillBg(sc);
+  const k = sm((lt - .4) / 1.0), p = lerpPose(FW.mid, Object.assign({}, FW.front, { armF: 92 }), k);
+  const F = [CX, H * .56], J = sbRider(F, 0, p, 165);
+  if (k > .5) {
+    const a = sm((k - .5) / .5), hd = J.Hd;
+    g.save(); g.globalAlpha = a * .8; const cg = g.createRadialGradient(hd[0], hd[1], 0, hd[0], hd[1], 620); cg.addColorStop(0, 'rgba(18,166,121,.28)'); cg.addColorStop(1, 'rgba(18,166,121,0)');
+    g.fillStyle = cg; g.beginPath(); g.moveTo(hd[0], hd[1]); g.arc(hd[0], hd[1], 620, -.45, .45); g.closePath(); g.fill(); g.restore();
+    ring(J.Hnf[0], J.Hnf[1], 44, COL.green, a);
+    pill('先看过去，再走过去', CX, H * .68, 38, '#dcf5ec', COL.green, a);
+  }
+  inset(W * .8, H * .3, 0, k > .5 ? 1 : 0);
+});
+// H 三个常见错误
+S.push(lt => {
+  const seg = lt < 8 ? 0 : lt < 16 ? 1 : 2, l2 = lt - seg * 8;
+  uphillBg(seg === 0 ? Math.sin(lt * 4) * 30 : seg === 1 ? -l2 * 120 : 0);
+  const F = [CX, H * .56];
+  let p;
+  if (seg === 0) { const w = (Math.sin(l2 * 4) + 1) / 2; p = lerpPose(FW.twistA, FW.twistB, w); }
+  else if (seg === 1) p = lerpPose(FW.back, FW.backSit, sm((l2 - .8) / 1.0));
+  else p = lerpPose(FW.mid, FW.hunch, sm((l2 - .6) / 1.0));
+  const J = sbRider(F, 0, p, 165);
+  const a = win(l2, 1.0, 7.8, .3, .3);
+  if (seg === 0) {
+    g.save(); g.globalAlpha = a; arcArrow(J.S[0], J.S[1], 230, -Math.PI * .85, -Math.PI * .15, COL.red, 7, 26); g.restore(); pill('肩膀甩来甩去', CX, H * .68, 38, '#ffe4e1', COL.red, a);
+    g.save(); g.translate(W * .8, H * .3); g.fillStyle = 'rgba(255,255,255,.92)'; rrect(-130, -150, 260, 300, 26); g.fill(); label('俯视', 0, -120, 28, COL.sub, 700); topBoardSB(0, 20, Math.sin(lt * 4) * .7, .8); label('板在打转', 0, 120, 30, COL.red, 900); g.restore();
+  } else if (seg === 1) {
+    g.save(); g.globalAlpha = a; ring(J.Hc[0], J.Hc[1], 70, COL.red, 1, true); label('往后坐', J.Hc[0] - 220, J.Hc[1], 42, COL.red, 900); g.restore();
+    inset(W * .8, H * .3, 0, -1);
+  } else {
+    g.save(); g.globalAlpha = a; ring(J.Hd[0], J.Hd[1], 60, COL.red, 1, true); g.setLineDash([10, 8]); g.strokeStyle = COL.red; g.lineWidth = 4; g.beginPath(); g.moveTo(J.Hd[0], J.Hd[1]); g.lineTo(J.P(0, .1)[0], J.P(0, .1)[1]); g.stroke(); g.setLineDash([]);
+    label('眼睛盯着板', J.Hd[0] + 230, J.Hd[1] - 20, 40, COL.red, 900); g.restore();
+  }
+  markX(W * .16, H * .3, 40, win(l2, .4, 7.8, .2, .3));
+});
+// I 先后刃再前刃
+S.push(lt => {
+  drawSky(0); drawSnowfall(lt + 104, .5);
+  const panel = (x, facing, good, title, sub, delay) => {
+    const a = eout((lt - delay) / .4); if (a <= 0) return;
+    const pw = 450, ph = 640, px = x - pw / 2, py = H * .26;
+    g.save(); g.globalAlpha = a; g.translate(0, (1 - a) * 40);
+    g.fillStyle = '#fff'; g.shadowColor = 'rgba(27,40,56,.12)'; g.shadowBlur = 40; rrect(px, py, pw, ph, 36); g.fill(); g.shadowBlur = 0;
+    g.save(); rrect(px, py, pw, ph, 36); g.clip(); g.fillStyle = '#e9f1f8'; g.fillRect(px, py, pw, ph);
+    const th = 14, F = [x - facing * 20, py + ph * .7]; drawSlope(F, th, lt * 60, { noProps: true });
+    rider(F, th, RP.ride, 95, { facing, rot: facing === 1 ? -14 : 14, pivot: facing === 1 ? 'heel' : 'toe' });
+    g.restore();
+    g.strokeStyle = good ? COL.green : COL.boardDark; g.lineWidth = 6; rrect(px, py, pw, ph, 36); g.stroke();
+    label(title, x, py + 62, 46, COL.ink, 900); label(sub, x, py + 116, 32, COL.sub, 700);
+    if (good) { const k = pop(lt - delay - .6); if (k > 0) markV(px + pw - 54, py + 60, 32, 1, k); }
+    g.restore();
+  };
+  panel(W * .27, 1, true, '后刃', '面朝山下 · 先练', .3);
+  panel(W * .73, -1, false, '前刃', '面朝山上 · 再练', 1.0);
+});
+// J 落叶飘 + 换刃 = 转弯
+S.push(lt => {
+  slopeTop(lt + 114, lt * 30);
+  const y0 = H * .26, y1 = H * .68, A = 250;
+  zigPath(CX, y0, y1, A, 4, 1, 'rgba(106,92,255,.2)', true);
+  const k = clamp((lt - 1.2) / 7.4, 0, 1), sx = kk => CX + A * .9 * Math.sin(kk * Math.PI * 2), sy = kk => lerp(y0, y1, kk);
+  g.save(); g.strokeStyle = COL.green; g.lineWidth = 8; g.lineCap = 'round'; g.beginPath(); for (let i = 0; i <= 200; i++) { const kk = k * i / 200; i ? g.lineTo(sx(kk), sy(kk)) : g.moveTo(sx(kk), sy(kk)); } g.stroke(); g.restore();
+  [.25, .75].forEach((kk, i) => { if (k < kk) return; const x = sx(kk), y = sy(kk); g.fillStyle = COL.amber; g.beginPath(); g.arc(x, y, 16, 0, Math.PI * 2); g.fill(); label('换刃', x + (i ? -90 : 90), y, 34, COL.amber, 900); });
+  const dk = .003, ang = Math.atan2(sy(k + dk) - sy(k), sx(k + dk) - sx(k));
+  topBoardSB(sx(k), sy(k), ang, 1.2);
+  label('落叶飘', CX + A + 40, y0 - 10, 30, '#8d84ff', 900, 'left');
+});
+// K 口诀卡
+S.push(lt => {
+  drawSky(0); drawSnowfall(lt + 124, .5);
+  const a = eout(lt / .4), x = W * .08, y = H * .24, w = W * .84, h = H * .46;
+  g.save(); g.globalAlpha = a; g.translate(0, (1 - a) * 50);
+  g.fillStyle = '#fff'; g.shadowColor = 'rgba(27,40,56,.14)'; g.shadowBlur = 50; rrect(x, y, w, h, 44); g.fill(); g.shadowBlur = 0;
+  label('记住这几句', CX, y + 100, 50, COL.amber, 900);
+  [['控速', '脚尖抬高就慢 · 放低就滑', COL.green], ['方向', '往哪边走就压哪只脚、看哪边', COL.green], ['记住', '别把板放平', COL.red]].forEach(([t1, t2, c], i) => {
+    const ra = eout((lt - .8 - i * 1.2) / .35); if (ra <= 0) return; const ry = y + 240 + i * 200;
+    g.save(); g.globalAlpha = a * ra; g.translate((1 - ra) * 40, 0); pill(t1, x + 70 + (t1.length * 34 + 48) / 2, ry - 40, 34, c, '#fff'); label(t2, x + 70, ry + 40, 44, COL.ink, 900, 'left'); g.restore();
+  });
+  g.restore();
+  label('飘稳了，转弯就只差一步。', CX, H * .75, 46, COL.sub, 700);
+});
+// L 结尾
+S.push(lt => {
+  slopeTop(lt + 131, lt * 30); g.fillStyle = 'rgba(247,250,252,.6)'; g.fillRect(0, 0, W, H);
+  const k = clamp(lt / 6.5, 0, 1); zigPath(CX, H * .62, H * .86, 180, 3, k, 'rgba(106,92,255,.5)', false);
+  topBoardSB(CX + zig(k, 3, 180), lerp(H * .62, H * .86, k), 0, 1);
+  pill('下集 · 换刃：从落叶飘到第一个弯', CX, H * .55, 36, COL.amber, '#fff', eout((lt - 1.8) / .4));
+});
+
+/* ───────── 封面 ───────── */
+function coverArt(key, w, h) {
+  const portrait = h > w;
+  slopeTop(0, 0); g.fillStyle = 'rgba(247,250,252,.5)'; g.fillRect(0, 0, w, h);
+  const art = (cx, y0, y1, A) => { zigPath(cx, y0, y1, A, 3, 1, 'rgba(106,92,255,.55)', true); topBoardSB(cx + zig(.62, 3, A), lerp(y0, y1, .62), 0, 1.3 * Math.min(1, (y1 - y0) / 600)); leaf(cx + A * .9, y0 - 10, -.6, .8); };
+  const title = (cx, y1, y2, size, subY, subSize, pillY, pillSize) => {
+    pill('滑雪不难 · EP.03 · 单板', cx, pillY, pillSize, COL.amber, '#fff');
+    label('落叶飘', cx, y1, size * 1.1, COL.boardDark, 900);
+    label('到底在练什么？', cx, y2, size * .62, COL.ink, 900);
+    label('控速 · 重心 · 方向，一次讲清', cx, subY, subSize, COL.sub, 700);
+  };
+  if (key === '9x16') { title(CX, h * .27, h * .36, 170, h * .42, 42, h * .17, 42); art(CX, h * .52, h * .84, 260); }
+  else if (key === '3x4') { title(CX, h * .22, h * .33, 160, h * .4, 42, h * .09, 40); art(CX, h * .52, h * .9, 250); }
+  else {
+    const fade = g.createLinearGradient(0, 0, w * .62, 0); fade.addColorStop(0, 'rgba(248,251,253,.95)'); fade.addColorStop(1, 'rgba(248,251,253,.6)'); g.fillStyle = fade; g.fillRect(0, 0, w * .62, h);
+    art(w * .74, h * .16, h * .88, key === '16x9' ? 230 : 170);
+    const size = key === '16x9' ? 150 : 128;
+    title(w * .31, h * .43, h * .6, size, h * .72, key === '16x9' ? 38 : 32, h * .24, key === '16x9' ? 38 : 34);
+  }
+}
+
+/* ───────── 声音 ───────── */
+function sound(K, c, DUR) {
+  K.bed(8.0, DUR, t => t < 26 ? 'verse' : t < 44 ? 'tense' : t < 80 ? 'chorus' : t < 104 ? 'tense' : t < 124 ? 'chorus' : 'outro');
+  // 开头：叶子飘落的轻柔音
+  [0, .9, 1.8, 2.7, 3.6, 4.5, 5.4, 6.3].forEach((t, i) => K.tone([659.25, 587.33, 523.25, 587.33, 659.25, 783.99, 659.25, 523.25][i], t + .2, 1.2, .05, 'triangle'));
+  K.wind(DUR, t => t > 28 && t < 36 ? clamp((14 - edgeAt(t - 26)) / 14, 0, 1) * .35 : 0);
+  K.noise(26 + 10.3, .3, .5, 'bandpass', 3200, K.out, 1.5); K.wrong(26 + 10.35); K.thud(26 + 10.9);
+  for (let i = 0; i < 4; i++) K.tone(780 + i * 90, 11.6 + 7.8 + i * .6, .2, .06, 'triangle');
+  [26 + 6.6, 44 + 3.2, 44 + 10.6, 62 + 2.2, 72 + 1.4, 104 + .9, 114 + 3.0, 114 + 6.7].forEach(K.ding);
+  [80 + .5, 88 + .5, 96 + .5].forEach(K.wrong);
+  for (let i = 0; i < 3; i++) K.tone(880 + i * 110, 124 + .8 + i * 1.2, .25, .07, 'triangle');
+  K.riser(112.6, 114, .14);
+}
+
+kitRun({
+  T, S, TX, seed: 31,
+  allText: FOUR.join('') + '下坡板一直横着刃放低：往下滑刃立起来：停住挂刃！板头板尾俯视正着滑·前脚领倒后先看过去，再走肩膀甩来去在打转往坐眼睛盯面朝山上练前后换落叶飘控速抬高就慢方向哪边压只别平记几句稳了转弯差一步你卡在评论区说集从到第个？清重心°',
+  audio: sound, cover: coverArt
+});
+})();
+</script>
+</body>
+</html>
