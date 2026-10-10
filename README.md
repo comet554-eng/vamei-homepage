@@ -14,3 +14,9 @@
 - 预览：浏览器打开 `video/film.html`，点击画面即可带声音播放。
 - 导出：`node video/render.js [输出目录]`，生成 `video.mp4` 和封面 `cover.jpg`（需要 playwright 与 ffmpeg）。
 - 画面和声音由同一条时间轴驱动，改 `film.html` 顶部的 `M`（关键节点）/ `PROG` / `TX` / `EV` 即可调整节奏与文案。
+
+## 滑雪不难（双板教学系列）
+
+- EP.01《为什么你一害怕就往后坐》：`video/ski-ep01.html`，约 2 分 26 秒，明亮的线条动画风格。
+- 导出：`node video/render.js video/ski-ep01.html [输出目录]`。每集在页面里用 `FILM.encode` 指定码率，导出脚本自动采用。
+- 画面是时间的纯函数，每个场景是 `S` 数组里的一个函数，场景起止时间在 `T`，字幕在 `TX`。
