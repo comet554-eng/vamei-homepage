@@ -26,3 +26,4 @@
 - EP.01 单板版：`video/ski-ep01-sb.html`，侧面视角（整块板沿坡、前脚在山下），结构与双板版一致。
 - EP.02 双板版：`video/ski-ep02-ski.html`；双板侧面小人抽到了 `video/skirig.js`，正面小人在本页里。
 - EP.03 单板《落叶飘，到底在练什么》：`video/ski-ep03-sb.html`；单板两种视角的小人抽到了 `video/sbrig.js`。
+- EP.03 双板《八字刹车，为什么能停下》：`video/ski-ep03-ski.html`（俯视受力 + 正面迎面视角）。
