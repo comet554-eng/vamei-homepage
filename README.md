@@ -30,3 +30,4 @@
 - EP.04 单板《换刃：从落叶飘到第一个弯》：`video/ski-ep04-sb.html`。
 - EP.04 双板《八字转弯：压哪边，往哪转》：`video/ski-ep04-ski.html`（讲左右脚用背面视角）；八字相关绘制抽到了 `video/skiwedge.js`。
 - EP.05 单板《连续转弯：用转弯来控速》：`video/ski-ep05-sb.html`（俯视轨迹按"朝下 / 横过来"上色，速度为示意曲线）。
+- EP.05 双板《从八字到平行：把八字收起来》：`video/ski-ep05-ski.html`（俯视双板 `skiPair()` 可分别设定两块板角度，演示内脚并过来）。
