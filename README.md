@@ -28,3 +28,4 @@
 - EP.03 单板《落叶飘，到底在练什么》：`video/ski-ep03-sb.html`；单板两种视角的小人抽到了 `video/sbrig.js`。
 - EP.03 双板《八字刹车，为什么能停下》：`video/ski-ep03-ski.html`（俯视受力 + 正面迎面视角）。
 - EP.04 单板《换刃：从落叶飘到第一个弯》：`video/ski-ep04-sb.html`。
+- EP.04 双板《八字转弯：压哪边，往哪转》：`video/ski-ep04-ski.html`（讲左右脚用背面视角）；八字相关绘制抽到了 `video/skiwedge.js`。
