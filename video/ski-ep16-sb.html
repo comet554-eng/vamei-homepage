@@ -92,7 +92,7 @@ const HEEL = { shin: 14, thigh: -70, torso: 34, head: 14, uarm: 150, farm: 105 }
 const PALM = { shin: 30, thigh: -20, torso: 45, head: 25, uarm: 92, farm: 86 };        // 往前倒，手张开去撑
 const BACKHAND = { shin: 10, thigh: -60, torso: -14, head: -12, uarm: 210, farm: 200 }; // 往后倒，手往后撑
 const SITDOWN = { shin: -25, thigh: -150, torso: -8, head: 30, uarm: 120, farm: 70 };   // 一屁股坐下
-const SITPOST = { shin: -25, thigh: -150, torso: -32, head: -40, uarm: 214, farm: 210 }; // 上身往后甩、仰头
+const SITPOST = { shin: -25, thigh: -150, torso: -32, head: -40, uarm: 150, farm: 105 }; // 上身往后甩、仰头
 const TUCK = { shin: -25, thigh: -150, torso: -12, head: 62, uarm: 160, farm: 45 };     // 坐下、低头、手抱胸
 const HOLD = { shin: -25, thigh: -150, torso: -6, head: 34, uarm: 132, farm: 62 };      // 坐着歇
 const GROUND = H * .645;
@@ -298,7 +298,7 @@ S.push(lt => {
     const fn = t => Object.assign(whipState(t, F, U, SITDOWN, SITPOST, .5, 1.35), { F, u: U });
     ghosts(l2, fn, l2 > .6 && l2 < 1.5);
     const st = fn(l2), J = drawR(F, st.pose, U, st.o), hd = J.tf(J.Hd), b = J.tf(buttRaw(J));
-    if (l2 > .4 && l2 < 1.6) { g.save(); g.globalAlpha = win(l2, .4, 1.6, .2, .3); const r = Math.hypot(hd[0] - b[0], hd[1] - b[1]) + 70, a0 = Math.atan2(hd[1] - b[1], hd[0] - b[0]); arcArrow(b[0], b[1], r, a0 - .3, a0 + .9, COL.amber, 8, 28); g.restore(); }
+    if (l2 > .4 && l2 < 1.6) { g.save(); g.globalAlpha = win(l2, .4, 1.6, .2, .3); arcArrow(b[0], b[1], 2.5 * U, -1.9, -0.4, COL.amber, 8, 28); g.restore(); }
     burst(hd[0], hd[1] + 20, l2 - 1.35, 24, .45);
     const a = win(l2, 1.4, 5, .2, .3); hurt(hd, a, lt, 56); callout(hd, hd[0] - 40, H * .38, '后脑', COL.red, a, 46, '上身像鞭子一样甩下去');
   }
@@ -329,7 +329,7 @@ S.push(lt => {
     ghosts(l2, fn, l2 > .5 && l2 < 1.8);
     const st = fn(l2), J = drawR(F, st.pose, U, st.o), w = J.tf(wristRaw(J)), c = J.tf(mid(J.B, J.S));
     const wa = win(l2, .7, 3.4, .3, .4);
-    if (wa > 0) { g.save(); g.globalAlpha = wa; arrow(c[0], c[1] + 20, w[0] - 10, w[1] - 60, COL.amber, 10, 34); label('全身的重量', c[0] - 20, c[1] - 90, 40, COL.amber, 900); g.restore(); }
+    if (wa > 0) { g.save(); g.globalAlpha = wa; arrow(c[0], c[1] + 20, w[0] - 10, w[1] - 60, COL.amber, 10, 34); label('全身的重量', c[0] - 40, c[1] - 190, 40, COL.amber, 900); g.restore(); }
     burst(w[0], w[1], l2 - 1.5, 26, .5);
     const a = sm((l2 - 1.5) / .2); hurt(w, a, lt, 52);
     // 放大：手腕被掰向手背
@@ -372,7 +372,7 @@ S.push(lt => {
     const a1 = win(l2, 1.5, 6, .3, .3), a2 = win(l2, 2.0, 6, .3, .3), a3 = win(l2, 2.4, 6, .3, .3);
     soft(b, a1, 80); callout(b, W * .2, H * .5, '① 屁股先着地', COL.green, a1, 36);
     ring(hd[0], hd[1], 52, COL.green, a2); callout([hd[0] + 40, hd[1] - 40], W * .74, H * .27, '② 低头收下巴', COL.green, a2, 38);
-    if (a3 > 0) { soft(bk, a3 * .8, 110); g.save(); g.globalAlpha = a3; const bc = J.tf(J.B); arcArrow(bc[0], bc[1], 2.2 * U, -2.3, -1.1, COL.green, 8, 28); label('③ 顺势往后滚', W * .74, H * .335, 38, COL.green, 900); g.restore(); }
+    if (a3 > 0) { soft(bk, a3 * .8, 110); g.save(); g.globalAlpha = a3; const bc = J.tf(J.B); arcArrow(bc[0], bc[1], 2.2 * U, -2.3, -1.1, COL.green, 8, 28); label('③ 顺势往后滚', bc[0] - 40, bc[1] - 2.2 * U - 60, 38, COL.green, 900); g.restore(); }
   }
 });
 // F 怎么防：别卡刃 / 累了就歇、挑自己水平的道
@@ -387,7 +387,7 @@ S.push(lt => {
     const ra = win(lt, .5, 2.8, .3, .3); ring(toe[0], toe[1], 46, COL.red, ra, true);
     callout(toe, toe[0] + 230, H * .4, '板放平', COL.red, ra, 40, '山下的刃一碰雪就被吃住');
     const ga = sm((lt - 3.0) / .3); ring(heel[0], heel[1], 46, COL.green, ga);
-    callout(heel, heel[0] - 120, H * .4, '立住山上的刃', COL.green, ga, 40);
+    callout(heel, W * .66, H * .5, '立住山上的刃', COL.green, ga, 40);
     const v = pop(lt - 3.4); if (v > 0) markV(J.tf(J.Hd)[0] + 140, J.tf(J.Hd)[1] - 30, 38, 1, v);
   } else {
     const l2 = lt - 5.2;
