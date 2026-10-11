@@ -104,7 +104,7 @@ const tc = u => 60 * Math.sin(u * 5.2 + .5);
 const nar = u => sm((u - .55) / .08) * (1 - sm((u - .67) / .08));
 const thw = u => 250 - 100 * nar(u);
 const STEEP = [.34, .5];
-const ICE = [[.455, .42, 1], [.8, -.5, .7]];
+const ICE = [[.48, .1, 1], [.8, -.5, .7]];
 function view(u0, u1, top, bot, cx) { return { u0, u1, top, bot, cx: cx == null ? CX : cx, z: (bot - top) / ((u1 - u0) * ML) }; }
 const MP = (V, u, v) => [V.cx + (tc(u) + v * thw(u)) * V.z, V.top + (u - V.u0) * ML * V.z];
 function band(V, ua, ub, va, vb) {
@@ -297,7 +297,7 @@ S.push(lt => {
   if (lt < 6.4) { g.save(); g.globalAlpha = sm(lt / .4) * (1 - sm((lt - 6) / .4)); label('缆车上看', lx - 20, cy - 52, 32, COL.green, 900); g.restore(); }
   // 标注
   const A = i => sm((lt - 6.8 - i * .9) / .35);
-  if (A(0) > 0) { const p = MP(VF, .4, .55); pill('最陡', p[0], p[1], 32, 'rgba(27,40,56,.85)', '#fff', A(0)); }
+  if (A(0) > 0) { const p = MP(VF, .365, .62); pill('最陡', p[0], p[1], 32, 'rgba(27,40,56,.85)', '#fff', A(0)); }
   if (A(1) > 0) { g.save(); g.globalAlpha = A(1); const l = MP(VF, .635, -1), r = MP(VF, .635, 1); arrow(l[0] - 90, l[1], l[0] - 14, l[1], COL.amber, 6, 20); arrow(r[0] + 90, r[1], r[0] + 14, r[1], COL.amber, 6, 20); label('窄', r[0] + 130, r[1], 36, COL.amber, 900); g.restore(); }
   if (A(2) > 0) { g.save(); g.globalAlpha = A(2); const p = MP(VF, .92, -1); label('人多', p[0] - 40, p[1], 36, COL.amber, 900, 'right'); g.restore(); }
   if (A(3) > 0) { g.save(); g.globalAlpha = A(3); const p = MP(VF, ICE[0][0], ICE[0][1]); ring(p[0], p[1], 66, COL.blue, 1, true); label('结冰', p[0], p[1] + 96, 34, COL.blue, 900); g.restore(); }
@@ -308,7 +308,7 @@ S.push(lt => {
   drawMap(VE, { crowd: 0 });
   const s0 = MP(VE, ...STOPS[0]), from = MP(VE, -.07, .25), k = sm(lt / 2);
   const p = [lerp(from[0], s0[0], k), lerp(from[1], s0[1], k) + Math.sin(k * Math.PI) * -20], ang = lt < 1.6 ? Math.atan2(s0[1] - from[1], s0[0] - from[0]) : lerp(Math.atan2(s0[1] - from[1], s0[0] - from[0]), 0, sm((lt - 1.6) / .4));
-  const steepP = MP(VE, .42, .55); pill('最陡', steepP[0], steepP[1], 34, 'rgba(27,40,56,.85)', '#fff');
+  const steepP = MP(VE, .47, .8); pill('最陡', steepP[0], steepP[1], 34, 'rgba(27,40,56,.85)', '#fff');
   if (lt < 5.6) {
     cone(p[0], p[1], Math.PI / 2 + .25, 560, .5, GREEN, sm((lt - 2.2) / .4));
     topRider(p[0], p[1], ang, RS * VE.z * .8);
@@ -316,12 +316,12 @@ S.push(lt => {
   } else {
     const l2 = lt - 5.6, a1 = sm((l2 - .2) / .3), a2 = sm((l2 - 1.4) / .3);
     // 红：从最陡处直冲
-    g.save(); g.globalAlpha = a1; const r0 = MP(VE, .02, .5), r1 = MP(VE, .46, .55); g.setLineDash([16, 12]); arrow(r0[0], r0[1], r1[0], r1[1], COL.red, 7, 28); g.restore();
+    g.save(); g.globalAlpha = a1; const r0 = MP(VE, .02, .5), r1 = MP(VE, .4, .5); g.setLineDash([16, 12]); arrow(r0[0], r0[1], r1[0], r1[1], COL.red, 7, 28); g.restore();
     markX(r0[0] + 70, lerp(r0[1], r1[1], .35), 30, a1);
     // 绿：第一段
     g.save(); g.globalAlpha = a2; drawRoute(VE, 0, 1, 'rgba(18,166,121,.85)', true, 7); g.restore();
     stopMark(VE, 1, a2, 1.2);
-    const s1 = MP(VE, ...STOPS[1]); if (a2 > 0) { g.save(); g.globalAlpha = a2; label('第一段', s1[0] + 70, s1[1] + 4, 38, COL.green, 900, 'left'); g.restore(); }
+    const s1 = MP(VE, ...STOPS[1]); if (a2 > 0) { g.save(); g.globalAlpha = a2; label('第一段', s1[0] + 40, s1[1] + 66, 38, COL.green, 900, 'left'); g.restore(); }
     const T2 = tour(VE, l2 - 2.2, 2.6, 9, 0, 1); cone(T2.p[0], T2.p[1], Math.PI / 2, 360, .45, GREEN, l2 < 2.2 ? 1 - sm(l2 / .4) : 0);
     topRider(T2.p[0], T2.p[1], l2 < 2.2 ? 0 : T2.ang, RS * VE.z * .8);
   }
@@ -459,7 +459,7 @@ function coverArt(key, w, h) {
     const V = view(-.02, 1.0, top, bot, cx); drawMap(V, {});
     drawRoute(V, 0, SEGM.length, 'rgba(18,166,121,.85)', true, 7);
     for (let i = 1; i < STOPS.length; i++) stopMark(V, i, 1, 1.2 * Math.max(.8, V.z));
-    const p = routePt(V, 1.35); topRider(p[0], p[1], routeHd(V, 1.35), RS * V.z * .85);
+    const p = routePt(V, .62); topRider(p[0], p[1], routeHd(V, .62), RS * V.z * .85);
     const sp = MP(V, .4, .55); pill('最陡', sp[0], sp[1], 34 * Math.max(.85, V.z), 'rgba(27,40,56,.85)', '#fff');
   };
   const title = (cx, y1, y2, size, subY, subSize, pillY, pillSize) => {
