@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>滑雪不难 EP.09 双板</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#000;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;aspect-ratio:9/16;max-width:100vw;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;aspect-ratio:auto;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="skirig.js"></script>
+<script>
+/*
+ * 滑雪不难 EP.09 双板《雪道上，谁该让谁？》（约 2 分 05 秒）
+ * 俯视：山上在画面上方，人往画面下方滑。
+ */
+(() => {
+'use strict';
+const T = [0, 8.0, 11.6, 28.0, 44.0, 58.0, 76.0, 88.0, 100.0, 112.0, 119.0, 125.5];
+const YH = .135, YB = .745;
+
+const TX = [
+  { in: .15, out: 3.8, text: '雪道上撞了，\n{r}算谁的{/}？', y: YH, size: 88, w: 900, st: .06 },
+  { in: 4.0, out: 7.8, text: '其实有一套\n大家都在用的{g}规矩{/}。', y: YH, size: 80, w: 900 },
+  { in: 8.25, out: 11.35, text: '雪道上，\n谁该让谁？', y: .3, size: 104, w: 900, st: .05 },
+  { in: 9.0, out: 11.35, text: '几条规矩，保护别人，也保护自己', y: .415, size: 42, w: 700, sub: 1 },
+  { in: 11.8, out: 19.8, text: '第一条：\n{g}下方的人优先{/}。', y: YH, size: 84, w: 900 },
+  { in: 12.6, out: 19.8, text: '前面、下面的人看不到你。\n你在后面、在上方，就由你来避让。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 20.2, out: 27.8, text: '你看得见他，\n就是{a}你来让{/}。', y: YH, size: 84, w: 900 },
+  { in: 21.0, out: 27.8, text: '从上面下来的人，要选一条\n不会撞到下方的人的路线。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 28.2, out: 35.8, text: '超车：\n{a}留足空间{/}。', y: YH, size: 84, w: 900 },
+  { in: 29.0, out: 35.8, text: '从哪边超都可以，\n但前面的人随时可能转弯。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 36.2, out: 43.8, text: '别贴着人超，\n{g}离远一点{/}。', y: YH, size: 84, w: 900 },
+  { in: 37.0, out: 43.8, text: '把他下一个弯可能用到的地方，都让出来。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 44.2, out: 50.8, text: '起步之前，\n先{g}往上看{/}。', y: YH, size: 84, w: 900 },
+  { in: 45.0, out: 50.8, text: '从停着的地方重新出发，\n先确认上面没人冲下来。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 51.2, out: 57.8, text: '汇入主道，\n也一样{g}先看上面{/}。', y: YH, size: 84, w: 900 },
+  { in: 52.0, out: 57.8, text: '从岔道、缆车下站口进主道，主道上的人优先。', y: YB, size: 40, w: 500, sub: 1 },
+  { in: 58.2, out: 66.8, text: '别停在\n{r}看不见{/}的地方。', y: YH, size: 84, w: 900 },
+  { in: 59.0, out: 66.8, text: '坡顶下面、拐弯后面、窄道里，\n上面的人看到你时已经来不及了。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 67.2, out: 75.8, text: '要停，就停在\n{g}雪道边上{/}。', y: YH, size: 84, w: 900 },
+  { in: 68.0, out: 75.8, text: '停在上面的人看得见的地方。\n摔倒了，也尽快挪到边上。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 76.2, out: 87.8, text: '速度，控制在\n{g}随时能停下{/}。', y: YH, size: 84, w: 900 },
+  { in: 77.0, out: 87.8, text: '按自己的水平、雪况和人多不多来控速。\n停不下来的速度，就是太快了。', y: YB, size: 40, w: 500, sub: 1 },
+  { in: 88.2, out: 93.8, text: '走路、爬坡，\n{g}贴着边{/}走。', y: YH, size: 84, w: 900 },
+  { in: 89.0, out: 93.8, text: '别在雪道中间走，更别横着慢慢晃过去。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 94.2, out: 99.8, text: '掉了东西回去捡，\n也先{g}往上看{/}。', y: YH, size: 84, w: 900 },
+  { in: 95.0, out: 99.8, text: '确认上面没人冲下来，再快速过去。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 100.2, out: 111.8, text: '万一真撞了：\n{g}先停下，看对方{/}。', y: YH, size: 80, w: 900 },
+  { in: 101.0, out: 111.8, text: '需要帮助就联系雪场救护，\n留下联系方式，别一走了之。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 119.2, out: 999, text: '你在雪道上\n被撞过吗？', y: .37, size: 88, w: 900, st: .06 },
+  { in: 120.2, out: 999, text: '评论区说说', y: .465, size: 42, w: 500, sub: 1 }
+];
+
+/* ───────── 俯视工具 ───────── */
+// 板沿局部 x；人的正面朝局部 +y（前刃一侧）；o.face = ±1 选正面朝哪边
+// 双板俯视：两块板沿局部 x，人朝 +x；o.sit：坐在雪上
+function rider(x, y, ang, s, o = {}) {
+  s *= .95; g.save(); g.translate(x, y); g.rotate(ang); g.globalAlpha = o.alpha == null ? 1 : o.alpha; g.lineCap = 'round';
+  [-1, 1].forEach(sd => { g.strokeStyle = COL.ski; g.lineWidth = 16 * s; g.beginPath(); g.moveTo(-100 * s, sd * 40 * s); g.lineTo(120 * s, sd * 40 * s); g.stroke(); g.fillStyle = COL.boot; rrect(-18 * s, sd * 40 * s - 12 * s, 36 * s, 24 * s, 7 * s); g.fill(); });
+  g.strokeStyle = '#7d8ea3'; g.lineWidth = 5 * s; [-1, 1].forEach(sd => { g.beginPath(); g.moveTo(26 * s, sd * 72 * s); g.lineTo(-84 * s, sd * 108 * s); g.stroke(); });
+  const bx = o.sit ? -50 * s : -4 * s;
+  g.fillStyle = o.jacket || COL.jacket; g.beginPath(); g.ellipse(bx, 0, (o.sit ? 40 : 26) * s, 50 * s, 0, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#fff'; g.strokeStyle = COL.pants; g.lineWidth = 4 * s; g.beginPath(); g.arc(bx + 8 * s, 0, 16 * s, 0, Math.PI * 2); g.fill(); g.stroke();
+  g.fillStyle = COL.amber; g.beginPath(); g.arc(bx + 20 * s, 0, 5 * s, 0, Math.PI * 2); g.fill();
+  g.restore();
+}
+function walker(x, y, ang, s, o = {}) { // 扛着板走路的人
+  g.save(); g.translate(x, y); g.rotate(ang); g.lineCap = 'round';
+  g.strokeStyle = COL.ski; g.lineWidth = 12 * s; [-8, 8].forEach(d => { g.beginPath(); g.moveTo(-110 * s, -60 * s + d * s); g.lineTo(110 * s, 50 * s + d * s); g.stroke(); });
+  g.fillStyle = o.jacket || COL.jacket; g.beginPath(); g.ellipse(0, 0, 26 * s, 46 * s, 0, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#fff'; g.strokeStyle = COL.pants; g.lineWidth = 4 * s; g.beginPath(); g.arc(6 * s, 0, 16 * s, 0, Math.PI * 2); g.fill(); g.stroke();
+  g.restore();
+}
+function cone(x, y, ang, len, spread, color, a) {
+  g.save(); g.globalAlpha = a == null ? 1 : a; const gr = g.createRadialGradient(x, y, 0, x, y, len); gr.addColorStop(0, color.replace(')', ',.38)').replace('rgb', 'rgba')); gr.addColorStop(1, color.replace(')', ',0)').replace('rgb', 'rgba'));
+  g.fillStyle = gr; g.beginPath(); g.moveTo(x, y); g.arc(x, y, len, ang - spread, ang + spread); g.closePath(); g.fill(); g.restore();
+}
+const GREEN = 'rgb(18,166,121)', RED = 'rgb(240,71,60)', AMB = 'rgb(255,159,28)';
+function slopeTop(scroll) {
+  g.fillStyle = '#f7fafc'; g.fillRect(0, 0, W, H);
+  g.strokeStyle = '#e3ebf2'; g.lineWidth = 3; for (let x = 120; x < W - 100; x += 34) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); }
+  g.fillStyle = '#dbe6ef'; g.fillRect(0, 0, 90, H); g.fillRect(W - 90, 0, 90, H);
+  for (let i = 0; i < 16; i++) { const side = i % 2 ? W - 45 : 45, y = ((i * 240 - (scroll || 0)) % (H + 200) + H + 200) % (H + 200) - 100; g.fillStyle = '#a9c0d1'; g.beginPath(); g.moveTo(side, y - 40); g.lineTo(side - 30, y + 20); g.lineTo(side + 30, y + 20); g.closePath(); g.fill(); }
+}
+const cPath = (cx, y0, y1, A, n) => k => { const ph = k * n * Math.PI, yy = ph / 2 - Math.sin(2 * ph) / 4, ymax = n * Math.PI / 2; return [cx + A * Math.sin(ph), lerp(y0, y1, yy / ymax)]; };
+const heading = (f, k) => { const a = f(Math.max(0, k - .002)), b = f(Math.min(1, k + .002)); return Math.atan2(b[1] - a[1], b[0] - a[0]); };
+function trail(f, k0, k1, color) { g.save(); g.strokeStyle = color || 'rgba(106,92,255,.25)'; g.lineWidth = 6; g.lineCap = 'round'; g.beginPath(); for (let i = 0; i <= 80; i++) { const q = f(lerp(k0, k1, i / 80)); i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1]); } g.stroke(); g.restore(); }
+function dashPath(f, k0, k1, color) { g.save(); g.strokeStyle = color; g.lineWidth = 5; g.setLineDash([12, 10]); g.beginPath(); for (let i = 0; i <= 80; i++) { const q = f(lerp(k0, k1, i / 80)); i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1]); } g.stroke(); g.restore(); }
+const BLUE = '#2f80ed';
+
+/* ───────── 场景 ───────── */
+const S = [];
+// A 钩子：两人汇到一起
+S.push(lt => {
+  slopeTop(lt * 30);
+  const k = clamp(lt / 3.4, 0, 1), fA = cPath(W * .42, H * .42, H * .62, 120, 1.3), fB = kk => [lerp(W * .78, W * .5, kk), lerp(H * .18, H * .58, kk)];
+  trail(fA, 0, k); trail(fB, 0, k, 'rgba(47,128,237,.25)');
+  const a = fA(k), b = fB(k); rider(a[0], a[1], heading(fA, k), 1.15); rider(b[0], b[1], heading(fB, k), 1.15, { jacket: BLUE });
+  if (lt > 3.3) { burst(CX, H * .58, lt - 3.3); const aa = sm((lt - 3.4) / .3); g.save(); g.globalAlpha = aa; label('？', W * .3, H * .5, 110, COL.red, 900); label('？', W * .72, H * .5, 110, COL.red, 900); g.restore(); }
+});
+// B 标题
+S.push(lt => {
+  slopeTop(lt * 30); g.fillStyle = 'rgba(247,250,252,.6)'; g.fillRect(0, 0, W, H);
+  pill('滑雪不难 · EP.09 · 双板', CX, H * .19, 40, COL.amber, '#fff', eout(lt / .3));
+  const f = cPath(CX, H * .52, H * .84, 230, 2), k = clamp(lt / 3.4, 0, 1); trail(f, 0, k); const p = f(k); rider(p[0], p[1], heading(f, k), 1.0);
+});
+// C 下方优先
+S.push(lt => {
+  slopeTop(lt * 30);
+  const fA = cPath(CX - 40, H * .5, H * .7, 200, 2), kA = clamp(lt / 16, 0, 1) * .8, a = fA(kA), hA = heading(fA, kA);
+  const fB = kk => { const yy = lerp(H * .16, H * .46, kk); return [W * .66 + Math.sin(kk * 7) * 60, yy]; }, kB = clamp(lt / 16, 0, 1), b = fB(kB), hB = heading(fB, kB);
+  // 视线
+  cone(a[0], a[1], Math.PI / 2, 420, .7, GREEN, .8); cone(b[0], b[1], Math.PI / 2 + .1, 640, .6, AMB, .9);
+  trail(fA, 0, kA); trail(fB, 0, kB, 'rgba(47,128,237,.25)');
+  rider(a[0], a[1], hA, 1.1); rider(b[0], b[1], hB, 1.1, { jacket: BLUE });
+  label('下方的人', a[0] + (a[0] > CX ? -150 : 150), a[1] + 100, 36, COL.green, 900);
+  label('他看不到你', a[0] + (a[0] > CX ? -150 : 150), a[1] + 145, 30, COL.sub, 700);
+  label('你（在上方）', b[0] - 220, b[1] - 20, 36, BLUE, 900);
+  if (lt > 8.4) { const aa = sm((lt - 8.4) / .4); g.save(); g.globalAlpha = aa; label('你来让', b[0] - 220, b[1] + 30, 40, COL.amber, 900); g.restore(); }
+  label('山上 ↑', W * .86, H * .2, 28, '#9aabbb', 700);
+});
+// D 超车留空间
+S.push(lt => {
+  slopeTop(lt * 30);
+  const fA = cPath(CX - 60, H * .38, H * .68, 220, 2), kA = clamp(lt / 16, 0, 1) * .7, a = fA(kA);
+  // 他下一个弯可能用到的范围
+  const nx = fA(Math.min(1, kA + .25));
+  g.save(); g.fillStyle = 'rgba(255,159,28,.14)'; g.strokeStyle = COL.amber; g.lineWidth = 4; g.setLineDash([10, 8]); g.beginPath(); g.ellipse(CX - 60, nx[1], 300, 170, 0, 0, Math.PI * 2); g.fill(); g.stroke(); g.restore();
+  label('他可能转到这里', CX - 60, nx[1] + 200, 32, COL.amber, 900);
+  trail(fA, 0, kA); rider(a[0], a[1], heading(fA, kA), 1.05);
+  const good = lt > 8, fB = good ? (kk => [lerp(W * .82, W * .84, kk), lerp(H * .14, H * .72, kk)]) : (kk => [lerp(W * .55, CX - 40, kk), lerp(H * .14, H * .72, kk)]), kB = clamp(((lt % 8) - .4) / 6.8, 0, 1), b = fB(kB);
+  trail(fB, 0, kB, good ? 'rgba(18,166,121,.4)' : 'rgba(240,71,60,.4)'); rider(b[0], b[1], heading(fB, kB), 1.05, { jacket: BLUE });
+  if (good) markV(W * .84, H * .3, 30, sm((lt - 8.4) / .3)); else markX(W * .55, H * .26, 30, sm((lt - .8) / .3));
+});
+// E 往上看
+S.push(lt => {
+  slopeTop(lt * 20);
+  if (lt < 7) {
+    const sx = 150, sy = H * .48, look = lt < 1 ? Math.PI / 2 : lerp(Math.PI / 2, -Math.PI / 2 + .3, sm((lt - 1) / .8));
+    const mv = sm((lt - 5) / 1.8), px = lerp(sx, W * .45, mv), py = lerp(sy, sy + 380, mv);
+    cone(px, py, look, 520, .55, GREEN, 1 - mv);
+    rider(px, py, lerp(0, .7, mv), 1.15);
+    const fB = kk => [lerp(W * .7, W * .45, kk), lerp(-100, H * .9, kk)], kB = clamp((lt - 1.5) / 3, 0, 1), b = fB(kB);
+    if (lt > 1.5 && kB < 1) rider(b[0], b[1], heading(fB, kB), 1.0, { jacket: BLUE });
+    label(lt < 4.8 ? '等一等' : '没人了，出发', sx + 40, sy + 130, 36, lt < 4.8 ? COL.amber : COL.green, 900, 'left');
+  } else {
+    const l2 = lt - 7;
+    // 岔道从左边汇进来
+    g.save(); g.fillStyle = '#eef3f8'; g.beginPath(); g.moveTo(0, H * .42); g.lineTo(W * .45, H * .56); g.lineTo(W * .45, H * .66); g.lineTo(0, H * .54); g.closePath(); g.fill(); g.restore();
+    label('岔道', 140, H * .45, 30, '#9aabbb', 700);
+    const t1 = clamp(l2 / 2.4, 0, 1), m = [lerp(80, W * .38, t1), lerp(H * .48, H * .6, t1)];
+    cone(m[0], m[1], -Math.PI / 2 + .6, 520, .5, GREEN, sm((l2 - 1) / .4));
+    rider(m[0], m[1], Math.atan2(H * .12, W * .3), 1.05);
+    const fB = kk => [lerp(W * .66, W * .6, kk), lerp(-60, H * .95, kk)], kB = clamp((l2 - 1.2) / 3.2, 0, 1), b = fB(kB);
+    if (kB > 0 && kB < 1) rider(b[0], b[1], heading(fB, kB), 1.0, { jacket: BLUE });
+    pill('主道的人优先', W * .66, H * .3, 32, COL.green, '#fff', sm((l2 - 1.6) / .4));
+  }
+});
+// F 停在哪
+S.push(lt => {
+  if (lt < 9) {
+    // 侧面：坡顶挡住视线
+    drawSky(0);
+    const crest = [W * .46, H * .5], hill = x => x < crest[0] ? crest[1] + (crest[0] - x) * -.05 + Math.pow((crest[0] - x) / 260, 2) * -10 : crest[1] + Math.pow((x - crest[0]) / 300, 2) * 160;
+    g.save(); g.fillStyle = '#fff'; g.beginPath(); g.moveTo(0, H); for (let x = 0; x <= W; x += 8) g.lineTo(x, hill(x)); g.lineTo(W, H); g.closePath(); g.fill();
+    g.strokeStyle = '#c3d4e4'; g.lineWidth = 4; g.beginPath(); for (let x = 0; x <= W; x += 8) { x ? g.lineTo(x, hill(x)) : g.moveTo(x, hill(x)); } g.stroke(); g.restore();
+    // 坐着的人
+    const sx = W * .7, sy = hill(sx), sth = Math.atan2(hill(sx + 5) - hill(sx - 5), 10) / D2R;
+    drawSkier([sx, sy], sth, POSES.fallen, 70);
+    // 上面滑来的人
+    const kx = clamp(lt / 6, 0, 1) * .38, ux = lerp(W * .05, W * .36, kx / .38), uy = hill(ux), uth = Math.atan2(hill(ux + 5) - hill(ux - 5), 10) / D2R, J = drawSkier([ux, uy], uth, POSES.neutral, 70);
+    // 视线被挡
+    g.save(); g.setLineDash([10, 8]); g.strokeStyle = COL.red; g.lineWidth = 4; g.beginPath(); g.moveTo(J.Hd[0], J.Hd[1]); const hit = [crest[0], crest[1] - 6]; g.lineTo(hit[0], hit[1]); g.stroke(); g.setLineDash([]); g.restore();
+    markX(hit[0] + 10, hit[1] - 50, 26, sm((lt - 1.2) / .3));
+    label('看不见', hit[0] + 10, hit[1] - 110, 34, COL.red, 900);
+    label('停在坡顶下面', sx, sy + 110, 34, COL.red, 900);
+  } else {
+    slopeTop(0); const l2 = lt - 9, mv = sm((l2 - 2.6) / 1.6);
+    const p = [lerp(CX, 160, mv), H * .48];
+    if (l2 < 2.6) { markX(CX + 120, H * .42, 30, sm((l2 - .4) / .3)); label('雪道中间', CX, H * .58, 34, COL.red, 900); }
+    rider(p[0], p[1], 0, 1.2, { sit: true });
+    if (mv > .9) { markV(p[0] + 110, p[1] - 60, 30, sm((l2 - 4.2) / .3)); label('雪道边，看得见', p[0] + 40, p[1] + 110, 34, COL.green, 900, 'left'); }
+    const fB = kk => [lerp(W * .62, W * .55, kk), lerp(-60, H * .95, kk)], kB = clamp((l2 - 4.5) / 3, 0, 1), b = fB(kB); if (kB > 0 && kB < 1) rider(b[0], b[1], heading(fB, kB), 1.0, { jacket: BLUE });
+  }
+});
+// G 控速：能停下的距离
+S.push(lt => {
+  slopeTop(lt * 60);
+  const fast = lt > 6, p = [CX, H * .3], v = fast ? 42 : 18, stop = fast ? 560 : 200;
+  [[CX - 120, H * .54], [CX + 170, H * .6], [CX - 280, H * .64]].forEach((q, i) => rider(q[0], q[1], Math.PI / 2 + (i - 1) * .4, .9, { jacket: i % 2 ? BLUE : '#12a679' }));
+  g.save(); g.fillStyle = fast ? 'rgba(240,71,60,.18)' : 'rgba(18,166,121,.18)'; rrect(p[0] - 50, p[1] + 60, 100, stop, 30); g.fill(); g.restore();
+  label('停下来需要的距离', p[0] + 80, p[1] + 60 + stop / 2, 30, fast ? COL.red : COL.green, 900, 'left');
+  rider(p[0], p[1], Math.PI / 2, 1.1, { jacket: BLUE });
+  label(`${v} km/h`, W * .8, H * .24, 52, fast ? COL.red : COL.green, 900);
+  if (fast) markX(W * .14, H * .3, 40, sm((lt - 6.3) / .3)); else markV(W * .14, H * .3, 40, sm((lt - .8) / .3));
+});
+// H 走路贴边 / 回头捡东西先往上看
+S.push(lt => {
+  slopeTop(lt * 20);
+  if (lt < 6) {
+    const y = lerp(H * .7, H * .38, clamp(lt / 6, 0, 1)); walker(150, y, -Math.PI / 2, 1.1);
+    markV(260, y - 40, 30, sm((lt - .8) / .3)); label('贴着边', 260, y + 60, 34, COL.green, 900, 'left');
+    const fB = kk => [lerp(W * .66, W * .5, kk), lerp(-60, H * .95, kk)], kB = clamp((lt - 1) / 3.2, 0, 1), b = fB(kB); if (kB > 0 && kB < 1) rider(b[0], b[1], heading(fB, kB), 1.0, { jacket: BLUE });
+  } else {
+    const l2 = lt - 6, gl = [W * .58, H * .5];
+    g.fillStyle = COL.red; rrect(gl[0] - 20, gl[1] - 14, 40, 28, 10); g.fill(); label('手套', gl[0], gl[1] + 50, 30, COL.sub, 700);
+    const look = sm((l2 - .5) / .5) * (1 - sm((l2 - 3.6) / .3)), go = sm((l2 - 3.6) / 1.4), p = [lerp(150, gl[0] - 60, go), lerp(H * .52, gl[1], go)];
+    cone(p[0], p[1], -Math.PI / 2 + .25, 520, .55, GREEN, look);
+    walker(p[0], p[1], lerp(-Math.PI / 2, 0, go), 1.0);
+    const fB = kk => [lerp(W * .72, W * .62, kk), lerp(-60, H * .95, kk)], kB = clamp((l2 - .8) / 2.6, 0, 1), b = fB(kB); if (kB > 0 && kB < 1) rider(b[0], b[1], heading(fB, kB), 1.0, { jacket: BLUE });
+    label(l2 < 3.6 ? '先看上面…' : '没人了，快去快回', 150, H * .52 + 110, 34, l2 < 3.6 ? COL.amber : COL.green, 900, 'left');
+  }
+  label('山上 ↑', W * .86, H * .2, 28, '#9aabbb', 700);
+});
+// I 万一撞了
+S.push(lt => {
+  slopeTop(0);
+  rider(CX - 90, H * .36, -.3, 1.1, { sit: true }); rider(CX + 90, H * .38, .4, 1.1, { sit: true, jacket: BLUE });
+  ['停下', '确认对方情况', '需要就叫雪场救护', '留下联系方式'].forEach((t, i) => {
+    const a = sm((lt - .8 - i * 1.6) / .4), y = H * .5 + i * 64; if (a <= 0) return;
+    g.save(); g.globalAlpha = a; pill(`${i + 1}  ${t}`, CX, y, 36, i === 2 ? COL.amber : COL.green, '#fff'); g.restore();
+  });
+});
+// J 口诀卡
+S.push(lt => {
+  drawSky(0); drawSnowfall(lt + 112, .5);
+  const a = eout(lt / .4), x = W * .08, y = H * .22, w = W * .84, h = H * .46;
+  g.save(); g.globalAlpha = a; g.translate(0, (1 - a) * 50);
+  g.fillStyle = '#fff'; g.shadowColor = 'rgba(27,40,56,.14)'; g.shadowBlur = 50; rrect(x, y, w, h, 44); g.fill(); g.shadowBlur = 0;
+  label('记住这几句', CX, y + 90, 50, COL.amber, 900);
+  [['优先', '下方的人优先', COL.green], ['超车', '留足空间，离远一点', COL.amber], ['起步', '先往上看', COL.green], ['停下', '停在边上、看得见的地方', COL.blue]].forEach(([t1, t2, c], i) => {
+    const ra = eout((lt - .6 - i * .9) / .35); if (ra <= 0) return; const ry = y + 200 + i * 175;
+    g.save(); g.globalAlpha = a * ra; g.translate((1 - ra) * 40, 0); pill(t1, x + 70 + (t1.length * 36 + 50) / 2, ry - 36, 36, c, '#fff'); label(t2, x + 70, ry + 34, 46, COL.ink, 900, 'left'); g.restore();
+  });
+  g.restore();
+  label('看得见别人的人，负责避让。', CX, H * .75, 44, COL.sub, 700);
+});
+// K 结尾
+S.push(lt => {
+  slopeTop(lt * 30); g.fillStyle = 'rgba(247,250,252,.6)'; g.fillRect(0, 0, W, H);
+  const f = cPath(CX, H * .62, H * .88, 220, 2), k = clamp(lt / 6, 0, 1); trail(f, 0, k); const p = f(k); rider(p[0], p[1], heading(f, k), 1);
+  pill('下集 · 雪况：硬雪、粉雪、烂雪怎么滑', CX, H * .55, 36, COL.amber, '#fff', eout((lt - 1.8) / .4));
+});
+
+/* ───────── 封面 ───────── */
+function coverArt(key, w, h) {
+  slopeTop(0);
+  const art = (cx, cy, s) => {
+    cone(cx, cy + 220 * s, Math.PI / 2, 360 * s, .7, GREEN, .9); cone(cx + 160 * s, cy - 80 * s, Math.PI / 2 + .3, 520 * s, .5, AMB, .9);
+    rider(cx, cy + 220 * s, .3, 1.2 * s); rider(cx + 160 * s, cy - 80 * s, Math.PI / 2 + .2, 1.2 * s, { jacket: BLUE });
+    label('下方优先', cx - 30 * s, cy + 340 * s, 44 * s, COL.green, 900); label('你来让', cx + 330 * s, cy - 80 * s, 40 * s, COL.amber, 900);
+  };
+  const title = (cx, y1, y2, size, subY, subSize, pillY, pillSize) => {
+    pill('滑雪不难 · EP.09 · 双板', cx, pillY, pillSize, COL.amber, '#fff');
+    label('雪道上，谁该让谁？', cx, y1, size, COL.ink, 900);
+    g.font = `900 ${size * .6}px ${SANS}`; const parts = [['看得见别人的人，', COL.ink], ['负责让', COL.green]], ws = parts.map(q => g.measureText(q[0]).width);
+    let x = cx - ws.reduce((s, v) => s + v, 0) / 2; parts.forEach((q, i) => { label(q[0], x + ws[i] / 2, y2, size * .6, q[1], 900); x += ws[i]; });
+    label('优先 · 超车 · 起步 · 停下 · 走路', cx, subY, subSize, COL.sub, 700);
+  };
+  if (key === '9x16') { title(CX, h * .24, h * .31, 100, h * .36, 38, h * .16, 42); art(CX - 100, h * .6, 1.2); }
+  else if (key === '3x4') { title(CX, h * .17, h * .26, 96, h * .32, 36, h * .07, 40); art(CX - 100, h * .6, 1.0); }
+  else {
+    art(w * .7, h * .38, key === '16x9' ? .95 : .8);
+    const fade = g.createLinearGradient(0, 0, w * .62, 0); fade.addColorStop(0, 'rgba(248,251,253,.97)'); fade.addColorStop(1, 'rgba(248,251,253,.2)'); g.fillStyle = fade; g.fillRect(0, 0, w * .56, h);
+    const size = key === '16x9' ? 96 : 74;
+    title(w * .29, h * .43, h * .57, size, h * .68, key === '16x9' ? 34 : 28, h * .26, key === '16x9' ? 38 : 34);
+  }
+}
+
+/* ───────── 声音 ───────── */
+function sound(K, c, DUR) {
+  K.bed(8.0, DUR, t => t < 28 ? 'verse' : t < 44 ? 'chorus' : t < 58 ? 'verse' : t < 76 ? 'tense' : t < 100 ? 'chorus' : t < 112 ? 'verse' : 'outro');
+  K.thud(3.3, .7); K.wrong(3.6); K.ding(5.0);
+  [11.6 + 8.6, 28 + 8.4, 44 + 4.9, 44 + 8.6, 58 + 13.4, 76 + .9, 88 + 1.1, 88 + 9.6].forEach(K.ding);
+  [28 + .9, 58 + 1.2, 58 + 9.4, 76 + 6.3].forEach(K.wrong);
+  for (let i = 0; i < 4; i++) K.tone(780 + i * 90, 100 + .8 + i * 1.6, .18, .06, 'triangle');
+  for (let i = 0; i < 3; i++) K.tone(880 + i * 110, 112 + .8 + i * 1.2, .25, .07, 'triangle');
+}
+
+kitRun({
+  T, S, TX, seed: 161,
+  allText: '走路贴着边手套先看上面…快去回停在顶摔倒挪到？下方的人他看不到你（在上方）来让山↑可能转这里等一没了，出发岔道主优先看见坐坡顶下面雪中间边得停需要距离km/h盲区：背后回头扫眼确认对情况就叫场救护留联系式记住几句超车足空远起步别负责避集况硬粉烂怎么滑你被撞过吗12340',
+  audio: sound, cover: coverArt
+});
+})();
+</script>
+</body>
+</html>
