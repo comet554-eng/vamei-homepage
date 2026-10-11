@@ -33,3 +33,4 @@
 - EP.05 双板《从八字到平行：把八字收起来》：`video/ski-ep05-ski.html`（俯视双板 `skiPair()` 可分别设定两块板角度，演示内脚并过来）。
 - EP.06 单板《搓雪还是刻滑：雪上的两种痕迹》：`video/ski-ep06-sb.html`（俯视痕迹 `skidTrack` / `carveTrack`、板的横截面、侧切示意）。
 - EP.06 双板《点杖到底在点什么》：`video/ski-ep06-ski.html`（俯视平行双板带雪杖 `topPar()`、沿 S 形自动在新弯内侧点杖 `rideWithPlants()`、侧面杖尖瞄准 `plantPose()`）。
+- EP.07 单板《腿为什么这么累：像弹簧一样起伏》：`video/ski-ep07-sb.html`（起伏地形 `terrain()` / `bumpState()`，吸收与伸直两种模式，头部高度轨迹对比）。

@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>滑雪不难 EP.07 单板</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#000;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;aspect-ratio:9/16;max-width:100vw;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;aspect-ratio:auto;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="sbrig.js"></script>
+<script>
+/*
+ * 滑雪不难 EP.07 单板《腿为什么这么累：像弹簧一样起伏》（约 2 分 05 秒）
+ */
+(() => {
+'use strict';
+const T = [0, 8.0, 11.6, 29.6, 46.0, 62.0, 74.0, 94.0, 112.0, 119.0, 125.5];
+const YH = .135, YB = .745;
+
+const TX = [
+  { in: .15, out: 3.8, text: '滑两趟，\n腿就{r}酸到发抖{/}？', y: YH, size: 84, w: 900, st: .06 },
+  { in: 4.0, out: 7.8, text: '问题可能不在体力，\n在你{a}怎么用腿{/}。', y: YH, size: 80, w: 900 },
+  { in: 8.25, out: 11.35, text: '腿为什么这么累：\n像弹簧一样起伏', y: .3, size: 96, w: 900, st: .05 },
+  { in: 9.0, out: 11.35, text: '会用腿，才能滑一整天', y: .415, size: 42, w: 600, sub: 1 },
+  { in: 11.8, out: 17.4, text: '累的原因一：\n一直{r}蹲死{/}不动', y: YH, size: 80, w: 900 },
+  { in: 12.6, out: 17.4, text: '肌肉一直绷着，没有一秒放松，最容易酸。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 17.8, out: 23.4, text: '累的原因二：\n{r}往后坐{/}', y: YH, size: 80, w: 900 },
+  { in: 18.6, out: 23.4, text: '重心在后脚，大腿前侧一直在"刹车"。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 23.8, out: 29.4, text: '累的原因三：\n全身{r}绷紧{/}', y: YH, size: 80, w: 900 },
+  { in: 24.6, out: 29.4, text: '一紧张就浑身用力，力气全花在"僵着"上。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 29.8, out: 37.6, text: '腿是{g}弹簧{/}：\n有起有伏。', y: YH, size: 84, w: 900 },
+  { in: 30.6, out: 37.6, text: '站高、蹲低来回换，肌肉有紧有松，\n比一直蹲着省力得多。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 38.0, out: 45.8, text: '{a}三个关节{/}一起弯', y: YH, size: 84, w: 900 },
+  { in: 38.8, out: 45.8, text: '脚踝、膝盖、髋一起弯，不是只弯腰。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 46.2, out: 53.8, text: '遇到起伏：\n腿{g}收起来{/}吸收。', y: YH, size: 84, w: 900 },
+  { in: 47.0, out: 53.8, text: '鼓包顶上来，腿就收；\n过了鼓包，腿再伸出去。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 54.2, out: 61.8, text: '上身和头，\n高度{g}基本不变{/}。', y: YH, size: 84, w: 900 },
+  { in: 55.0, out: 61.8, text: '板贴着雪走，人不会被弹起来。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 62.2, out: 67.8, text: '转弯也一样：\n{a}起{/}来换刃，{g}蹲{/}下压刃。', y: YH, size: 80, w: 900 },
+  { in: 63.0, out: 67.8, text: '连续转弯的节奏，靠的就是这根弹簧。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 68.2, out: 73.8, text: '腿酸到发抖，\n就{g}停下歇一会儿{/}。', y: YH, size: 80, w: 900 },
+  { in: 69.0, out: 73.8, text: '累到控制不住还硬撑，最容易受伤。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 74.2, out: 76.4, text: '怎么练？\n三步。', y: YH, size: 80, w: 900 },
+  { in: 76.7, out: 82.8, text: '① 原地弹簧', y: YH, size: 84, w: 900 },
+  { in: 77.4, out: 82.8, text: '平地上站好，脚踝、膝盖、髋一起弯，\n慢慢起、慢慢蹲，做 10 次。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 83.2, out: 88.8, text: '② 缓坡直滑时起伏', y: YH, size: 80, w: 900 },
+  { in: 83.9, out: 88.8, text: '一边滑一边起伏，重心始终在两脚中间。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 89.2, out: 93.8, text: '③ 找小鼓包练吸收', y: YH, size: 80, w: 900 },
+  { in: 89.9, out: 93.8, text: '目标：头的高度不跟着地形上下跑。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 94.2, out: 99.8, text: '常见错误一：\n只弯腰，{r}不弯腿{/}', y: YH, size: 80, w: 900 },
+  { in: 95.0, out: 99.8, text: '屁股撅出去，重量全压在后脚和腰上。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 100.2, out: 105.8, text: '常见错误二：\n起得太猛，{r}蹦起来{/}', y: YH, size: 76, w: 900 },
+  { in: 101.0, out: 105.8, text: '起伏要慢慢来，板始终贴着雪。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 106.2, out: 111.8, text: '常见错误三：\n腿{r}伸直{/}过鼓包', y: YH, size: 80, w: 900 },
+  { in: 107.0, out: 111.8, text: '人被弹起来，落地就容易失去平衡。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 119.2, out: 999, text: '你滑一天，\n腿能撑几趟？', y: .37, size: 88, w: 900, st: .06 },
+  { in: 120.2, out: 999, text: '评论区说说', y: .465, size: 42, w: 500, sub: 1 }
+];
+const STEPS = ['① 原地弹簧', '② 直滑起伏', '③ 过小鼓包'];
+
+/* ───────── 侧面姿势 ───────── */
+const SQ = { hipS: .05, hipH: 1.08, lean: 10, armF: 108, armB: -115, look: .7 };   // 蹲死
+const UP = { hipS: .05, hipH: 1.6, lean: 4, armF: 118, armB: -122, look: .7 };     // 站高
+const STRAIGHT = { hipS: 0, hipH: 1.66, lean: 2, armF: 150, armB: -150, look: .4 }; // 腿伸直
+const WAIST = { hipS: -.38, hipH: 1.52, lean: 42, armF: 95, armB: -105, look: .9 };  // 只弯腰
+const springPose = v => lerpPose(SQ, UP, v); // v：0 = 蹲低，1 = 站高
+
+function muscleBar(x, y, w, level, txt) {
+  g.save(); g.fillStyle = 'rgba(255,255,255,.92)'; g.shadowColor = 'rgba(27,40,56,.1)'; g.shadowBlur = 16; rrect(x - 20, y - 60, w + 40, 110, 22); g.fill(); g.shadowBlur = 0;
+  label(txt || '大腿负担', x, y - 28, 28, COL.sub, 700, 'left');
+  g.fillStyle = '#e6edf3'; rrect(x, y, w, 26, 13); g.fill();
+  const c = level > .7 ? COL.red : level > .45 ? COL.amber : COL.green; g.fillStyle = c; rrect(x, y, Math.max(26, w * level), 26, 13); g.fill();
+  g.restore();
+}
+function thighHeat(J, a) { glow(mid(J.Kf, J.Hf)[0], mid(J.Kf, J.Hf)[1], .55 * J.u, '240,71,60', a); glow(mid(J.Kb, J.Hb)[0], mid(J.Kb, J.Hb)[1], .5 * J.u, '240,71,60', a * .8); }
+function spring(x, y0, y1, a) { // 一根弹簧
+  g.save(); g.globalAlpha = a; g.strokeStyle = COL.green; g.lineWidth = 6; g.lineJoin = 'round'; g.beginPath(); const n = 8;
+  for (let i = 0; i <= n * 2; i++) { const yy = lerp(y0, y1, i / (n * 2)), xx = x + (i === 0 || i === n * 2 ? 0 : (i % 2 ? 26 : -26)); i ? g.lineTo(xx, yy) : g.moveTo(xx, yy); }
+  g.stroke(); g.fillStyle = COL.green; rrect(x - 34, y0 - 8, 68, 10, 4); g.fill(); rrect(x - 34, y1 - 2, 68, 10, 4); g.fill(); g.restore();
+}
+
+/* ───────── 起伏地形（侧面） ───────── */
+const SPD = 260, WL = 560, AMP = 64, TH0 = 6;
+const bump = xw => AMP * Math.pow(.5 - .5 * Math.cos(2 * Math.PI * xw / WL), 1.3);
+const surfY = (x, sc, base) => base + (x - CX) * Math.tan(TH0 * D2R) - bump(x + sc);
+function terrain(sc, base) {
+  g.save(); const gr = g.createLinearGradient(0, base - 200, 0, H); gr.addColorStop(0, '#ffffff'); gr.addColorStop(1, '#dde8f2'); g.fillStyle = gr;
+  g.beginPath(); g.moveTo(0, H); for (let x = 0; x <= W; x += 8) g.lineTo(x, surfY(x, sc, base)); g.lineTo(W, H); g.closePath(); g.fill();
+  g.strokeStyle = '#c3d4e4'; g.lineWidth = 4; g.beginPath(); for (let x = 0; x <= W; x += 8) { const y = surfY(x, sc, base); x ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke(); g.restore();
+}
+// mode：'absorb' 吸收；'stiff' 腿伸直
+function bumpState(t, mode, base, u) {
+  const sc = t * SPD, y = surfY(CX, sc, base), th = Math.atan2(surfY(CX + 6, sc, base) - surfY(CX - 6, sc, base), 12) / D2R, b = bump(CX + sc);
+  let F = [CX, y], p;
+  if (mode === 'absorb') { const v = clamp((1.58 - b / u * .95 - SQ.hipH) / (UP.hipH - SQ.hipH), 0, 1); p = springPose(v); }
+  else { p = STRAIGHT; const ph = ((CX + sc) / WL) % 1, hop = 46 * Math.pow(Math.max(0, Math.sin((ph - .5) * 2 * Math.PI)), 2); F = [CX, y - hop]; }
+  return { F, th, p, sc, y };
+}
+function bumpScene(t, mode, base, u, trailOn) {
+  const st = bumpState(t, mode, base, u);
+  terrain(st.sc, base);
+  if (trailOn) {
+    g.save(); g.strokeStyle = mode === 'absorb' ? COL.green : COL.red; g.lineWidth = 6; g.setLineDash([4, 10]); g.lineCap = 'round'; g.beginPath();
+    for (let i = 0; i <= 60; i++) { const tt = t - i * .04; if (tt < 0) break; const s2 = bumpState(tt, mode, base, u), J = sbJoints(s2.F, s2.th, s2.p, u), x = CX - (st.sc - s2.sc); i ? g.lineTo(x, J.Hd[1]) : g.moveTo(x, J.Hd[1]); }
+    g.stroke(); g.restore();
+  }
+  if (mode === 'stiff' && st.F[1] < st.y - 6) { g.save(); g.fillStyle = 'rgba(40,60,80,.12)'; g.beginPath(); g.ellipse(CX, st.y, 2 * u, 12, 0, 0, Math.PI * 2); g.fill(); g.restore(); }
+  return sbRider(st.F, st.th, st.p, u);
+}
+
+/* 顺着板看的小人（换刃 + 起伏），同 EP.05 */
+const TALL = { shin: 10, thigh: -16, torso: 10, head: 8, uarm: 155, farm: 115 };
+const HEEL = { shin: 14, thigh: -70, torso: 34, head: 14, uarm: 150, farm: 105 };
+const TOE = { shin: 42, thigh: -30, torso: 20, head: 12, uarm: 150, farm: 100 };
+function rhythmRider(F, u, ph) { const s = Math.sin(ph), a = Math.abs(s), tilt = s * 13; return rider(F, 0, lerpPose(TALL, s > 0 ? TOE : HEEL, Math.pow(a, .8)), u, { rot: tilt, pivot: tilt < 0 ? 'heel' : 'toe' }); }
+function heightGraph(x, y, w, h, ph) {
+  g.save(); g.fillStyle = 'rgba(255,255,255,.92)'; g.shadowColor = 'rgba(27,40,56,.1)'; g.shadowBlur = 20; rrect(x - 20, y - h / 2 - 50, w + 40, h + 100, 24); g.fill(); g.shadowBlur = 0;
+  g.strokeStyle = COL.amber; g.lineWidth = 6; g.beginPath();
+  for (let i = 0; i <= 120; i++) { const t = i / 120, p = ph - Math.PI * 2 + t * Math.PI * 4, v = Math.cos(2 * p) * .5 + .5; const xx = x + t * w, yy = y + h / 2 - v * h; i ? g.lineTo(xx, yy) : g.moveTo(xx, yy); } g.stroke();
+  const v = Math.cos(2 * ph) * .5 + .5; g.fillStyle = COL.ink; g.beginPath(); g.arc(x + w / 2, y + h / 2 - v * h, 12, 0, Math.PI * 2); g.fill();
+  label('站高', x - 4, y - h / 2 - 24, 26, COL.sub, 700, 'left'); label('蹲低', x - 4, y + h / 2 + 24, 26, COL.sub, 700, 'left');
+  g.restore();
+}
+
+/* ───────── 场景 ───────── */
+const S = [];
+// A 钩子：蹲死、发抖
+S.push(lt => {
+  const th = 10, F = [CX - 10, H * .6]; drawSky(0); drawSnowfall(lt, .4); drawSlope(F, th, lt * 200, { noProps: true }); speedLines(F, th, lt, .3);
+  const shake = clamp((lt - 1) / 2.5, 0, 1), F2 = [F[0] + Math.sin(lt * 60) * 3 * shake, F[1]];
+  const J = sbRider(F2, th, SQ, 165);
+  thighHeat(J, .3 + .6 * shake);
+  muscleBar(W * .14, H * .665, W * .72, lerp(.35, .98, shake));
+  if (lt > 4.2) { g.save(); g.globalAlpha = sm((lt - 4.2) / .4); label('?', J.Hd[0] + 120, J.Hd[1] - 60, 90, COL.amber, 900); g.restore(); }
+});
+// B 标题
+S.push(lt => {
+  drawSky(0); g.fillStyle = 'rgba(247,250,252,.5)'; g.fillRect(0, 0, W, H);
+  pill('滑雪不难 · EP.07 · 单板', CX, H * .19, 40, COL.amber, '#fff', eout(lt / .3));
+  const base = H * .75, st = bumpState(lt, 'absorb', base, 120); terrain(st.sc, base); sbRider(st.F, st.th, st.p, 120);
+});
+// C 三个原因
+S.push(lt => {
+  const seg = lt < 6.2 ? 0 : lt < 12.2 ? 1 : 2, l2 = lt - [0, 6.2, 12.2][seg];
+  const th = 10, F = [CX - 10, H * .58]; drawSky(0); drawSlope(F, th, lt * 200, { noProps: true });
+  let J, load;
+  if (seg === 0) { J = sbRider(F, th, SQ, 165); load = lerp(.4, .95, sm(l2 / 4)); thighHeat(J, load * .8); label('一直这么低', J.Hd[0] + 230, J.Hd[1] + 20, 36, COL.red, 900); }
+  else if (seg === 1) { const p = lerpPose(SP.neutral, SP.back, sm((l2 - .3) / .8)); J = sbRider(F, th, p, 165); load = lerp(.45, .9, sm((l2 - .3) / 1.2)); ring(mid(J.Kf, J.Hf)[0], mid(J.Kf, J.Hf)[1], .5 * 165, COL.red, win(l2, .8, 6, .3, .3), true); sbBalance(J, win(l2, 1.2, 6, .3, .3)); }
+  else { const sh = Math.sin(lt * 50) * 3; J = sbRider([F[0] + sh, F[1]], th, SP.tense, 165); load = lerp(.5, .92, sm(l2 / 3)); g.save(); g.globalAlpha = .55; [J.Hd, J.S, J.Hnf, J.Kf, J.Kb].forEach((q, i) => { ring(q[0], q[1], 30 + 8 * Math.sin(lt * 9 + i), COL.red, .7); }); g.restore(); label('浑身用力', J.Hd[0] + 230, J.Hd[1] + 20, 36, COL.red, 900); }
+  muscleBar(W * .14, H * .665, W * .72, load);
+  markX(W * .14, H * .3, 40, win(l2, .3, 6, .2, .3));
+});
+// D 弹簧 + 三个关节
+S.push(lt => {
+  const th = 10, F = [CX + 40, H * .6]; drawSky(0); drawSnowfall(lt + 30, .4); drawSlope(F, th, lt * 160, { noProps: true });
+  if (lt < 8.2) {
+    const v = .5 - .5 * Math.cos(Math.max(0, lt - .6) * 1.6), J = sbRider(F, th, springPose(v), 165);
+    const Jt = sbJoints(F, th, springPose(1), 165), Jb = sbJoints(F, th, springPose(0), 165), sy = J.Hc[1];
+    spring(W * .14, sy, F[1] + 10, 1);
+    muscleBar(W * .14, H * .665, W * .72, .35 + .15 * (1 - v), '大腿负担：有紧有松');
+    label(v > .5 ? '站高 · 放松' : '蹲低 · 用力', J.Hd[0] + 220, J.Hd[1] - 10, 36, v > .5 ? COL.green : COL.amber, 900);
+  } else {
+    const l2 = lt - 8.2, v = .5 - .5 * Math.cos(Math.max(0, l2) * 1.2), J = sbRider(F, th, springPose(.15 + .3 * v), 165);
+    [[J.Af, '脚踝', .3], [J.Kf, '膝盖', 1.3], [J.Hc, '髋', 2.3]].forEach(([q, t, d], i) => {
+      const a = sm((l2 - d) / .4); ring(q[0], q[1], 40, COL.amber, a); g.save(); g.globalAlpha = a; label(t, q[0] + 210, q[1] - (i - 1) * 30, 40, COL.amber, 900); g.setLineDash([8, 8]); g.strokeStyle = COL.amber; g.lineWidth = 3; g.beginPath(); g.moveTo(q[0] + 44, q[1]); g.lineTo(q[0] + 150, q[1] - (i - 1) * 30); g.stroke(); g.restore();
+    });
+  }
+});
+// E 吸收鼓包
+S.push(lt => {
+  drawSky(0); drawSnowfall(lt + 46, .4);
+  const base = H * .64, u = 150, J = bumpScene(lt, 'absorb', base, u, lt > 8);
+  if (lt < 8) { const b = bump(CX + lt * SPD); spring(W * .12, J.Hc[1], J.Af[1] + 10, 1); label(b > AMP * .5 ? '收' : '伸', W * .12 + 70, (J.Hc[1] + J.Af[1]) / 2, 44, b > AMP * .5 ? COL.amber : COL.green, 900, 'left'); }
+  else { const a = sm((lt - 8.4) / .4); g.save(); g.globalAlpha = a; label('头的高度：几乎一条直线', CX, H * .33, 38, COL.green, 900); g.restore(); }
+});
+// F 转弯也一样 / 歇一会儿
+S.push(lt => {
+  drawSky(0); drawSnowfall(lt + 62, .4);
+  if (lt < 6) {
+    const F = [CX - 10, H * .56]; drawSlope(F, 0, 0, { noProps: true });
+    const ph = Math.max(0, lt - .4) * 1.1; rhythmRider(F, 150, ph);
+    const s = Math.sin(ph); pill(Math.abs(s) < .35 ? '起 · 换刃' : '蹲 · 压刃', CX, H * .235, 40, Math.abs(s) < .35 ? COL.amber : COL.green, '#fff');
+    heightGraph(W * .14, H * .655, W * .72, 70, ph);
+  } else {
+    const th = 0, F = [CX - 60, H * .6]; drawSlope(F, th, 0, { noProps: true });
+    const l2 = lt - 6, J = sbRider(F, th, lerpPose(SQ, SP.stand, sm((l2 - .3) / .8)), 165);
+    thighHeat(J, .6 * (1 - sm((l2 - .3) / 2)));
+    const a = sm((l2 - .8) / .4), cx = W * .78, cy = H * .3, pr = clamp((l2 - 1) / 4, 0, 1);
+    g.save(); g.globalAlpha = a; g.strokeStyle = '#e6edf3'; g.lineWidth = 14; g.beginPath(); g.arc(cx, cy, 70, 0, Math.PI * 2); g.stroke();
+    g.strokeStyle = COL.green; g.lineCap = 'round'; g.beginPath(); g.arc(cx, cy, 70, -Math.PI / 2, -Math.PI / 2 + pr * Math.PI * 2); g.stroke(); label('歇', cx, cy, 52, COL.green, 900); g.restore();
+    muscleBar(W * .14, H * .665, W * .72, lerp(.9, .25, sm((l2 - .3) / 4)));
+  }
+});
+// G 练习三步
+S.push(lt => {
+  const cur = lt < 2.4 ? -1 : lt < 9 ? 0 : lt < 15 ? 1 : lt < 19.8 ? 2 : 3;
+  drawSky(0);
+  if (cur <= 0) {
+    const th = 0, F = [CX - 40, H * .6]; drawSlope(F, th, 0, { noProps: true });
+    const tt = Math.max(0, lt - 2.6), v = .5 + .5 * Math.cos(tt * Math.PI / .62 * .5), J = sbRider(F, th, springPose(v), 165);
+    const cnt = Math.min(10, Math.floor(tt / 2.48)); label(`${cnt} / 10`, W * .8, H * .32, 60, COL.green, 900);
+    spring(W * .12, J.Hc[1], F[1] + 10, 1);
+  } else if (cur === 1) {
+    const th = 10, F = [CX - 10, H * .58], l2 = lt - 9; drawSlope(F, th, lt * 220, { noProps: true }); speedLines(F, th, lt, .3);
+    const v = .5 + .5 * Math.cos(l2 * 1.6), J = sbRider(F, th, springPose(v), 160); sbBalance(J, 1, true);
+  } else {
+    const l2 = lt - 15; bumpScene(l2 + 1, 'absorb', H * .64, 150, true);
+  }
+  stepChips(STEPS, H * .235, cur, eout((lt - .3) / .4), 34);
+});
+// H 三个错误
+S.push(lt => {
+  const seg = lt < 6 ? 0 : lt < 12 ? 1 : 2, l2 = lt - seg * 6;
+  drawSky(0);
+  if (seg === 0) {
+    const th = 10, F = [CX - 10, H * .6]; drawSlope(F, th, lt * 180, { noProps: true });
+    sbRider([F[0] + 360, F[1] + 64], th, springPose(.3), 95, { mono: COL.green, alpha: .3 });
+    const J = sbRider(F, th, lerpPose(SP.neutral, WAIST, sm((l2 - .3) / .8)), 165);
+    const a = win(l2, 1.2, 6, .3, .3); ring(J.Hb[0] - 20, J.Hb[1], 60, COL.red, a, true);
+    g.save(); g.globalAlpha = a; label('屁股撅出去', J.Hb[0] - 150, J.Hb[1] - 90, 36, COL.red, 900); label('应该：三个关节一起弯', F[0] + 330, F[1] + 170, 30, COL.green, 900); g.restore();
+  } else if (seg === 1) {
+    const th = 10, F = [CX - 10, H * .6]; drawSlope(F, th, lt * 180, { noProps: true });
+    const ph = (l2 % 2.2) / 2.2, hop = 90 * Math.max(0, Math.sin(Math.min(1, Math.max(0, ph - .25) / .35) * Math.PI)), up = ph < .3 ? sm(ph / .3) : 1 - sm((ph - .6) / .4);
+    const J = sbRider([F[0], F[1] - hop], th, springPose(up), 165);
+    if (hop > 8) { g.save(); g.fillStyle = 'rgba(40,60,80,.12)'; g.beginPath(); g.ellipse(F[0], F[1] + 4, 300, 14, th * D2R, 0, Math.PI * 2); g.fill(); g.restore(); label('板离开雪', F[0] + 330, F[1] - 60, 36, COL.red, 900); }
+  } else {
+    drawSnowfall(lt, .3); bumpScene(l2 + .5, 'stiff', H * .64, 150, true);
+    const a = win(l2, 1.4, 6, .3, .3); g.save(); g.globalAlpha = a; label('头的高度上下跑', CX, H * .33, 38, COL.red, 900); g.restore();
+  }
+  markX(W * .14, H * .3, 40, win(l2, .3, 6, .2, .3));
+});
+// I 口诀卡
+S.push(lt => {
+  drawSky(0); drawSnowfall(lt + 112, .5);
+  const a = eout(lt / .4), x = W * .08, y = H * .24, w = W * .84, h = H * .42;
+  g.save(); g.globalAlpha = a; g.translate(0, (1 - a) * 50);
+  g.fillStyle = '#fff'; g.shadowColor = 'rgba(27,40,56,.14)'; g.shadowBlur = 50; rrect(x, y, w, h, 44); g.fill(); g.shadowBlur = 0;
+  label('记住这几句', CX, y + 100, 50, COL.amber, 900);
+  [['起伏', '站高换刃 · 蹲低压刃', COL.amber], ['关节', '脚踝、膝盖、髋一起弯', COL.green], ['地形', '鼓包来了，腿收起来', COL.blue]].forEach(([t1, t2, c], i) => {
+    const ra = eout((lt - .8 - i * 1.2) / .35); if (ra <= 0) return; const ry = y + 250 + i * 225;
+    g.save(); g.globalAlpha = a * ra; g.translate((1 - ra) * 40, 0); pill(t1, x + 70 + (t1.length * 38 + 52) / 2, ry - 44, 38, c, '#fff'); label(t2, x + 70, ry + 42, 50, COL.ink, 900, 'left'); g.restore();
+  });
+  g.restore();
+  label('腿是弹簧，不是柱子。', CX, H * .75, 46, COL.sub, 700);
+});
+// J 结尾
+S.push(lt => {
+  drawSky(0); const base = H * .86, st = bumpState(lt + 3, 'absorb', base, 110); terrain(st.sc, base); sbRider(st.F, st.th, st.p, 110);
+  pill('下集 · 雪道上，谁该让谁？', CX, H * .55, 36, COL.amber, '#fff', eout((lt - 1.8) / .4));
+});
+
+/* ───────── 封面 ───────── */
+function coverArt(key, w, h) {
+  drawSky(0);
+  const art = (base, u, cx) => {
+    const sc = 1.05 * SPD, y = k => base + (k - cx) * Math.tan(TH0 * D2R) - bump(k - cx + CX + sc);
+    g.save(); g.fillStyle = '#fff'; g.beginPath(); g.moveTo(0, h); for (let x = 0; x <= w; x += 8) g.lineTo(x, y(x)); g.lineTo(w, h); g.closePath(); g.fill();
+    g.strokeStyle = '#c3d4e4'; g.lineWidth = 4; g.beginPath(); for (let x = 0; x <= w; x += 8) { x ? g.lineTo(x, y(x)) : g.moveTo(x, y(x)); } g.stroke(); g.restore();
+    const F = [cx, y(cx)], th = Math.atan2(y(cx + 6) - y(cx - 6), 12) / D2R, J = sbRider(F, th, springPose(.15), u);
+    spring(cx - 2.6 * u, J.Hc[1], F[1] + 10, 1);
+  };
+  const title = (cx, y1, y2, size, subY, subSize, pillY, pillSize) => {
+    pill('滑雪不难 · EP.07 · 单板', cx, pillY, pillSize, COL.amber, '#fff');
+    label('腿为什么这么累？', cx, y1, size, COL.ink, 900);
+    g.font = `900 ${size * .62}px ${SANS}`; const parts = [['把腿当', COL.ink], ['弹簧', COL.green], ['用', COL.ink]], ws = parts.map(q => g.measureText(q[0]).width);
+    let x = cx - ws.reduce((s, v) => s + v, 0) / 2; parts.forEach((q, i) => { label(q[0], x + ws[i] / 2, y2, size * .62, q[1], 900); x += ws[i]; });
+    label('原因 · 起伏 · 吸收 · 三个错误', cx, subY, subSize, COL.sub, 700);
+  };
+  if (key === '9x16') { art(h * .8, 175, w * .56); title(CX, h * .24, h * .315, 112, h * .37, 40, h * .15, 42); }
+  else if (key === '3x4') { art(h * .84, 140, w * .56); title(CX, h * .17, h * .265, 106, h * .325, 38, h * .07, 40); }
+  else {
+    art(h * .8, key === '16x9' ? 150 : 120, key === '16x9' ? w * .74 : w * .7);
+    const fade = g.createLinearGradient(0, 0, w * .62, 0); fade.addColorStop(0, 'rgba(240,246,251,.96)'); fade.addColorStop(1, 'rgba(240,246,251,0)'); g.fillStyle = fade; g.fillRect(0, 0, w * .56, h);
+    const size = key === '16x9' ? 108 : 86;
+    title(w * .29, h * .43, h * .58, size, h * .7, key === '16x9' ? 36 : 30, h * .26, key === '16x9' ? 38 : 34);
+  }
+}
+
+/* ───────── 声音 ───────── */
+function sound(K, c, DUR) {
+  K.bed(8.0, DUR, t => t < 29.6 ? 'verse' : t < 46 ? 'chorus' : t < 62 ? 'verse' : t < 94 ? 'chorus' : t < 112 ? 'tense' : 'outro');
+  K.wind(DUR, t => (t < 8 || (t > 11.6 && t < 29.6)) ? .18 : 0);
+  K.wrong(3.6); [11.6 + .3, 11.6 + 6.5, 11.6 + 12.5].forEach(K.wrong);
+  [29.6 + 1.2, 29.6 + 8.6, 29.6 + 9.9, 29.6 + 10.9, 46 + 8.5, 62 + 6.9, 74 + 14.4].forEach(K.ding);
+  // 鼓包：每过一个鼓包一声轻"咚"
+  [[46, 62], [74 + 15, 74 + 19.8]].forEach(([a, b], j) => { for (let t = a; t < b; t += .02) { const s1 = (t - a + (j ? 1 : 0)) * SPD, s0 = s1 - .02 * SPD, ph1 = ((CX + s1) / WL) % 1, ph0 = ((CX + s0) / WL) % 1; if (ph0 < .5 && ph1 >= .5) K.tone(330, t, .18, .05, 'sine'); } });
+  // 原地弹簧计数
+  for (let i = 1; i <= 2; i++) K.ding(74 + 2.6 + i * 2.48);
+  [94 + .3, 100 + .3, 106 + .3].forEach(K.wrong);
+  for (let t = 100 + .6 * 2.2; t < 106; t += 2.2) K.thud(t, .35);
+  for (let i = 0; i < 3; i++) K.tone(880 + i * 110, 112 + .8 + i * 1.2, .25, .07, 'triangle');
+  K.riser(92.6, 94, .12);
+}
+
+kitRun({
+  T, S, TX, seed: 111,
+  allText: STEPS.join('') + '大腿负担：有紧松?一直这么低浑身用力站高·放蹲低脚踝膝盖髋收伸头的度几乎条线起换刃压歇/0123456789屁股撅出去没弯三个关节板离开雪上下跑记住句地形鼓包来了，起伏是弹簧不柱子你滑天能撑趟集道谁该让？为什么累把当原因吸错误',
+  audio: sound, cover: coverArt
+});
+})();
+</script>
+</body>
+</html>
