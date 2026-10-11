@@ -43,3 +43,11 @@
 - EP.10 单板《立刃：板立多高才咬得住》：`video/ski-ep10-sb.html`（顺着板看的横截面小人 + 角度弧 `angleArc()`、抓地条）。
 - EP.11 单板《站姿怎么定：正脚、反脚和角度》：`video/ski-ep11-sb.html`（俯视大雪板 `bigBoard()`：固定器角度、站距、滑行方向；侧面固定器与鞋 `bindingSide()`）。
 - EP.12 单板《魔毯、拖牵、缆车：单板怎么上下》：`video/ski-ep12-sb.html`（俯视单板可设后脚位置 `topSB()`、魔毯、拖牵侧面、缆车椅子 `chair()`）。
+- EP.11 双板《立刃：板立多高才咬得住》：`video/ski-ep11-ski.html`（两块板横截面 `crossSkis()`，可分别设外脚、内脚角度）。
+- EP.12 双板《雪鞋怎么穿才不疼》：`video/ski-ep12-ski.html`（雪鞋侧面剖面：外壳、内胆、扣子、魔术贴、脚和小腿）。
+- EP.13 双板《魔毯、拖牵、缆车：双板怎么上下》：`video/ski-ep13-ski.html`（由单板 EP.12 改为双板，加上雪杖与腕带）。
+- EP.14 双板《侧滑：陡坡下不去怎么办》：`video/ski-ep14-ski.html`。
+- EP.15 双板《第一次上中级道：先看再滑》：`video/ski-ep15-ski.html`（俯视雪道地图、路线规划）。
+- EP.13 单板《反脚也要会滑》：`video/ski-ep13-sb.html`（侧面镜像表现反着滑，L/R 两脚分色）。
+- EP.14 单板《小跳：第一个 ollie》：`video/ski-ep14-sb.html`。
+- EP.15 单板《第一次上中级道：先看再滑》：`video/ski-ep15-sb.html`。
