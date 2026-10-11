@@ -185,7 +185,7 @@ function bindingView(cx, gy, rel, din, o = {}) {
   g.strokeStyle = COL.ski; g.lineWidth = 30; g.lineCap = 'round'; g.beginPath(); g.moveTo(cx + 425, gy - 19); g.quadraticCurveTo(cx + 490, gy - 19, cx + 505, gy - 70); g.stroke();
   g.fillStyle = '#1d5fbf'; rrect(cx - 300, gy - 44, 600, 12, 6); g.fill();
   // 雪鞋
-  const bx = cx - 20 - rel * 50 + (o.shake || 0), by = gy - 104 - rel * 150, ang = -rel * .32;
+  const bx = cx - 20 - rel * 50 + (o.shake || 0), by = gy - 104 - rel * 100, ang = -rel * .32;
   g.save(); g.translate(bx, by); g.rotate(ang);
   g.fillStyle = COL.boot; rrect(-160, -190, 230, 190, 30); g.fill(); rrect(-200, -10, 400, 64, 16); g.fill();
   g.strokeStyle = '#8fa3b8'; g.lineWidth = 7; g.lineCap = 'round'; [-140, -85].forEach(y => { g.beginPath(); g.moveTo(-145, y); g.lineTo(55, y); g.stroke(); });
@@ -305,10 +305,10 @@ S.push(lt => {
       const a = win(lt, 2.2, 7.2, .3, .3); kneeHurt(J, a, lt);
       const tail = J.P(-1.55, .1);
       g.save(); g.globalAlpha = a; arcArrow(tail[0] + 30, tail[1] - 40, 120, Math.PI * .95, Math.PI * .35, COL.red, 7, 26);
-      label('板尾卡住雪', tail[0] - 10, tail[1] + 90, 38, COL.red, 900);
+      label('板尾卡住雪', tail[0] + 20, tail[1] + 150, 38, COL.red, 900);
       label('膝盖被扭', J.K[0] + 30, J.K[1] - 100, 40, COL.red, 900);
       const hp = J.Hp; g.setLineDash([10, 8]); g.strokeStyle = COL.red; g.lineWidth = 4; g.beginPath(); g.moveTo(hp[0] - 120, hp[1]); g.lineTo(J.K[0] + 120, hp[1]); g.stroke(); g.setLineDash([]);
-      label('屁股低过膝盖', hp[0] - 200, hp[1] - 40, 34, COL.red, 900);
+      label('屁股低过膝盖', hp[0] - 180, hp[1] - 95, 34, COL.red, 900);
       g.restore();
     }
   } else {
@@ -321,9 +321,9 @@ S.push(lt => {
     g.save(); g.globalAlpha = a; label('这只板被卡住', J.tip1[0] - 10, J.tip1[1] + 70, 36, COL.red, 900);
     arrow(J.tip1[0] - 130, J.tip1[1] - 10, J.tip1[0] - 10, J.tip1[1] - 30, COL.red, 7, 26); g.restore();
     const b = sm((l2 - 2.4) / .4); kneeHurt({ K: J.knees[1] }, b, lt);
-    g.save(); g.globalAlpha = b; label('膝盖往里倒', J.knees[1][0] + 210, J.knees[1][1] - 30, 38, COL.red, 900);
+    g.save(); g.globalAlpha = b; label('膝盖往里倒', W * .82, J.knees[1][1] - 40, 38, COL.red, 900);
     ellArrow(J.boots[1][0], J.boots[1][1] - .2 * 185, 90, 24, Math.PI * .1, Math.PI * 1.1, COL.red, 6, 1);
-    label('腿被往外拧', J.boots[1][0] + 230, J.boots[1][1] - 60, 36, COL.red, 900); g.restore();
+    label('腿被往外拧', W * .82, J.boots[1][1] - 40, 36, COL.red, 900); g.restore();
   }
 });
 // E 怎么防：重心在中间；别硬撑
@@ -333,7 +333,7 @@ S.push(lt => {
     const th = 10, F = [CX - 140, H * .6]; drawSlope(F, th, lt * 160, { noProps: true }); speedLines(F, th, lt, .2);
     const gx = F[0] + 470, G = [gx, F[1] + 470 * Math.tan(th * D2R)];
     const ga = sm((lt - 2.6) / .4);
-    if (ga > 0) { const JG = drawSkier(G, th, POSES.back, 92, { mono: COL.red, alpha: .32 * ga }); markX(JG.Hd[0] + 60, JG.Hd[1] - 70, 30, ga); g.save(); g.globalAlpha = ga; label('往后坐', G[0] + 20, G[1] + 120, 34, COL.red, 900); g.restore(); }
+    if (ga > 0) { const JG = drawSkier(G, th, POSES.back, 92, { mono: COL.red, alpha: .32 * ga }); markX(G[0] + 115, JG.Hd[1] - 80, 28, ga); g.save(); g.globalAlpha = ga; label('往后坐', G[0] + 10, JG.Hd[1] - 80, 34, COL.red, 900); g.restore(); }
     const J = drawSkier(F, th, POSES.neutral, 160);
     const a = sm((lt - .6) / .4), c = J.P(.1, 0);
     g.save(); g.globalAlpha = a; g.setLineDash([10, 8]); g.strokeStyle = COL.green; g.lineWidth = 4; g.beginPath(); g.moveTo(J.com[0], J.com[1]); g.lineTo(c[0], c[1]); g.stroke(); g.setLineDash([]);
@@ -352,7 +352,7 @@ S.push(lt => {
     } else {
       const a = sm((l2 - 3.9) / .4);
       J && [J.Hn].forEach(q => ring(q[0], q[1], 44, COL.green, a));
-      g.save(); g.globalAlpha = a; label('手往前伸', J.Hn[0] + 140, J.Hn[1] - 60, 38, COL.green, 900); g.restore();
+      g.save(); g.globalAlpha = a; label('手往前伸', J.Hn[0] - 10, J.Hn[1] - 100, 36, COL.green, 900); g.restore();
       const b = sm((l2 - 4.5) / .4), ft = J.P(.2, -.5);
       g.save(); g.globalAlpha = b; label('两脚并拢', ft[0] + 160, ft[1] + 70, 38, COL.green, 900); g.restore();
       const kv = pop(l2 - 4.9); if (kv > 0) markV(W * .14, H * .3, 40, 1, kv);
@@ -365,7 +365,7 @@ S.push(lt => {
   drawSky(0);
   if (lt < 7) {
     drawSnowfall(lt + 53, .3);
-    chipRow(FACT, H * .3, i => sm((lt - .9 - i * .35) / .3), COL.blue, 36);
+    chipRow(FACT, H * .255, i => sm((lt - .9 - i * .35) / .3), COL.blue, 36);
     const tw = sm((lt - 2.6) / .5), rel = eout(clamp((lt - 3.4) / .5, 0, 1));
     const B = bindingView(CX, H * .58, rel, .5, { shake: lt > 2.8 && lt < 3.4 ? Math.sin(lt * 60) * 4 : 0 });
     if (lt > 2.6 && lt < 4.4) { g.save(); g.globalAlpha = win(lt, 2.6, 4.3, .2, .3) * tw; arcArrow(B.tip[0] - 40, B.tip[1] - 60, 90, Math.PI * .1, Math.PI * .85, COL.red, 7, 26); g.restore(); }
@@ -446,7 +446,7 @@ S.push(lt => {
     const J = frontV2([CX - 40 + sh, H * .56], p, 185);
     const a = win(l2, 1.3, 6, .3, .3);
     const lk = J.knees[0]; g.save(); g.globalAlpha = a; g.strokeStyle = COL.red; g.lineWidth = 6; g.setLineDash([10, 8]); g.beginPath(); g.moveTo(J.boots[0][0], J.boots[0][1] - 20); g.lineTo(J.hipC[0] - .18 * 185, J.hipC[1]); g.stroke(); g.setLineDash([]);
-    label('一条腿硬撑', W * .15, lk[1] + 70, 36, COL.red, 900); g.restore();
+    label('一条腿硬撑', W * .135, lk[1] + 70, 36, COL.red, 900); g.restore();
     kneeHurt({ K: J.knees[1] }, a, lt);
     g.save(); g.globalAlpha = a; label('另一只板被带走', J.tip1[0] + 140, J.tip1[1] - 90, 34, COL.red, 900); g.restore();
   } else {
@@ -497,7 +497,7 @@ function coverArt(key, w, h) {
     let x = cx - ws.reduce((s, v) => s + v, 0) / 2; parts.forEach((q, i) => { label(q[0], x + ws[i] / 2, y2, size, q[1], 900); x += ws[i]; });
     label('为什么会伤 · 怎么防 · 三个错误', cx, subY, subSize, COL.sub, 700);
   };
-  if (key === '9x16') { art([CX + 60, h * .78], 165); title(CX, h * .24, h * .33, 190, h * .41, 42, h * .16, 42); }
+  if (key === '9x16') { art([CX + 70, h * .8], 205); title(CX, h * .24, h * .33, 190, h * .41, 42, h * .16, 42); }
   else if (key === '3x4') { art([CX + 60, h * .9], 135); title(CX, h * .19, h * .3, 170, h * .39, 40, h * .085, 40); }
   else {
     art([w * .76, h * .78], key === '16x9' ? 160 : 135);
