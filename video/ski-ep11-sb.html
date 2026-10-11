@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>滑雪不难 EP.11 单板</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#000;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;aspect-ratio:9/16;max-width:100vw;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;aspect-ratio:auto;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="sbrig.js"></script>
+<script>
+/*
+ * 滑雪不难 EP.11 单板《站姿怎么定：正脚、反脚和角度》（约 2 分 05 秒）
+ * 俯视：人面朝画面下方（前刃在下）。正脚 = 左脚在前，左脚在画面右边。
+ */
+(() => {
+'use strict';
+const T = [0, 8.0, 11.6, 29.6, 45.6, 61.6, 75.6, 93.6, 111.6, 118.6, 125.1];
+const YH = .135, YB = .745;
+
+const TX = [
+  { in: .15, out: 3.8, text: '上板第一天：\n左脚还是{a}右脚{/}在前？', y: YH, size: 80, w: 900, st: .06 },
+  { in: 4.0, out: 7.8, text: '站姿没定好，\n怎么练都{r}别扭{/}。', y: YH, size: 84, w: 900 },
+  { in: 8.25, out: 11.35, text: '站姿怎么定：\n正脚、反脚和角度', y: .3, size: 96, w: 900, st: .05 },
+  { in: 9.0, out: 11.35, text: '上板之前，先把板调对', y: .415, size: 42, w: 600, sub: 1 },
+  { in: 11.8, out: 17.4, text: '左脚在前：{g}正脚{/}\n右脚在前：{a}反脚{/}', y: YH, size: 80, w: 900 },
+  { in: 12.6, out: 17.4, text: '两种都很正常，没有好坏之分。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 17.8, out: 23.4, text: '怎么测？让人从\n背后{g}轻推一下{/}。', y: YH, size: 80, w: 900 },
+  { in: 18.6, out: 23.4, text: '下意识先迈出去的那只脚，通常放前面。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 23.8, out: 29.4, text: '也可以穿袜子\n在地板上{g}滑一下{/}。', y: YH, size: 80, w: 900 },
+  { in: 24.6, out: 29.4, text: '自然冲在前面的脚，就是前脚。\n还拿不准，就两种都试试。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 29.8, out: 37.4, text: '站距：大约{g}和肩同宽{/}，\n或稍宽一点。', y: YH, size: 80, w: 900 },
+  { in: 30.6, out: 37.4, text: '太窄站不稳，太宽蹲不下去。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 37.8, out: 45.4, text: '固定器装在\n板的{g}中间{/}。', y: YH, size: 84, w: 900 },
+  { in: 38.6, out: 45.4, text: '两只脚到板头、板尾的距离差不多，\n新手先居中。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 45.8, out: 53.4, text: '角度：新手常用\n{g}外八字{/}。', y: YH, size: 84, w: 900 },
+  { in: 46.6, out: 53.4, text: '前脚大约 +15°，后脚大约 -6° 到 -15°，\n正着滑、反着滑都方便。', y: YB, size: 40, w: 500, sub: 1 },
+  { in: 53.8, out: 61.4, text: '别把两只脚\n转得{r}太朝前{/}。', y: YH, size: 84, w: 900 },
+  { in: 54.6, out: 61.4, text: '角度太大，膝盖会别着劲。\n先用小角度，再慢慢调。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 61.8, out: 68.4, text: '鞋跟要\n{g}顶到底{/}。', y: YH, size: 88, w: 900 },
+  { in: 62.6, out: 68.4, text: '脚跟顶住固定器的后背，后刃才使得上劲。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 68.8, out: 75.4, text: '绑带：{g}贴住{/}，\n不勒脚。', y: YH, size: 88, w: 900 },
+  { in: 69.6, out: 75.4, text: '脚在鞋里不晃就行，勒太紧脚会麻。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 75.8, out: 78.2, text: '调好以后，\n先{g}试一试{/}。', y: YH, size: 84, w: 900 },
+  { in: 78.5, out: 83.8, text: '① 平地蹲一蹲、跳一跳', y: YH, size: 76, w: 900 },
+  { in: 79.2, out: 83.8, text: '膝盖朝着脚尖的方向弯，舒服就对了。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 84.2, out: 88.8, text: '② 单脚滑一滑', y: YH, size: 84, w: 900 },
+  { in: 84.9, out: 88.8, text: '只绑前脚，在缓坡底滑一小段，感受前脚。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 89.2, out: 93.4, text: '③ 别扭就微调', y: YH, size: 84, w: 900 },
+  { in: 89.9, out: 93.4, text: '每次只改一点，几度或一个孔位，滑一天再说。', y: YB, size: 40, w: 500, sub: 1 },
+  { in: 93.8, out: 99.4, text: '常见错误一：\n站距{r}太窄{/}', y: YH, size: 84, w: 900 },
+  { in: 94.6, out: 99.4, text: '像站在独木桥上，一晃就倒。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 99.8, out: 105.4, text: '常见错误二：\n角度{r}太大{/}，膝盖别着', y: YH, size: 80, w: 900 },
+  { in: 100.6, out: 105.4, text: '膝盖和脚尖不朝一个方向，久了会疼。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 105.8, out: 111.4, text: '常见错误三：\n鞋跟{r}没顶到底{/}', y: YH, size: 84, w: 900 },
+  { in: 106.6, out: 111.4, text: '后刃一用力，脚先在鞋里滑，板却没反应。', y: YB, size: 40, w: 500, sub: 1 },
+  { in: 118.8, out: 999, text: '你是正脚，\n还是反脚？', y: .37, size: 88, w: 900, st: .06 },
+  { in: 119.8, out: 999, text: '评论区说说', y: .465, size: 42, w: 500, sub: 1 }
+];
+const STEPS = ['① 平地蹲一蹲', '② 单脚滑一滑', '③ 别扭就微调'];
+
+function bg() { g.fillStyle = '#f4f8fb'; g.fillRect(0, 0, W, H); g.strokeStyle = '#e6edf3'; g.lineWidth = 2; for (let x = 0; x < W; x += 60) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); } for (let y = 0; y < H; y += 60) { g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke(); } }
+
+/* ───────── 俯视：大雪板 ─────────
+ * nose = 1 板头在右（正脚），-1 在左（反脚）。front/back：前、后脚角度（度，正 = 脚尖转向板头）。
+ * width：两只脚中心的距离（像素）。off：固定器整体偏移。*/
+function bigBoard(cx, cy, L, o = {}) {
+  const nose = o.nose || 1, bw = L * .27, wd = o.width == null ? L * .44 : o.width, off = o.off || 0;
+  g.save(); g.translate(cx, cy);
+  g.fillStyle = 'rgba(40,60,80,.12)'; rrect(-L / 2 + 10, -bw / 2 + 16, L, bw, bw / 2); g.fill();
+  g.fillStyle = COL.board; rrect(-L / 2, -bw / 2, L, bw, bw / 2); g.fill();
+  g.strokeStyle = COL.boardTop; g.lineWidth = 6; rrect(-L / 2 + 14, -bw / 2 + 14, L - 28, bw - 28, bw / 2 - 14); g.stroke();
+  label(nose > 0 ? '板头 →' : '← 板头', nose * L * .36, -bw / 2 - 36, 30, '#9aabbb', 700);
+  const feet = [];
+  [['front', 1], ['back', -1]].forEach(([k, side]) => {
+    const x = off + side * nose * wd / 2, ang = (o[k] == null ? (k === 'front' ? 15 : -9) : o[k]) * nose, a = Math.PI / 2 - ang * D2R;
+    g.save(); g.translate(x, 0); g.rotate(-ang * D2R);
+    g.fillStyle = '#2a2f3a'; rrect(-52, -bw / 2 + 8, 104, bw - 16, 22); g.fill(); // 固定器底座
+    g.fillStyle = o.footCol ? o.footCol[k] || COL.boot : (o.hl && k === 'front' ? COL.green : COL.boot); g.beginPath(); g.ellipse(0, 4, 40, bw / 2 - 18, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#fff'; g.beginPath(); g.ellipse(0, bw / 2 - 40, 16, 12, 0, 0, Math.PI * 2); g.fill(); // 脚尖
+    if (o.letters) label(k === 'front' ? (nose > 0 ? 'L' : 'R') : (nose > 0 ? 'R' : 'L'), 0, -10, 46, '#fff', 900);
+    g.restore();
+    feet.push({ k, x: cx + x, y: cy, ang });
+  });
+  if (o.dir) { const y = bw / 2 + 56; arrow(-nose * L * .22, y, nose * L * .22, y, COL.green, 8, 28); label('滑行方向', 0, y + 44, 30, COL.green, 900); }
+  g.restore();
+  return { feet, bw, L };
+}
+function angleTag(f, cy, bw, a) { // 角度弧 + 数字
+  g.save(); g.globalAlpha = a == null ? 1 : a; g.strokeStyle = COL.amber; g.lineWidth = 5; const r = bw * .75;
+  g.setLineDash([6, 6]); g.beginPath(); g.moveTo(f.x, cy); g.lineTo(f.x, cy + r + 10); g.stroke(); g.setLineDash([]);
+  const s = Math.PI / 2, e = Math.PI / 2 - f.ang * D2R; g.beginPath(); g.arc(f.x, cy, r, Math.min(s, e), Math.max(s, e)); g.stroke();
+  const ang = Math.round(f.ang * (f.nose || 1)); label(`${f.lab}`, f.x, cy + r + 50, 40, COL.amber, 900); g.restore();
+}
+function tagFeet(B, cy, nose, front, back, a) { B.feet.forEach(f => { f.lab = (f.k === 'front' ? (front >= 0 ? '+' : '') + front : (back >= 0 ? '+' : '') + back) + '°'; angleTag(f, cy, B.bw, a); }); }
+function footprint(x, y, ang, lr, col, a) { // 光脚的脚印（俯视）
+  g.save(); g.globalAlpha = a == null ? 1 : a; g.translate(x, y); g.rotate(ang); g.scale(1.5, 1.5); g.fillStyle = col || COL.pants;
+  g.beginPath(); g.ellipse(0, 0, 36, 70, 0, 0, Math.PI * 2); g.fill();
+  for (let i = 0; i < 5; i++) { g.beginPath(); g.arc((i - 2) * 14 * lr * -1 + lr * 4, 82 - Math.abs(i - 1.5) * 4, 9 - i * .8, 0, Math.PI * 2); g.fill(); }
+  label(lr > 0 ? 'R' : 'L', 0, -6, 40, '#fff', 900); g.restore();
+}
+
+/* ───────── 场景 ───────── */
+const S = [];
+// A 钩子：左还是右？
+S.push(lt => {
+  bg(); const nose = Math.floor(lt / 1.3) % 2 ? -1 : 1, fl = Math.abs(Math.cos(lt / 1.3 * Math.PI));
+  g.save(); g.translate(CX, H * .46); g.scale(1, .3 + .7 * fl); bigBoard(0, 0, 820, { nose, letters: true, hl: true, dir: true }); g.restore();
+  label('?', CX, H * .66, 120, COL.amber, 900);
+});
+// B 标题
+S.push(lt => { bg(); pill('滑雪不难 · EP.11 · 单板', CX, H * .19, 40, COL.amber, '#fff', eout(lt / .3)); bigBoard(CX, H * .66, 760, { nose: 1, letters: true }); });
+// C 正脚 / 反脚 / 测试
+S.push(lt => {
+  bg();
+  if (lt < 6) {
+    const B1 = bigBoard(CX, H * .33, 720, { nose: 1, letters: true, hl: true, dir: true }), B2 = bigBoard(CX, H * .56, 720, { nose: -1, letters: true, hl: true, dir: true });
+    pill('正脚 Regular · 左脚在前', CX, H * .33 - 150, 34, COL.green, '#fff'); pill('反脚 Goofy · 右脚在前', CX, H * .56 - 150, 34, COL.amber, '#fff');
+    label('人面朝画面下方 ↓', CX, H * .68, 28, '#9aabbb', 700);
+  } else if (lt < 12) {
+    const l2 = lt - 6, step = sm((l2 - 1.8) / .7);
+    footprint(CX - 110, H * .43, 0, 1, COL.pants); // 右脚（俯视，人面朝画面下方：左脚在画面右边）
+    footprint(CX + 110, H * .43 + step * 220, 0, -1, COL.green); // 左脚先迈
+    // 背后的手
+    const push = sm((l2 - .8) / .5) * (1 - sm((l2 - 1.8) / .5)); g.save(); g.globalAlpha = sm((l2 - .4) / .3); arrow(CX, H * .25 + push * 40, CX, H * .34 + push * 40, COL.amber, 10, 34); label('背后轻推', CX + 150, H * .28, 34, COL.amber, 900); g.restore();
+    if (step > .5) { g.save(); g.globalAlpha = sm((step - .5) / .3); label('左脚先迈 → 左脚在前 → 正脚', CX, H * .66, 38, COL.green, 900); g.restore(); }
+    label('面朝这边 ↓', W * .86, H * .27, 28, '#9aabbb', 700);
+  } else {
+    const l2 = lt - 12, k = sm((l2 - .6) / 1.6);
+    g.save(); g.strokeStyle = '#d6e2ed'; g.lineWidth = 6; g.beginPath(); g.moveTo(80, H * .58); g.lineTo(W - 80, H * .58); g.stroke(); g.restore();
+    label('光滑的地板', W * .8, H * .61, 28, '#9aabbb', 700);
+    const x = lerp(W * .25, W * .62, k);
+    g.save(); g.strokeStyle = '#c8d7e5'; g.lineWidth = 5; for (let i = 0; i < 4; i++) { g.beginPath(); g.moveTo(x - 140 - i * 30, H * .52 + i * 14); g.lineTo(x - 220 - i * 40, H * .52 + i * 14); g.stroke(); } g.restore();
+    // 侧面：两只袜子脚
+    [[x + 70, COL.green, '前'], [x - 70, COL.pants, '后']].forEach(([fx, c, t]) => { g.fillStyle = c; rrect(fx - 60, H * .58 - 34, 120, 34, 16); g.fill(); g.fillRect(fx - 26, H * .58 - 120, 40, 90); label(t, fx, H * .58 - 150, 34, c, 900); });
+  }
+});
+// D 站距 / 居中
+S.push(lt => {
+  bg();
+  if (lt < 8) {
+    const wd = lt < 2 ? 300 : lt < 4.5 ? lerp(300, 520, sm((lt - 2) / 1)) : lerp(520, 400, sm((lt - 4.5) / 1));
+    const B = bigBoard(CX, H * .5, 860, { nose: 1, width: wd });
+    // 肩膀
+    g.save(); g.fillStyle = 'rgba(255,122,61,.85)'; g.beginPath(); g.ellipse(CX, H * .5 - 230, 210, 60, 0, 0, Math.PI * 2); g.fill(); g.fillStyle = '#fff'; g.strokeStyle = COL.pants; g.lineWidth = 6; g.beginPath(); g.arc(CX, H * .5 - 230, 46, 0, Math.PI * 2); g.fill(); g.stroke(); g.restore();
+    g.save(); g.strokeStyle = COL.sub; g.setLineDash([8, 8]); g.lineWidth = 3; [-1, 1].forEach(sd => { g.beginPath(); g.moveTo(CX + sd * 200, H * .5 - 230); g.lineTo(CX + sd * 200, H * .5 + 160); g.stroke(); }); g.restore();
+    label('肩宽', CX, H * .5 - 320, 34, COL.sub, 900);
+    const ok = wd > 360 && wd < 470; g.save(); g.strokeStyle = ok ? COL.green : COL.red; g.lineWidth = 6; const y = H * .5 + 190; g.beginPath(); g.moveTo(CX - wd / 2, y - 20); g.lineTo(CX - wd / 2, y); g.lineTo(CX + wd / 2, y); g.lineTo(CX + wd / 2, y - 20); g.stroke(); g.restore();
+    label(wd < 360 ? '太窄' : wd > 470 ? '太宽' : '刚好', CX, H * .5 + 240, 40, ok ? COL.green : COL.red, 900);
+  } else {
+    const B = bigBoard(CX, H * .48, 860, { nose: 1, width: 400 }), y = H * .48 + 200;
+    g.save(); g.strokeStyle = COL.green; g.lineWidth = 5; [[-430, -200], [200, 430]].forEach(([a, b]) => { g.beginPath(); g.moveTo(CX + a, y); g.lineTo(CX + b, y); g.stroke(); arrow(CX + (a + b) / 2, y, CX + b, y, COL.green, 5, 18); arrow(CX + (a + b) / 2, y, CX + a, y, COL.green, 5, 18); }); g.restore();
+    label('差不多', CX - 315, y + 40, 32, COL.green, 900); label('差不多', CX + 315, y + 40, 32, COL.green, 900);
+  }
+});
+// E 角度
+S.push(lt => {
+  bg();
+  if (lt < 8) {
+    const k = sm((lt - .6) / 1.2), f = Math.round(15 * k), b = Math.round(-9 * k), B = bigBoard(CX, H * .45, 860, { nose: 1, front: f, back: b, letters: true });
+    B.feet.forEach(ft => ft.nose = 1); tagFeet(B, H * .45, 1, f, b, k);
+    label('前脚', B.feet[0].x, H * .45 - 160, 34, COL.ink, 900); label('后脚', B.feet[1].x, H * .45 - 160, 34, COL.ink, 900);
+    if (lt > 3) { const a = sm((lt - 3) / .4); g.save(); g.globalAlpha = a; pill('外八字：正反都好滑', CX, H * .66, 36, COL.green, '#fff'); g.restore(); }
+  } else {
+    const l2 = lt - 8, k = sm((l2 - .4) / 1), f = Math.round(lerp(15, 36, k)), b = Math.round(lerp(-9, 24, k)), B = bigBoard(CX, H * .45, 860, { nose: 1, front: f, back: b, letters: true });
+    tagFeet(B, H * .45, 1, f, b, 1);
+    if (k > .6) { markX(W * .14, H * .3, 40, sm((k - .6) / .3)); label('太朝前', CX, H * .66, 40, COL.red, 900); }
+  }
+});
+// F 鞋跟顶到底 / 绑带
+function bindingSide(cx, by, gap, strapA, strapTight) {
+  g.save(); g.lineCap = 'round';
+  g.fillStyle = COL.board; rrect(cx - 360, by, 720, 34, 17); g.fill(); // 板
+  g.fillStyle = '#2a2f3a'; rrect(cx - 170, by - 22, 330, 24, 8); g.fill(); // 底座
+  g.save(); g.translate(cx - 175, by - 20); g.rotate(-.18); g.fillStyle = '#2a2f3a'; rrect(-20, -250, 40, 260, 14); g.fill(); g.restore(); // 后背 highback
+  // 鞋
+  const hx = cx - 140 + gap; g.fillStyle = COL.boot; g.beginPath(); g.moveTo(hx, by - 24); g.lineTo(hx + 290, by - 24); g.quadraticCurveTo(hx + 310, by - 70, hx + 220, by - 100); g.lineTo(hx + 90, by - 120); g.lineTo(hx + 80, by - 280); g.lineTo(hx - 10, by - 280); g.closePath(); g.fill();
+  if (strapA > 0) { g.globalAlpha = strapA; g.strokeStyle = strapTight > 1.2 ? COL.red : '#555f6e'; g.lineWidth = 26 * strapTight; g.beginPath(); g.moveTo(hx - 20, by - 150); g.quadraticCurveTo(hx + 60, by - 220, hx + 140, by - 110); g.stroke(); g.beginPath(); g.moveTo(hx + 190, by - 30); g.quadraticCurveTo(hx + 240, by - 110, hx + 300, by - 40); g.stroke(); g.globalAlpha = 1; }
+  g.restore();
+  return hx;
+}
+S.push(lt => {
+  bg();
+  if (lt < 7) {
+    const gap = lerp(60, 0, sm((lt - 1.4) / 1)), hx = bindingSide(CX, H * .56, gap, 0, 1);
+    if (gap > 5) { g.save(); g.strokeStyle = COL.red; g.lineWidth = 4; g.setLineDash([6, 6]); g.beginPath(); g.moveTo(CX - 150, H * .56 - 140); g.lineTo(hx, H * .56 - 140); g.stroke(); g.restore(); label('有空隙', CX - 120, H * .56 - 180, 34, COL.red, 900); }
+    else { ring(hx, H * .56 - 160, 60, COL.green, 1); label('顶到底', hx - 160, H * .56 - 240, 38, COL.green, 900); }
+    label('鞋跟', hx + 20, H * .56 + 90, 32, COL.sub, 700); label('固定器后背', CX - 280, H * .56 - 300, 30, COL.sub, 700);
+  } else {
+    const l2 = lt - 7, tight = l2 < 3.4 ? lerp(1, 1.5, sm((l2 - .8) / .6)) : lerp(1.5, 1, sm((l2 - 3.4) / .6));
+    bindingSide(CX, H * .56, 0, 1, tight);
+    label(tight > 1.2 ? '太紧：脚会麻' : '贴住、不晃', CX + 120, H * .56 - 330, 40, tight > 1.2 ? COL.red : COL.green, 900);
+  }
+});
+// G 先试一试
+S.push(lt => {
+  const cur = lt < 2.8 ? -1 : lt < 8.6 ? 0 : lt < 13.2 ? 1 : lt < 17.8 ? 2 : 3;
+  if (cur <= 0) {
+    drawSky(0); const F = [CX, H * .6]; drawSlope(F, 0, 0, { noProps: true });
+    const v = .5 + .5 * Math.cos(Math.max(0, lt - 2.8) * 2.2), J = sbRider(F, 0, lerpPose(SP.deep, SP.stand, v), 165);
+    if (cur === 0) ring(J.Kf[0], J.Kf[1], 44, COL.green, 1);
+  } else if (cur === 1) {
+    bg(); const l2 = lt - 8.6, x = lerp(W * .2, W * .65, sm(l2 / 4)); bigBoard(x, H * .48, 640, { nose: 1, footCol: { back: 'rgba(51,71,94,.35)' } });
+    label('只绑前脚', x + 140, H * .48 - 140, 34, COL.green, 900); label('后脚踩在板上', x - 140, H * .48 + 150, 30, COL.sub, 700);
+  } else {
+    bg(); const l2 = lt - 13.2, f = Math.round(lerp(12, 15, sm((l2 - 1) / .6))), B = bigBoard(CX, H * .47, 820, { nose: 1, front: f, back: -9, letters: true }); B.feet.forEach(ft => ft.nose = 1); tagFeet(B, H * .47, 1, f, -9, 1);
+    if (l2 > 1.6) pill('+3°', B.feet[0].x + 140, H * .47 - 150, 40, COL.green, '#fff');
+  }
+  stepChips(STEPS, H * .235, cur, eout((lt - 2.6) / .4), 34);
+});
+// H 三个错误
+S.push(lt => {
+  const seg = lt < 6 ? 0 : lt < 12 ? 1 : 2, l2 = lt - seg * 6;
+  bg();
+  if (seg === 0) { g.save(); g.translate(CX, H * .48); g.rotate(Math.sin(lt * 4) * .06 * sm((l2 - 1) / .5)); bigBoard(0, 0, 860, { nose: 1, width: 230 }); g.restore(); label('两只脚挤在一起', CX, H * .62, 38, COL.red, 900); }
+  else if (seg === 1) { const B = bigBoard(CX, H * .47, 860, { nose: 1, front: 36, back: 27, letters: true }); B.feet.forEach(ft => ft.nose = 1); tagFeet(B, H * .47, 1, 36, 27, 1); label('膝盖和脚尖不朝一个方向', CX, H * .66, 36, COL.red, 900); }
+  else { const gap = 50 + Math.sin(l2 * 5) * 16, hx = bindingSide(CX, H * .56, gap, 1, 1); label('脚在鞋里先滑', CX + 120, H * .56 - 330, 38, COL.red, 900); }
+  markX(W * .14, H * .3, 40, win(l2, .3, 6, .2, .3));
+});
+// I 口诀卡
+S.push(lt => {
+  drawSky(0); drawSnowfall(lt + 112, .5);
+  const a = eout(lt / .4), x = W * .08, y = H * .24, w = W * .84, h = H * .42;
+  g.save(); g.globalAlpha = a; g.translate(0, (1 - a) * 50);
+  g.fillStyle = '#fff'; g.shadowColor = 'rgba(27,40,56,.14)'; g.shadowBlur = 50; rrect(x, y, w, h, 44); g.fill(); g.shadowBlur = 0;
+  label('记住这几句', CX, y + 100, 50, COL.amber, 900);
+  [['前脚', '被推时先迈出的那只', COL.green], ['站距', '大约和肩同宽', COL.green], ['角度', '外八：+15° / -6°~-15°', COL.amber]].forEach(([t1, t2, c], i) => {
+    const ra = eout((lt - .8 - i * 1.2) / .35); if (ra <= 0) return; const ry = y + 250 + i * 225;
+    g.save(); g.globalAlpha = a * ra; g.translate((1 - ra) * 40, 0); pill(t1, x + 70 + (t1.length * 38 + 52) / 2, ry - 44, 38, c, '#fff'); label(t2, x + 70, ry + 42, 48, COL.ink, 900, 'left'); g.restore();
+  });
+  g.restore();
+  label('舒服、顺脚，就是对的站姿。', CX, H * .75, 46, COL.sub, 700);
+});
+// J 结尾
+S.push(lt => {
+  bg(); bigBoard(CX, H * .74, 640, { nose: Math.floor(lt / 1.6) % 2 ? -1 : 1, letters: true, hl: true, dir: true });
+  pill('下集 · 魔毯、拖牵、缆车：单板怎么上下', CX, H * .55, 36, COL.amber, '#fff', eout((lt - 1.8) / .4));
+});
+
+/* ───────── 封面 ───────── */
+function coverArt(key, w, h) {
+  g.fillStyle = '#f4f8fb'; g.fillRect(0, 0, w, h);
+  const art = (cx, cy, L) => { const B = bigBoard(cx, cy, L, { nose: 1, front: 15, back: -9, letters: true, hl: true }); B.feet.forEach(ft => ft.nose = 1); tagFeet(B, cy, 1, 15, -9, 1); };
+  const title = (cx, y1, y2, size, subY, subSize, pillY, pillSize) => {
+    pill('滑雪不难 · EP.11 · 单板', cx, pillY, pillSize, COL.amber, '#fff');
+    label('站姿怎么定', cx, y1, size, COL.ink, 900);
+    g.font = `900 ${size * .5}px ${SANS}`; const parts = [['正脚', COL.green], ['还是', COL.ink], ['反脚', COL.amber], ['？', COL.ink]], ws = parts.map(q => g.measureText(q[0]).width);
+    let x = cx - ws.reduce((s, v) => s + v, 0) / 2; parts.forEach((q, i) => { label(q[0], x + ws[i] / 2, y2, size * .5, q[1], 900); x += ws[i]; });
+    label('前脚 · 站距 · 角度 · 鞋跟', cx, subY, subSize, COL.sub, 700);
+  };
+  if (key === '9x16') { title(CX, h * .26, h * .335, 150, h * .39, 40, h * .17, 42); art(CX, h * .62, 900); }
+  else if (key === '3x4') { title(CX, h * .19, h * .29, 140, h * .355, 38, h * .08, 40); art(CX, h * .66, 860); }
+  else {
+    art(w * .72, h * .45, key === '16x9' ? 900 : 700);
+    const size = key === '16x9' ? 130 : 104;
+    title(w * .27, h * .43, h * .58, size, h * .7, key === '16x9' ? 34 : 28, h * .26, key === '16x9' ? 38 : 34);
+  }
+}
+
+/* ───────── 声音 ───────── */
+function sound(K, c, DUR) {
+  K.bed(8.0, DUR, t => t < 29.6 ? 'verse' : t < 45.6 ? 'chorus' : t < 61.6 ? 'verse' : t < 93.6 ? 'chorus' : t < 111.6 ? 'tense' : 'outro');
+  for (let i = 0; i < 6; i++) K.whoosh(i * 1.3 + .3);
+  K.ding(11.6 + 1); K.tick(17.6 + .8 + .3); K.ding(17.6 + 6 + 2.1); K.whoosh(29.6 - 6 + 12 + .6 - 12);
+  K.ding(29.6 + 5); K.ding(45.6 + 3); K.wrong(45.6 + 8 + 1.2); K.ding(61.6 + 2.4); K.wrong(61.6 + 7 + 1.2); K.ding(61.6 + 7 + 3.8);
+  K.ding(75.6 + 13.2 + 1.6);
+  [93.6 + .3, 99.6 + .3, 105.6 + .3].forEach(K.wrong);
+  for (let i = 0; i < 3; i++) K.tone(880 + i * 110, 111.6 + .8 + i * 1.2, .25, .07, 'triangle');
+  K.riser(92.2, 93.6, .12);
+}
+
+kitRun({
+  T, S, TX, seed: 191,
+  allText: STEPS.join('') + '板头→←LR?正脚Regular·左在前反Goofy右面朝这边↓背后轻推先迈出去的放光滑地板后肩宽太窄刚好差不多外八字：都好滑+-°15936太有空隙顶到底鞋跟固定器紧会麻贴住、晃只绑踩上两只挤一起膝盖和尖个方向里记句被时那大约同角度舒服顺就是对姿集魔毯拖牵缆车怎么下你还？站定三误',
+  audio: sound, cover: coverArt
+});
+})();
+</script>
+</body>
+</html>
