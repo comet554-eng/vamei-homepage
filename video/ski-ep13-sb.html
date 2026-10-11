@@ -269,7 +269,7 @@ S.push(lt => {
     const a = sm((lt - 1.4) / .4), n = J.Q(1.45, .25), nl = J.Q(1.5, -1.0);
     ring(n[0], n[1], 70, COL.red, a, true); g.save(); g.globalAlpha = a; lab('板头不听话', nl[0], nl[1], 36, COL.red); g.restore();
   } else {
-    bg(); const l2 = lt - 8, y1 = H * .3, y2 = H * .52;
+    bg(); const l2 = lt - 8, y1 = H * .31, y2 = H * .53;
     const B1 = topBoard(CX, y1, 600, { aL: 15, aR: -9, dir: -1, dirAbove: true, dirCol: COL.amber, angles: { L: COL.blue, R: COL.amber } });
     angTag(B1, 'L', y1, '+15°', COL.blue); angTag(B1, 'R', y1, '-9°', COL.amber);
     const a2 = sm((l2 - 2.4) / .4);
@@ -415,7 +415,7 @@ function sound(K, c, DUR) {
 
 kitRun({
   T, S, TX, seed: 221,
-  allText: STEPS.join('') + 'LR?←→↓：（）·°+-0123456789平时在前反着滑以正脚为例左往这边飘落叶俯视重心跟过来了还上看新的方前扭朝原向对准肩膀髋现后板头不听话外八倾尖拧绑好雪蹬刃慢早换弯画大一屁股坐下要去是太陡快记住几句成到两个都会才算真小跳第ollie只也滑雪不难单',
+  allText: STEPS.join('') + '行LR?←→↓：（）·°+-0123456789平时在前反着滑以正脚为例左往这边飘落叶俯视重心跟过来了还上看新的方前扭朝原向对准肩膀髋现后板头不听话外八倾尖拧绑好雪蹬刃慢早换弯画大一屁股坐下要去是太陡快记住几句成到两个都会才算真小跳第ollie只也滑雪不难单',
   audio: sound, cover: coverArt
 });
 })();
