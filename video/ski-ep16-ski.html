@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>滑雪不难 EP.16 双板</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#000;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;aspect-ratio:9/16;max-width:100vw;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;aspect-ratio:auto;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="skirig.js"></script>
+<script src="skiwedge.js"></script>
+<script>
+/*
+ * 滑雪不难 EP.16 双板《双板最常伤哪里：膝盖》（约 2 分 05 秒）
+ * 侧面小人（skirig.js）讲往后坐着摔；"杠杆"用一张特写卡（地面上的长板 + 小腿）；正面小人讲八字时一只板被卡住；
+ * 固定器特写讲脱离值。受伤机制都是通俗说法，画面为示意。
+ */
+(() => {
+'use strict';
+const T = [0, 8.0, 11.6, 25.6, 39.6, 53.6, 67.6, 75.6, 93.6, 111.6, 118.6, 125.6];
+const YH = .135, YB = .745;
+
+const TX = [
+  { in: .15, out: 3.8, text: '双板摔一跤，\n膝盖{r}“咔”{/}一下？', y: YH, size: 84, w: 900, st: .06 },
+  { in: 4.0, out: 7.8, text: '双板最常伤的，\n就是{r}膝盖{/}。', y: YH, size: 88, w: 900 },
+  { in: 8.25, out: 11.35, text: '双板最常伤哪里：\n膝盖', y: .3, size: 96, w: 900, st: .05 },
+  { in: 9.0, out: 11.35, text: '为什么容易伤 · 怎么防', y: .415, size: 42, w: 600, sub: 1 },
+  { in: 11.8, out: 18.4, text: '雪板很长，\n像一根{a}长杠杆{/}。', y: YH, size: 84, w: 900 },
+  { in: 12.6, out: 18.4, text: '板头、板尾离脚都很远，\n板被雪一别，扭劲就被放大了。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 18.8, out: 25.4, text: '板{r}没脱开{/}，\n扭劲就传到膝盖上。', y: YH, size: 84, w: 900 },
+  { in: 19.6, out: 25.4, text: '雪鞋把脚踝包得很牢，\n扭劲顺着小腿往上，落在膝盖上。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 25.8, out: 32.4, text: '情况一：\n{r}往后坐着摔{/}', y: YH, size: 84, w: 900 },
+  { in: 26.6, out: 32.4, text: '身体往后倒，屁股低过膝盖，\n板尾卡住雪，腿被板扭住。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 32.8, out: 39.4, text: '情况二：\n一只板{r}被卡住{/}', y: YH, size: 84, w: 900 },
+  { in: 33.6, out: 39.4, text: '八字或转弯时，一只板被雪卡住往外跑，\n腿跟着被往外拧开。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 39.8, out: 46.4, text: '重心在{g}脚掌中间{/}，\n别往后坐。', y: YH, size: 84, w: 900 },
+  { in: 40.6, out: 46.4, text: '第 1 集讲过：一害怕就往后坐，\n板更不听话，摔起来也更容易伤膝盖。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 46.8, out: 53.4, text: '要倒就倒，\n{r}别一条腿硬撑{/}。', y: YH, size: 84, w: 900 },
+  { in: 47.6, out: 53.4, text: '越撑腿越扭。往后倒时手往前伸，\n两脚并拢，别坐在板尾上硬撑。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 53.8, out: 60.4, text: '固定器{a}脱离值{/}，\n交给雪具店调。', y: YH, size: 84, w: 900 },
+  { in: 54.6, out: 60.4, text: '按体重、身高、年龄和水平来定，\n别自己乱调；租的板也可以请店员检查。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 60.8, out: 67.4, text: '累了就{g}歇{/}，\n滑前先{g}热身{/}。', y: YH, size: 84, w: 900 },
+  { in: 61.6, out: 67.4, text: '在自己水平的雪道上滑，\n头盔照样要戴。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 67.8, out: 75.4, text: '摔完膝盖很疼、明显肿，\n走路{r}打软腿{/}？', y: YH, size: 80, w: 900 },
+  { in: 68.6, out: 75.4, text: '那就停下来，别再接着滑；\n可以找雪场救护，需要时去医院检查。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 75.8, out: 77.8, text: '怎么防？\n准备三步。', y: YH, size: 80, w: 900 },
+  { in: 78.1, out: 83.4, text: '① 让雪具店调好脱离值', y: YH, size: 76, w: 900 },
+  { in: 78.8, out: 83.4, text: '告诉店员你的体重、身高、年龄和水平，\n租的板也可以请他们看一眼。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 83.8, out: 88.6, text: '② 滑前热身几分钟', y: YH, size: 80, w: 900 },
+  { in: 84.5, out: 88.6, text: '活动活动脚踝、膝盖、髋，\n腿热起来再上雪道。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 89.0, out: 93.4, text: '③ 练重心，练摔倒', y: YH, size: 80, w: 900 },
+  { in: 89.7, out: 93.4, text: '缓坡上练重心在脚掌中间；\n摔的时候手往前、腿并拢，别硬撑。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 93.8, out: 99.4, text: '错误一：\n{r}往后坐着硬撑{/}', y: YH, size: 80, w: 900 },
+  { in: 94.6, out: 99.4, text: '屁股坐到板尾上还不肯倒，\n腿被板别着扭，膝盖最吃亏。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 99.8, out: 105.4, text: '错误二：\n{r}一条腿硬撑着不倒{/}', y: YH, size: 80, w: 900 },
+  { in: 100.6, out: 105.4, text: '另一只板已经被雪带走了，\n越撑，腿被拧得越厉害。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 105.8, out: 111.4, text: '错误三：“怕掉板”，\n{r}自己把脱离值调很高{/}', y: YH, size: 76, w: 900 },
+  { in: 106.6, out: 111.4, text: '调太高，该脱开的时候脱不开；\n调太低，又容易莫名掉板。交给店里调。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 118.8, out: 999, text: '你滑雪的时候，\n膝盖受过伤吗？', y: .37, size: 88, w: 900, st: .06 },
+  { in: 119.8, out: 999, text: '评论区说说', y: .465, size: 42, w: 500, sub: 1 }
+];
+const STEPS = ['① 调脱离值', '② 热身', '③ 练重心'];
+
+/* ───────── 姿势 ───────── */
+const PH = { // 屁股低过膝盖、坐在板尾上（同 EP.02）
+  phantom: { shin: 10, thigh: -122, torso: 0, head: 10, uarm: 205, farm: 192, pole: 230 },
+  reachBack: { shin: -10, thigh: -125, torso: -40, head: -25, uarm: 222, farm: 214, pole: 250 }
+};
+const GO = { shin: 22, thigh: -64, torso: 42, head: 18, uarm: 96, farm: 78, pole: 150 };      // 手往前、身体团起来
+const SIT = { shin: -30, thigh: -150, torso: -20, head: -10, uarm: 168, farm: 118, pole: 190 }; // 坐在雪上
+const SQ = { shin: 32, thigh: -66, torso: 40, head: 18, uarm: 120, farm: 90, pole: 205 };      // 热身下蹲
+
+function spark(q, lt, col) { const a = Math.max(0, 1 - lt / .5); if (a <= 0 || lt < 0) return; g.save(); g.globalAlpha = a; g.strokeStyle = col || COL.red; g.lineWidth = 6; g.lineCap = 'round'; for (let i = 0; i < 8; i++) { const an = i / 8 * Math.PI * 2, r1 = 18 + lt * 60, r2 = 50 + lt * 120; g.beginPath(); g.moveTo(q[0] + Math.cos(an) * r1, q[1] + Math.sin(an) * r1); g.lineTo(q[0] + Math.cos(an) * r2, q[1] + Math.sin(an) * r2); g.stroke(); } g.restore(); }
+function kneeHurt(J, a, t) { const pul = .55 + .45 * Math.sin(t * 8); glow(J.K[0], J.K[1], 110, '240,71,60', a * pul); ring(J.K[0], J.K[1], 56, COL.red, a, true); }
+// 椭圆箭头（表示"拧"）
+function ellArrow(cx, cy, rx, ry, a0, a1, col, w, a) {
+  if (a <= 0) return; g.save(); g.globalAlpha = a; g.strokeStyle = col; g.lineWidth = w; g.lineCap = 'round';
+  const n = 32, pts = []; for (let i = 0; i <= n; i++) { const an = lerp(a0, a1, i / n); pts.push([cx + Math.cos(an) * rx, cy + Math.sin(an) * ry]); }
+  g.beginPath(); for (let i = 0; i <= n - 3; i++) i ? g.lineTo(pts[i][0], pts[i][1]) : g.moveTo(pts[i][0], pts[i][1]); g.stroke();
+  arrow(pts[n - 4][0], pts[n - 4][1], pts[n][0], pts[n][1], col, w, w * 3.6);
+  g.restore();
+}
+function chipRow(items, y, a, colr, size) {
+  size = size || 34; g.save(); g.font = '700 ' + size + 'px ' + SANS;
+  const gap = 18, ws = items.map(t => g.measureText(t).width + size * 1.4), total = ws.reduce((s, v) => s + v, 0) + gap * (items.length - 1);
+  let x = W / 2 - total / 2;
+  items.forEach((t, i) => { const k = a(i); if (k > 0) pill(t, x + ws[i] / 2, y, size, colr, '#fff', k); x += ws[i] + gap; });
+  g.restore();
+}
+
+/* ───────── 特写卡：地面上的长板 + 小腿（"杠杆"） ─────────
+ * tw：板在雪面上被别着转的角度（弧度，示意）。小腿跟着板转，大腿基本不动 → 拧在膝盖。 */
+function leverCard(tw, o) {
+  const x0 = W * .07, y0 = H * .215, cw = W * .86, ch = H * .47, gy = H * .55;
+  g.save(); g.fillStyle = '#fff'; g.shadowColor = 'rgba(27,40,56,.13)'; g.shadowBlur = 44; rrect(x0, y0, cw, ch, 40); g.fill(); g.restore();
+  g.save(); rrect(x0, y0, cw, ch, 40); g.clip();
+  const gr = g.createLinearGradient(0, gy - 170, 0, y0 + ch); gr.addColorStop(0, '#e9f1f8'); gr.addColorStop(1, '#ffffff'); g.fillStyle = gr; g.fillRect(x0, gy - 170, cw, y0 + ch - gy + 170);
+  g.strokeStyle = '#d6e2ed'; g.lineWidth = 3; g.beginPath(); g.moveTo(x0, gy - 170); g.lineTo(x0 + cw, gy - 170); g.stroke();
+  const a = .2 + tw, L = 390, B = [CX, gy];
+  const P = s => [B[0] + s * L * Math.cos(a), B[1] + s * L * Math.sin(a) * .34];
+  // 板的影子与板
+  g.save(); g.globalAlpha = .12; g.strokeStyle = '#1b2838'; g.lineWidth = 34; g.lineCap = 'round'; const s1 = P(-1), s2 = P(1); g.beginPath(); g.moveTo(s1[0], s1[1] + 16); g.lineTo(s2[0], s2[1] + 16); g.stroke(); g.restore();
+  g.lineCap = 'round'; g.strokeStyle = COL.ski; g.lineWidth = 30; const t1 = P(1), t2 = P(1.08);
+  g.beginPath(); g.moveTo(...P(-1)); g.lineTo(...t1); g.quadraticCurveTo(t2[0], t2[1], t2[0] + 4, t2[1] - 26); g.stroke();
+  g.strokeStyle = '#1d5fbf'; g.lineWidth = 10; g.beginPath(); g.moveTo(...P(-.26)); g.lineTo(...P(.3)); g.stroke();
+  // 固定器
+  [-.24, .27].forEach(s => { const q = P(s); g.fillStyle = '#4a5566'; rrect(q[0] - 26, q[1] - 26, 52, 32, 8); g.fill(); });
+  // 雪鞋
+  const sa = P(-.2), sb = P(.24);
+  g.strokeStyle = COL.boot; g.lineWidth = 40; g.beginPath(); g.moveTo(sa[0], sa[1] - 26); g.lineTo(sb[0], sb[1] - 26); g.stroke();
+  g.fillStyle = COL.boot; rrect(CX - 52, gy - 170, 104, 150, 22); g.fill();
+  g.strokeStyle = '#8fa3b8'; g.lineWidth = 5; [gy - 130, gy - 90].forEach(y => { g.beginPath(); g.moveTo(CX - 40, y); g.lineTo(CX + 40, y); g.stroke(); });
+  // 小腿、膝盖、大腿
+  const K = [CX, gy - 400], top = [CX - 8, y0 - 80];
+  g.strokeStyle = COL.pants; g.lineWidth = 74; g.beginPath(); g.moveTo(CX, gy - 160); g.lineTo(K[0], K[1]); g.stroke();
+  g.lineWidth = 88; g.beginPath(); g.moveTo(K[0], K[1]); g.lineTo(top[0], top[1]); g.stroke();
+  const so = 24 * Math.sin(clamp(tw * 2.4, -1.3, 1.3)), to = 24 * Math.sin(tw * .35);
+  g.strokeStyle = '#4b6c93'; g.lineWidth = 8; g.beginPath(); g.moveTo(CX + so, gy - 175); g.lineTo(K[0] + so, K[1] + 40); g.stroke();
+  g.beginPath(); g.moveTo(K[0] + to, K[1] - 40); g.lineTo(top[0] + to, top[1]); g.stroke();
+  g.fillStyle = '#2f4b6b'; g.beginPath(); g.arc(K[0], K[1], 48, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#3d5d82'; g.beginPath(); g.ellipse(K[0] + so * .4, K[1], 26, 30, 0, 0, Math.PI * 2); g.fill();
+  g.restore();
+  return { P, K, B, gy, tip: P(1), tail: P(-1), a };
+}
+
+/* ───────── 正面小人：右边那只板可以被"卡住"往外跑（catchR 0~1） ───────── */
+function frontV2(F, p, u, o = {}) {
+  const col = c => o.mono || c, J = { u };
+  g.save(); g.lineCap = 'round'; g.lineJoin = 'round'; g.globalAlpha = o.alpha == null ? 1 : o.alpha;
+  const seg = (a, b, w, c) => { g.strokeStyle = col(c); g.lineWidth = w * u; g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke(); };
+  const poly = (pts, c) => { g.beginPath(); pts.forEach((q, i) => i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); g.closePath(); g.fillStyle = col(c); g.fill(); };
+  const cr = p.catchR || 0;
+  const boots = [-1, 1].map(sd => [F[0] + sd * p.stance * u + p.sway * u * .3 + (sd > 0 ? cr * .2 * u : 0), F[1]]);
+  boots.forEach((b, i) => {
+    const sd = i ? 1 : -1, tipX = lerp(b[0], F[0] + sd * .12 * u, p.wedge);
+    let tip = [tipX, F[1] + 1.05 * u], tail = [b[0] + (b[0] - tipX) * .85, F[1] - .9 * u];
+    if (i === 1) { tip = [tip[0] + cr * .8 * u, tip[1] - cr * .08 * u]; tail = [tail[0] - cr * .62 * u, tail[1]]; }
+    const wn = .2 * u, wf = .12 * u, eg = p.edge * .07 * u * sd;
+    poly([[tail[0] - wf / 2 - eg, tail[1]], [tail[0] + wf / 2 - eg, tail[1]], [tip[0] + wn / 2 - eg, tip[1]], [tip[0] - wn / 2 - eg, tip[1]]], COL.ski);
+    if (p.edge > .05) poly([[tail[0] - sd * wf / 2 - eg, tail[1]], [tail[0] - sd * wf / 2, tail[1] + .03 * u], [tip[0] - sd * wn / 2, tip[1] + .05 * u], [tip[0] - sd * wn / 2 - eg, tip[1]]], '#1d5fbf');
+    J['tip' + i] = tip; J['tail' + i] = tail;
+  });
+  J.boots = boots;
+  const hipC = [F[0] + p.sway * u, F[1] - p.hipH * u], hips = [[hipC[0] - .18 * u, hipC[1]], [hipC[0] + .18 * u, hipC[1]]];
+  const knees = boots.map((b, i) => { const a = [b[0], b[1] - .4 * u], m = mid(a, hips[i]); const kin = p.kneeIn + (i ? cr * .3 : 0) - (i ? 0 : (p.stiffL || 0) * p.kneeIn); return [m[0] - (i ? 1 : -1) * kin * u, m[1]]; });
+  J.knees = knees;
+  const S = [hipC[0] + (p.lean || 0) * u, hipC[1] - 1.1 * u], sh = [[S[0] - .28 * u, S[1]], [S[0] + .28 * u, S[1]]];
+  const hands = sh.map((q, i) => [q[0] + (i ? 1 : -1) * .42 * u, q[1] + .8 * u]);
+  hands.forEach((h, i) => seg(h, [h[0] + (i ? 1 : -1) * .35 * u, F[1] + .25 * u], .04, '#8a9bb0'));
+  boots.forEach((b, i) => {
+    const a = [b[0], b[1] - .4 * u];
+    seg(a, knees[i], .26, COL.pants); seg(knees[i], hips[i], .3, COL.pants);
+    poly([[b[0] - .15 * u, b[1] + .02 * u], [b[0] + .15 * u, b[1] + .02 * u], [b[0] + .13 * u, b[1] - .45 * u], [b[0] - .13 * u, b[1] - .45 * u]], COL.boot);
+  });
+  seg(hips[0], hips[1], .34, COL.pants);
+  seg(hipC, S, .6, COL.jacket); seg(sh[0], sh[1], .32, COL.jacket);
+  sh.forEach((q, i) => { const e = [q[0] + (i ? 1 : -1) * .3 * u, q[1] + .45 * u]; seg(q, e, .17, i ? '#ff8a4f' : COL.jacket2); seg(e, hands[i], .15, i ? '#ff8a4f' : COL.jacket2); g.fillStyle = col(COL.pants); g.beginPath(); g.arc(hands[i][0], hands[i][1], .1 * u, 0, Math.PI * 2); g.fill(); });
+  const Hd = [S[0], S[1] - .4 * u]; J.Hd = Hd; J.hipC = hipC; J.S = S;
+  g.fillStyle = col('#fff'); g.strokeStyle = col(COL.pants); g.lineWidth = .05 * u; g.beginPath(); g.arc(Hd[0], Hd[1], .22 * u, 0, Math.PI * 2); g.fill(); g.stroke();
+  g.fillStyle = col(COL.amber); rrect(Hd[0] - .17 * u, Hd[1] - .06 * u, .34 * u, .13 * u, .06 * u); g.fill();
+  g.restore();
+  return J;
+}
+function snowPuff(q, lt, amt) {
+  if (amt < .02) return; g.save(); g.fillStyle = '#fff'; g.strokeStyle = '#c8d7e5'; g.lineWidth = 2;
+  for (let i = 0; i < 12; i++) { const ph = (lt * 1.3 + hash(i + 40)) % 1, an = -Math.PI * (.05 + hash(i + 2) * .5); const x = q[0] + Math.cos(an) * ph * 140, y = q[1] + Math.sin(an) * ph * 90 + ph * ph * 60; g.globalAlpha = amt * (1 - ph); g.beginPath(); g.arc(x, y, 6 + hash(i) * 9, 0, Math.PI * 2); g.fill(); g.stroke(); }
+  g.restore();
+}
+
+/* ───────── 固定器特写（侧面）：rel 0~1 鞋从板上脱开；din 0~1 脱离值指针（示意） ───────── */
+function bindingView(cx, gy, rel, din, o = {}) {
+  g.save();
+  g.fillStyle = 'rgba(27,40,56,.08)'; g.beginPath(); g.ellipse(cx, gy + 4, 470, 16, 0, 0, Math.PI * 2); g.fill();
+  g.fillStyle = COL.ski; rrect(cx - 440, gy - 34, 880, 30, 12); g.fill();
+  g.strokeStyle = COL.ski; g.lineWidth = 30; g.lineCap = 'round'; g.beginPath(); g.moveTo(cx + 425, gy - 19); g.quadraticCurveTo(cx + 490, gy - 19, cx + 505, gy - 70); g.stroke();
+  g.fillStyle = '#1d5fbf'; rrect(cx - 300, gy - 44, 600, 12, 6); g.fill();
+  // 雪鞋
+  const bx = cx - 20 - rel * 50 + (o.shake || 0), by = gy - 104 - rel * 150, ang = -rel * .32;
+  g.save(); g.translate(bx, by); g.rotate(ang);
+  g.fillStyle = COL.boot; rrect(-160, -190, 230, 190, 30); g.fill(); rrect(-200, -10, 400, 64, 16); g.fill();
+  g.strokeStyle = '#8fa3b8'; g.lineWidth = 7; g.lineCap = 'round'; [-140, -85].forEach(y => { g.beginPath(); g.moveTo(-145, y); g.lineTo(55, y); g.stroke(); });
+  g.fillStyle = COL.pants; rrect(-140, -330, 190, 150, 20); g.fill();
+  g.restore();
+  // 后跟座、前头座 + 脱离值窗口
+  g.fillStyle = '#4a5566'; rrect(cx - 285, gy - 104, 100, 72, 14); g.fill(); rrect(cx + 165, gy - 100, 125, 68, 14); g.fill();
+  const wx = cx + 178, wy = gy - 88, ww = 99, wh = 40;
+  g.fillStyle = '#fff'; rrect(wx, wy, ww, wh, 6); g.fill();
+  g.strokeStyle = '#9aabbb'; g.lineWidth = 2; for (let i = 0; i <= 8; i++) { const x = wx + 8 + i * (ww - 16) / 8; g.beginPath(); g.moveTo(x, wy + 6); g.lineTo(x, wy + (i % 2 ? 14 : 20)); g.stroke(); }
+  const nx = wx + 8 + clamp(din, 0, 1) * (ww - 16); g.fillStyle = din > .8 ? COL.red : COL.amber; rrect(nx - 4, wy + 4, 8, wh - 8, 3); g.fill();
+  label('DIN', wx + ww / 2, gy - 132, 28, COL.sub, 900);
+  g.restore();
+  return { bx, by, toe: [cx + 228, gy - 66], tip: [cx + 470, gy - 40], win: [wx + ww / 2, wy + wh / 2] };
+}
+function screwdriver(x, y, ang) {
+  g.save(); g.translate(x, y); g.rotate(ang);
+  g.fillStyle = '#9aabbb'; rrect(-5, -150, 10, 150, 4); g.fill();
+  g.fillStyle = COL.amber; rrect(-20, -270, 40, 130, 18); g.fill();
+  g.strokeStyle = 'rgba(255,255,255,.6)'; g.lineWidth = 4; [-8, 0, 8].forEach(d => { g.beginPath(); g.moveTo(d, -255); g.lineTo(d, -155); g.stroke(); });
+  g.restore();
+}
+
+/* ───────── 小图标 ───────── */
+function icon(kind, x, y, t) {
+  g.save(); g.translate(x, y); g.lineCap = 'round'; g.lineJoin = 'round';
+  if (kind === 0) { // 歇
+    const pr = clamp(t / 3, 0, 1); g.strokeStyle = '#e6edf3'; g.lineWidth = 14; g.beginPath(); g.arc(0, 0, 62, 0, Math.PI * 2); g.stroke();
+    g.strokeStyle = COL.green; g.beginPath(); g.arc(0, 0, 62, -Math.PI / 2, -Math.PI / 2 + pr * Math.PI * 2); g.stroke(); label('歇', 0, 2, 50, COL.green, 900);
+  } else if (kind === 1) { // 热身：温度计
+    const lv = .3 + .6 * clamp(t / 2.5, 0, 1); g.fillStyle = '#e6edf3'; rrect(-18, -80, 36, 120, 18); g.fill(); g.beginPath(); g.arc(0, 50, 34, 0, Math.PI * 2); g.fill();
+    g.fillStyle = COL.red; rrect(-9, 40 - 110 * lv, 18, 110 * lv + 10, 9); g.fill(); g.beginPath(); g.arc(0, 50, 24, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = '#c3d0dc'; g.lineWidth = 4; [-50, -25, 0].forEach(yy => { g.beginPath(); g.moveTo(26, yy); g.lineTo(44, yy); g.stroke(); });
+  } else if (kind === 2) { // 雪道标识
+    g.fillStyle = COL.green; g.beginPath(); g.arc(-52, 0, 40, 0, Math.PI * 2); g.fill();
+    g.fillStyle = COL.blue; rrect(10, -38, 76, 76, 8); g.fill();
+    markV(-52, 0, 24, 1);
+  } else { // 头盔
+    g.fillStyle = '#fff'; g.strokeStyle = COL.pants; g.lineWidth = 8; g.beginPath(); g.arc(0, 20, 78, Math.PI, 0); g.lineTo(78, 36); g.lineTo(-78, 36); g.closePath(); g.fill(); g.stroke();
+    g.strokeStyle = '#c9d3de'; g.lineWidth = 6; [-36, 0, 36].forEach(dx => { g.beginPath(); g.moveTo(dx, -46); g.lineTo(dx, -16); g.stroke(); });
+  }
+  g.restore();
+}
+
+/* ───────── 场景 ───────── */
+const S = [];
+const hookV = t => t < 3.3 ? 950 : lerp(950, 0, eout((t - 3.3) / 1.4));
+const hookScroll = makeScroll(hookV, 0, 8.2);
+// A 钩子：往后坐着摔，膝盖"咔"一下
+S.push(lt => {
+  const th = 14, F = [CX + 30, H * .62], sc = hookScroll(lt);
+  drawSky(sc * .3); drawSnowfall(lt, .6); drawSlope(F, th, sc, { noProps: true });
+  speedLines(F, th, lt, clamp(hookV(lt) / 1400, 0, 1));
+  let p;
+  if (lt < 1.6) p = POSES.neutral;
+  else if (lt < 2.6) p = lerpPose(POSES.neutral, POSES.back, sm((lt - 1.6) / 1));
+  else p = lerpPose(POSES.back, PH.phantom, ein((lt - 2.6) / .8));
+  const shake = lt > 3.4 ? Math.max(0, 1 - (lt - 3.4) / .6) * 20 : 0;
+  g.save(); g.translate((hash(Math.floor(lt * 30)) - .5) * shake, (hash(Math.floor(lt * 30) + 7) - .5) * shake);
+  const J = drawSkier(F, th, p, 150);
+  sprayTrail(J, lt, lt < 3.4 ? .6 : 0);
+  g.restore();
+  spark(J.K, lt - 3.4);
+  if (lt > 3.4 && lt < 4.6) { const k = pop(lt - 3.4); g.save(); g.globalAlpha = win(lt, 3.4, 4.5, .05, .3); g.translate(J.K[0] + 150, J.K[1] - 90); g.scale(k, k); label('咔！', 0, 0, 64, COL.red, 900); g.restore(); }
+  if (lt > 4.3) { const a = win(lt, 4.3, 7.9, .3, .3); kneeHurt(J, a, lt); g.save(); g.globalAlpha = a; label('膝盖', J.K[0] + 30, J.K[1] - 100, 44, COL.red, 900); g.restore(); }
+});
+// B 标题
+S.push(lt => {
+  drawSky(0); drawSnowfall(lt + 8, .5); g.fillStyle = 'rgba(247,250,252,.4)'; g.fillRect(0, 0, W, H);
+  pill('滑雪不难 · EP.16 · 双板', CX, H * .19, 40, COL.amber, '#fff', eout(lt / .3));
+  const th = 10, F = [CX - 20, H * .74]; drawSlope(F, th, lt * 120, { noProps: true });
+  const J = drawSkier(F, th, POSES.neutral, 125);
+  const a = sm((lt - .9) / .4); glow(J.K[0], J.K[1], 90, '240,71,60', a * (.5 + .3 * Math.sin(lt * 7))); ring(J.K[0], J.K[1], 42, COL.red, a, true);
+});
+// C 为什么是膝盖：长杠杆 + 板没脱开
+S.push(lt => {
+  drawSky(0);
+  const tw = .42 * sm((lt - 1.6) / 1.0) + (lt > 7 ? .04 * Math.sin((lt - 7) * 5) : 0);
+  const C = leverCard(tw, {});
+  if (lt < 7) {
+    // 力臂：脚 → 板头
+    const a1 = sm((lt - .5) / .4), fr = [Math.cos(C.a), Math.sin(C.a) * .34], nn = [fr[1], -fr[0]], nl = Math.hypot(nn[0], nn[1]), off = [nn[0] / nl * 56, nn[1] / nl * 56];
+    const tq = C.P(.9), p0 = [C.B[0] + 70 + off[0], C.B[1] + off[1]], p1 = [tq[0] + off[0], tq[1] + off[1]];
+    g.save(); g.globalAlpha = a1; g.strokeStyle = COL.amber; g.lineWidth = 5; g.setLineDash([12, 9]); g.beginPath(); g.moveTo(...p0); g.lineTo(...p1); g.stroke(); g.setLineDash([]);
+    [p0, p1].forEach(q => { g.beginPath(); g.moveTo(q[0] - off[0] * .35, q[1] - off[1] * .35); g.lineTo(q[0] + off[0] * .35, q[1] + off[1] * .35); g.stroke(); });
+    label('板头离脚很远', (p0[0] + p1[0]) / 2 + 30, Math.min(p0[1], p1[1]) - 44, 34, COL.amber, 900); g.restore();
+    const a2 = sm((lt - 1.4) / .3);
+    g.save(); g.globalAlpha = a2; arrow(C.tip[0] + 30, C.tip[1] - 110, C.tip[0] - 20, C.tip[1] - 22, COL.red, 7, 26); g.restore();
+    snowPuff(C.tip, lt, win(lt, 1.5, 3.2, .2, .5));
+    g.save(); g.globalAlpha = sm((lt - 1.8) / .3); label('板头被雪别住', C.tip[0] - 40, C.tip[1] + 92, 34, COL.red, 900); g.restore();
+    ellArrow(CX, C.gy - 210, 92, 24, Math.PI * .9, Math.PI * 2.1, COL.red, 6, sm((lt - 2.4) / .4));
+    const a3 = sm((lt - 3.4) / .4); glow(C.K[0], C.K[1], 140, '240,71,60', a3 * (.5 + .35 * Math.sin(lt * 8)));
+    g.save(); g.globalAlpha = a3; label('膝盖被拧', C.K[0] + 200, C.K[1], 40, COL.red, 900); g.restore();
+  } else {
+    const l2 = lt - 7, a = sm((l2 - .2) / .4);
+    // 扭劲的路线：板头 → 雪鞋 → 小腿 → 膝盖
+    g.save(); g.globalAlpha = a; g.strokeStyle = COL.red; g.lineWidth = 7; g.lineCap = 'round'; g.setLineDash([16, 14]); g.lineDashOffset = -l2 * 60;
+    g.beginPath(); g.moveTo(C.tip[0] - 10, C.tip[1] - 30); g.lineTo(CX + 80, C.gy - 60); g.lineTo(CX + 80, C.K[1] + 60); g.stroke(); g.setLineDash([]);
+    arrow(CX + 80, C.K[1] + 110, CX + 62, C.K[1] + 40, COL.red, 7, 26); g.restore();
+    const b = sm((l2 - .9) / .4); ring(CX - 135, C.gy - 4, 46, COL.red, b, true);
+    g.save(); g.globalAlpha = b; label('固定器没脱开', CX - 250, C.gy + 105, 34, COL.red, 900); g.restore();
+    const c = sm((l2 - 1.9) / .4); g.save(); g.globalAlpha = c; label('雪鞋包住脚踝', CX - 230, C.gy - 220, 34, COL.sub, 900); g.restore();
+    ellArrow(CX, C.gy - 210, 92, 24, Math.PI * .9, Math.PI * 2.1, COL.red, 6, 1);
+    ellArrow(C.K[0], C.K[1] + 10, 100, 26, Math.PI * .9, Math.PI * 2.1, COL.red, 6, sm((l2 - 2.6) / .4));
+    const d = sm((l2 - 2.8) / .4); glow(C.K[0], C.K[1], 160, '240,71,60', .3 + d * (.45 + .3 * Math.sin(lt * 8)));
+    g.save(); g.globalAlpha = d; label('扭劲落在膝盖', C.K[0] + 220, C.K[1] - 70, 38, COL.red, 900); g.restore();
+  }
+});
+// D 两种常见情况
+S.push(lt => {
+  if (lt < 7) {
+    const th = 14, F = [CX + 60, H * .62];
+    drawSky(0); drawSnowfall(lt + 25, .4); drawSlope(F, th, lt < 2 ? lt * 200 : 400, { noProps: true });
+    const p = lt < 1.2 ? lerpPose(POSES.neutral, POSES.back, sm((lt - .3) / .9)) : lerpPose(POSES.back, PH.phantom, sm((lt - 1.2) / .8));
+    const J = drawSkier(F, th, p, 160);
+    if (lt > 2.2) {
+      const a = win(lt, 2.2, 7.2, .3, .3); kneeHurt(J, a, lt);
+      const tail = J.P(-1.55, .1);
+      g.save(); g.globalAlpha = a; arcArrow(tail[0] + 30, tail[1] - 40, 120, Math.PI * .95, Math.PI * .35, COL.red, 7, 26);
+      label('板尾卡住雪', tail[0] - 10, tail[1] + 90, 38, COL.red, 900);
+      label('膝盖被扭', J.K[0] + 30, J.K[1] - 100, 40, COL.red, 900);
+      const hp = J.Hp; g.setLineDash([10, 8]); g.strokeStyle = COL.red; g.lineWidth = 4; g.beginPath(); g.moveTo(hp[0] - 120, hp[1]); g.lineTo(J.K[0] + 120, hp[1]); g.stroke(); g.setLineDash([]);
+      label('屁股低过膝盖', hp[0] - 200, hp[1] - 40, 34, COL.red, 900);
+      g.restore();
+    }
+  } else {
+    const l2 = lt - 7, k = sm((l2 - 1.0) / .7);
+    snowFront(l2 < 1.7 ? l2 * 120 : 204);
+    const p = Object.assign({}, FV.pizza, { catchR: k, hipH: lerp(1.45, 1.36, k), sway: -.12 * k });
+    const J = frontV2([CX - 40, H * .56], p, 185);
+    snowPuff([J.tip1[0], J.tip1[1] - 10], l2, win(l2, 1.0, 3.2, .2, .6));
+    const a = sm((l2 - 1.5) / .4);
+    g.save(); g.globalAlpha = a; label('这只板被卡住', J.tip1[0] - 10, J.tip1[1] + 70, 36, COL.red, 900);
+    arrow(J.tip1[0] - 130, J.tip1[1] - 10, J.tip1[0] - 10, J.tip1[1] - 30, COL.red, 7, 26); g.restore();
+    const b = sm((l2 - 2.4) / .4); kneeHurt({ K: J.knees[1] }, b, lt);
+    g.save(); g.globalAlpha = b; label('膝盖往里倒', J.knees[1][0] + 210, J.knees[1][1] - 30, 38, COL.red, 900);
+    ellArrow(J.boots[1][0], J.boots[1][1] - .2 * 185, 90, 24, Math.PI * .1, Math.PI * 1.1, COL.red, 6, 1);
+    label('腿被往外拧', J.boots[1][0] + 230, J.boots[1][1] - 60, 36, COL.red, 900); g.restore();
+  }
+});
+// E 怎么防：重心在中间；别硬撑
+S.push(lt => {
+  drawSky(0); drawSnowfall(lt + 39, .4);
+  if (lt < 7) {
+    const th = 10, F = [CX - 140, H * .6]; drawSlope(F, th, lt * 160, { noProps: true }); speedLines(F, th, lt, .2);
+    const gx = F[0] + 470, G = [gx, F[1] + 470 * Math.tan(th * D2R)];
+    const ga = sm((lt - 2.6) / .4);
+    if (ga > 0) { const JG = drawSkier(G, th, POSES.back, 92, { mono: COL.red, alpha: .32 * ga }); markX(JG.Hd[0] + 60, JG.Hd[1] - 70, 30, ga); g.save(); g.globalAlpha = ga; label('往后坐', G[0] + 20, G[1] + 120, 34, COL.red, 900); g.restore(); }
+    const J = drawSkier(F, th, POSES.neutral, 160);
+    const a = sm((lt - .6) / .4), c = J.P(.1, 0);
+    g.save(); g.globalAlpha = a; g.setLineDash([10, 8]); g.strokeStyle = COL.green; g.lineWidth = 4; g.beginPath(); g.moveTo(J.com[0], J.com[1]); g.lineTo(c[0], c[1]); g.stroke(); g.setLineDash([]);
+    g.fillStyle = COL.green; g.beginPath(); g.arc(J.com[0], J.com[1], 14, 0, Math.PI * 2); g.fill(); g.restore();
+    g.save(); g.globalAlpha = a; label('重心在脚掌中间', c[0] + 10, c[1] + 110, 36, COL.green, 900); g.restore();
+    const kv = pop(lt - 1.4); if (kv > 0) markV(J.Hd[0] - 30, J.Hd[1] - 130, 38, 1, kv);
+  } else {
+    const l2 = lt - 7, th = 12, F = [CX + 60, H * .6]; drawSlope(F, th, 0, { noProps: true });
+    const bad = l2 < 3.2;
+    let p = bad ? lerpPose(POSES.back, PH.phantom, sm((l2 - .1) / .7)) : lerpPose(PH.phantom, GO, sm((l2 - 3.2) / .8));
+    const sh = bad && l2 > .8 ? Math.sin(l2 * 40) * 4 : 0;
+    const J = drawSkier([F[0] + sh, F[1]], th, p, 160);
+    if (bad) {
+      const a = win(l2, .9, 3.2, .3, .25); kneeHurt(J, a, lt); markX(W * .14, H * .3, 40, a);
+      g.save(); g.globalAlpha = a; label('坐在板尾上硬撑', CX + 150, H * .3, 38, COL.red, 900); g.restore();
+    } else {
+      const a = sm((l2 - 3.9) / .4);
+      J && [J.Hn].forEach(q => ring(q[0], q[1], 44, COL.green, a));
+      g.save(); g.globalAlpha = a; label('手往前伸', J.Hn[0] + 140, J.Hn[1] - 60, 38, COL.green, 900); g.restore();
+      const b = sm((l2 - 4.5) / .4), ft = J.P(.2, -.5);
+      g.save(); g.globalAlpha = b; label('两脚并拢', ft[0] + 160, ft[1] + 70, 38, COL.green, 900); g.restore();
+      const kv = pop(l2 - 4.9); if (kv > 0) markV(W * .14, H * .3, 40, 1, kv);
+    }
+  }
+});
+// F 固定器脱离值；歇、热身、选道、头盔
+const FACT = ['体重', '身高', '年龄', '水平'];
+S.push(lt => {
+  drawSky(0);
+  if (lt < 7) {
+    drawSnowfall(lt + 53, .3);
+    chipRow(FACT, H * .3, i => sm((lt - .9 - i * .35) / .3), COL.blue, 36);
+    const tw = sm((lt - 2.6) / .5), rel = eout(clamp((lt - 3.4) / .5, 0, 1));
+    const B = bindingView(CX, H * .58, rel, .5, { shake: lt > 2.8 && lt < 3.4 ? Math.sin(lt * 60) * 4 : 0 });
+    if (lt > 2.6 && lt < 4.4) { g.save(); g.globalAlpha = win(lt, 2.6, 4.3, .2, .3) * tw; arcArrow(B.tip[0] - 40, B.tip[1] - 60, 90, Math.PI * .1, Math.PI * .85, COL.red, 7, 26); g.restore(); }
+    spark([CX + 30, H * .58 - 120], lt - 3.4, COL.green);
+    const a = sm((lt - 4.0) / .4); g.save(); g.globalAlpha = a; label('该脱开的时候，能脱开', CX, H * .665, 40, COL.green, 900); g.restore();
+    const kv = pop(lt - 4.0); if (kv > 0) markV(CX + 300, H * .42, 40, 1, kv);
+  } else {
+    const l2 = lt - 7; drawSnowfall(lt + 53, .3);
+    [['累了就歇', 0], ['滑前热身', 1], ['选合适的道', 2], ['头盔要戴', 3]].forEach(([name, i]) => {
+      const a = eout((l2 - .3 - i * .5) / .4); if (a <= 0) return;
+      const cw = W * .4, chh = H * .215, x = i % 2 ? W * .74 : W * .26, y = i < 2 ? H * .225 : H * .46;
+      g.save(); g.globalAlpha = a; g.translate(0, (1 - a) * 40);
+      g.fillStyle = '#fff'; g.shadowColor = 'rgba(27,40,56,.12)'; g.shadowBlur = 36; rrect(x - cw / 2, y, cw, chh, 32); g.fill(); g.shadowBlur = 0;
+      icon(i, x, y + chh * .4, l2 - .3 - i * .5); label(name, x, y + chh * .82, 40, COL.ink, 900);
+      g.restore();
+    });
+  }
+});
+// G 摔了以后
+S.push(lt => {
+  drawSky(0); drawSnowfall(lt + 67, .4);
+  const th = 6, F = [CX - 60, H * .62]; drawSlope(F, th, 0, { noProps: true });
+  const J = drawSkier(F, th, SIT, 165, { noPoles: true });
+  kneeHurt(J, sm((lt - .3) / .4) * (lt < 3.6 ? 1 : .6), lt);
+  [['很疼', 0], ['明显肿', 1], ['打软腿', 2]].forEach(([t, i]) => { const a = sm((lt - .8 - i * .5) / .3); if (a > 0) pill(t, W * .77, H * (.255 + i * .055), 36, COL.red, '#fff', a); });
+  const a = sm((lt - 3.6) / .4);
+  g.save(); g.globalAlpha = a;
+  const px = CX, py = H * .665; g.fillStyle = COL.green; g.beginPath(); g.arc(px - 270, py, 34, 0, Math.PI * 2); g.fill(); g.fillStyle = '#fff'; rrect(px - 270 - 7, py - 22, 14, 44, 3); g.fill(); rrect(px - 270 - 22, py - 7, 44, 14, 3); g.fill();
+  label('停下 · 找救护 · 去检查', px + 30, py, 40, COL.green, 900);
+  g.restore();
+});
+// H 准备三步
+S.push(lt => {
+  const cur = lt < 2.4 ? -1 : lt < 8 ? 0 : lt < 13.2 ? 1 : lt < 17.9 ? 2 : 3;
+  drawSky(0);
+  if (cur <= 0) {
+    drawSnowfall(lt + 75, .3);
+    const l2 = Math.max(0, lt - 2.4), din = .3 + .22 * sm((l2 - 1.2) / 2);
+    bindingView(CX, H * .6, 0, din);
+    if (cur === 0) {
+      chipRow(FACT, H * .33, i => sm((l2 - .2 - i * .3) / .3), COL.blue, 34);
+      const sa = sm((l2 - .8) / .4); if (sa > 0) { g.save(); g.globalAlpha = sa; screwdriver(CX + 228, H * .6 - 92, .5 + .12 * Math.sin(l2 * 6)); g.restore(); }
+      const a = sm((l2 - 3.6) / .4); g.save(); g.globalAlpha = a; label('交给店里调好', CX, H * .675, 40, COL.green, 900); g.restore();
+      const kv = pop(l2 - 4.4); if (kv > 0) markV(CX - 300, H * .44, 40, 1, kv);
+    }
+  } else if (cur === 1) {
+    const l2 = lt - 8, th = 0, F = [CX - 100, H * .6]; drawSlope(F, th, 0, { noProps: true });
+    const v = .5 - .5 * Math.cos(Math.max(0, l2 - .3) * 2.6), J = drawSkier(F, th, lerpPose(POSES.stand, SQ, v), 165);
+    ellArrow(J.K[0], J.K[1], 70, 22, Math.PI * .9, Math.PI * 2.1, COL.amber, 5, sm((l2 - .4) / .4));
+    const cx = W * .8, cy = H * .33, pr = clamp((l2 - .3) / 4.4, 0, 1);
+    g.save(); g.strokeStyle = '#e6edf3'; g.lineWidth = 14; g.beginPath(); g.arc(cx, cy, 70, 0, Math.PI * 2); g.stroke();
+    g.strokeStyle = COL.amber; g.lineCap = 'round'; g.beginPath(); g.arc(cx, cy, 70, -Math.PI / 2, -Math.PI / 2 + pr * Math.PI * 2); g.stroke(); label('热身', cx, cy, 36, COL.amber, 900); g.restore();
+  } else {
+    const l2 = lt - 13.2, th = 8, F = [CX - 40, H * .6]; drawSlope(F, th, l2 * 140, { noProps: true });
+    const k = sm((l2 - 2.4) / .6), J = drawSkier(F, th, lerpPose(POSES.neutral, GO, k), 160);
+    const a = 1 - k, c = J.P(.1, 0);
+    g.save(); g.globalAlpha = a; g.setLineDash([10, 8]); g.strokeStyle = COL.green; g.lineWidth = 4; g.beginPath(); g.moveTo(J.com[0], J.com[1]); g.lineTo(c[0], c[1]); g.stroke(); g.setLineDash([]);
+    g.fillStyle = COL.green; g.beginPath(); g.arc(J.com[0], J.com[1], 14, 0, Math.PI * 2); g.fill(); label('重心在中间', c[0] + 10, c[1] + 110, 36, COL.green, 900); g.restore();
+    const b = sm((l2 - 2.8) / .4); ring(J.Hn[0], J.Hn[1], 44, COL.green, b);
+    g.save(); g.globalAlpha = b; label('手往前 · 腿并拢', CX, H * .67, 38, COL.green, 900); g.restore();
+  }
+  stepChips(STEPS, H * .235, cur, eout((lt - .3) / .4), 34);
+});
+// I 三个错误
+S.push(lt => {
+  const seg = lt < 6 ? 0 : lt < 12 ? 1 : 2, l2 = lt - seg * 6;
+  drawSky(0);
+  if (seg === 0) {
+    const th = 14, F = [CX + 60, H * .62]; drawSlope(F, th, 0, { noProps: true });
+    const p = lerpPose(POSES.back, PH.phantom, sm((l2 - .2) / .8)), sh = l2 > 1 ? Math.sin(l2 * 40) * 4 : 0;
+    const J = drawSkier([F[0] + sh, F[1]], th, p, 160);
+    const a = win(l2, 1.1, 6, .3, .3); kneeHurt(J, a, lt);
+    const tail = J.P(-1.5, .1);
+    g.save(); g.globalAlpha = a; ring(tail[0] + 10, tail[1] - 10, 50, COL.red, 1, true); label('坐在板尾上', tail[0] - 10, tail[1] + 90, 36, COL.red, 900); label('还不肯倒', J.Hd[0] + 170, J.Hd[1] - 40, 38, COL.red, 900); g.restore();
+  } else if (seg === 1) {
+    snowFront(0);
+    const k = sm((l2 - .4) / .8), p = Object.assign({}, FV.pizza, { catchR: k, hipH: lerp(1.45, 1.62, k), kneeIn: .1, stiffL: k, sway: -.18 * k, lean: -.06 * k }), sh = l2 > 1.2 ? Math.sin(l2 * 40) * 3 : 0;
+    const J = frontV2([CX - 40 + sh, H * .56], p, 185);
+    const a = win(l2, 1.3, 6, .3, .3);
+    const lk = J.knees[0]; g.save(); g.globalAlpha = a; g.strokeStyle = COL.red; g.lineWidth = 6; g.setLineDash([10, 8]); g.beginPath(); g.moveTo(J.boots[0][0], J.boots[0][1] - 20); g.lineTo(J.hipC[0] - .18 * 185, J.hipC[1]); g.stroke(); g.setLineDash([]);
+    label('一条腿硬撑', W * .15, lk[1] + 70, 36, COL.red, 900); g.restore();
+    kneeHurt({ K: J.knees[1] }, a, lt);
+    g.save(); g.globalAlpha = a; label('另一只板被带走', J.tip1[0] + 140, J.tip1[1] - 90, 34, COL.red, 900); g.restore();
+  } else {
+    drawSnowfall(lt, .3);
+    const din = lerp(.45, .98, sm((l2 - .3) / 1.0)), tw = sm((l2 - 2.0) / .4), sh = l2 > 2.2 && l2 < 4 ? Math.sin(l2 * 60) * 5 : 0;
+    const B = bindingView(CX, H * .58, 0, din, { shake: sh });
+    const a1 = sm((l2 - .5) / .3); g.save(); g.globalAlpha = a1; label('拧到最高', B.win[0] - 20, H * .58 - 205, 36, COL.red, 900);
+    arrow(B.win[0] - 20, H * .58 - 180, B.win[0] + 10, B.win[1] - 26, COL.red, 5, 20); g.restore();
+    if (l2 > 2.0) { g.save(); g.globalAlpha = tw; arcArrow(B.tip[0] - 40, B.tip[1] - 60, 90, Math.PI * .1, Math.PI * .85, COL.red, 7, 26); g.restore(); }
+    const b = sm((l2 - 2.8) / .4); g.save(); g.globalAlpha = b; label('脱不开', CX - 60, H * .58 - 470, 44, COL.red, 900); label('扭劲全给了膝盖', CX, H * .665, 40, COL.red, 900); g.restore();
+  }
+  markX(W * .14, H * .3, 40, win(l2, .3, 6, .2, .3));
+});
+// J 口诀卡
+S.push(lt => {
+  drawSky(0); drawSnowfall(lt + 112, .5);
+  const a = eout(lt / .4), x = W * .08, y = H * .24, w = W * .84, h = H * .42;
+  g.save(); g.globalAlpha = a; g.translate(0, (1 - a) * 50);
+  g.fillStyle = '#fff'; g.shadowColor = 'rgba(27,40,56,.14)'; g.shadowBlur = 50; rrect(x, y, w, h, 44); g.fill(); g.shadowBlur = 0;
+  label('记住这几句', CX, y + 100, 50, COL.amber, 900);
+  [['重心', '在中间，别往后坐', COL.amber], ['摔倒', '摔就摔，别硬撑', COL.green], ['固定器', '脱离值让店里调', COL.blue]].forEach(([t1, t2, c], i) => {
+    const ra = eout((lt - .8 - i * 1.2) / .35); if (ra <= 0) return; const ry = y + 250 + i * 225;
+    g.save(); g.globalAlpha = a * ra; g.translate((1 - ra) * 40, 0); pill(t1, x + 70 + (t1.length * 38 + 52) / 2, ry - 44, 38, c, '#fff'); label(t2, x + 70, ry + 42, 54, COL.ink, 900, 'left'); g.restore();
+  });
+  g.restore();
+  label('护好膝盖，才能一直滑下去。', CX, H * .75, 46, COL.sub, 700);
+});
+// K 结尾
+S.push(lt => {
+  drawSky(0); drawSnowfall(lt + 119, .6);
+  const th = 10, F = [CX, H * .85]; drawSlope(F, th, lt * 200, { noProps: true }); speedLines(F, th, lt, .2);
+  drawSkier(F, th, POSES.neutral, 100);
+  pill('下集 · 小回转：节奏快一点的连续转弯', CX, H * .56, 36, COL.amber, '#fff', eout((lt - 1.8) / .4));
+});
+
+/* ───────── 封面 ───────── */
+function coverArt(key, w, h) {
+  drawSky(0); drawSnowfall(3, .6);
+  const art = (F, u) => {
+    drawSlope(F, 14, 0, { noProps: true }); const J = drawSkier(F, 14, PH.phantom, u);
+    glow(J.K[0], J.K[1], u * .8, '240,71,60', .75); ring(J.K[0], J.K[1], u * .36, COL.red, 1, true);
+    const tail = J.P(-1.55, .1); arcArrow(tail[0] + u * .2, tail[1] - u * .25, u * .75, Math.PI * .95, Math.PI * .35, COL.red, 7, 26);
+  };
+  const title = (cx, y1, y2, size, subY, subSize, pillY, pillSize) => {
+    pill('滑雪不难 · EP.16 · 双板', cx, pillY, pillSize, COL.amber, '#fff');
+    label('双板最常伤哪里？', cx, y1, size * .62, COL.ink, 900);
+    g.font = `900 ${size}px ${SANS}`; const parts = [['膝盖', COL.red], ['！', COL.ink]], ws = parts.map(q => g.measureText(q[0]).width);
+    let x = cx - ws.reduce((s, v) => s + v, 0) / 2; parts.forEach((q, i) => { label(q[0], x + ws[i] / 2, y2, size, q[1], 900); x += ws[i]; });
+    label('为什么会伤 · 怎么防 · 三个错误', cx, subY, subSize, COL.sub, 700);
+  };
+  if (key === '9x16') { art([CX + 60, h * .78], 165); title(CX, h * .24, h * .33, 190, h * .41, 42, h * .16, 42); }
+  else if (key === '3x4') { art([CX + 60, h * .9], 135); title(CX, h * .19, h * .3, 170, h * .39, 40, h * .085, 40); }
+  else {
+    art([w * .76, h * .78], key === '16x9' ? 160 : 135);
+    const fade = g.createLinearGradient(0, 0, w * .62, 0); fade.addColorStop(0, 'rgba(248,251,253,.95)'); fade.addColorStop(.75, 'rgba(248,251,253,.75)'); fade.addColorStop(1, 'rgba(248,251,253,0)');
+    g.fillStyle = fade; g.fillRect(0, 0, w * .6, h);
+    const size = key === '16x9' ? 170 : 140;
+    title(w * .28, h * .4, h * .56, size, h * .7, key === '16x9' ? 38 : 32, h * .23, key === '16x9' ? 38 : 34);
+  }
+}
+
+/* ───────── 声音 ───────── */
+function sound(K, c, DUR) {
+  K.bed(8.0, DUR, t => t < 25.6 ? 'verse' : t < 39.6 ? 'tense' : t < 67.6 ? 'chorus' : t < 75.6 ? 'verse' : t < 93.6 ? 'chorus' : t < 111.6 ? 'tense' : 'outro');
+  K.wind(DUR, t => t < 8 ? clamp(hookV(t) / 950, 0, 1) * .4 : 0);
+  const crack = t => { K.tone(1800, t, .06, .12, 'square'); K.noise(t, .12, .3, 'highpass', 3000); };
+  K.thud(3.4, 1.0); crack(3.45); K.wrong(4.4);
+  K.ding(11.6 + .9); K.noise(11.6 + 1.6, .5, .25, 'bandpass', 1600); K.wrong(11.6 + 3.5); K.wrong(11.6 + 9.9);
+  K.thud(25.6 + 1.8, .5); K.wrong(25.6 + 2.3);
+  K.noise(32.6 + 1.0, .6, .3, 'bandpass', 1800); K.wrong(32.6 + 2.5);
+  K.ding(39.6 + 1.4); K.wrong(46.6 + 1.0); K.ding(46.6 + 4.9);
+  K.tone(1500, 53.6 + 2.6, .08, .06, 'square'); crack(53.6 + 3.4); K.ding(53.6 + 4.0);
+  for (let i = 0; i < 4; i++) K.tone(780 + i * 90, 60.6 + .7 + i * .5, .15, .05, 'triangle');
+  K.wrong(67.6 + .9); K.ding(67.6 + 3.7);
+  K.ding(75.6 + 6.8); K.ding(75.6 + 13.0); K.ding(75.6 + 16.2);
+  K.riser(92.2, 93.6, .12);
+  [93.6 + .3, 99.6 + .3, 105.6 + .3].forEach(K.wrong); K.thud(93.6 + 1.0, .4); K.noise(99.6 + .6, .6, .3, 'bandpass', 1800);
+  for (let i = 0; i < 5; i++) K.tone(1500, 105.6 + 2.2 + i * .3, .05, .05, 'square');
+  for (let i = 0; i < 3; i++) K.tone(880 + i * 110, 111.6 + .8 + i * 1.2, .25, .07, 'triangle');
+}
+
+kitRun({
+  T, S, TX, seed: 291,
+  allText: STEPS.join('') + FACT.join('') + '①调脱离值②热身③练重心歇咔！膝盖滑雪不难·双板头脚很远被别住拧固定器没开鞋包踝扭劲落在尾卡屁股低过这只往里倒腿外后坐掌中间上硬撑手前伸两并拢体高年龄水平该的时候，能累了就选合适道盔要戴疼明显肿打软停下找救护去检查交给店好还肯一条另带走到最全记几句摔让才直。集小回转：节奏快点连续弯常伤哪？为什么会怎防三个错误DIN',
+  audio: sound, cover: coverArt
+});
+})();
+</script>
+</body>
+</html>
