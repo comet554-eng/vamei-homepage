@@ -49,7 +49,7 @@ const TX = [
   { in: 59.8, out: 66.4, text: '进阶：重心{a}前移、后移{/}，\n就会斜着往下走。', y: YH, size: 76, w: 900 },
   { in: 60.6, out: 66.4, text: '这就是"落叶飘"。\n能左右挪一挪，让开前面的人。', y: YB, size: 42, w: 500, sub: 1 },
   { in: 66.8, out: 73.4, text: '慢慢蹭下去，\n{g}一点也不丢人{/}。', y: YH, size: 84, w: 900 },
-  { in: 67.6, out: 73.4, text: '窄道、陡坡、硬雪上，\n很多老手也会先侧滑下去。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 67.6, out: 73.4, text: '窄道、陡坡、硬雪上，\n侧滑是很实用的下法。', y: YB, size: 42, w: 500, sub: 1 },
   { in: 73.8, out: 76.4, text: '怎么练？\n三步。', y: YH, size: 80, w: 900 },
   { in: 76.7, out: 82.8, text: '① 缓坡上：放平、立刃', y: YH, size: 76, w: 900 },
   { in: 77.4, out: 82.8, text: '先在缓坡上横站，\n练放平一点就动、立刃就停。', y: YB, size: 42, w: 500, sub: 1 },
@@ -462,7 +462,7 @@ function sound(K, c, DUR) {
 
 kitRun({
   T, S, TX, seed: 231,
-  allText: STEPS.join('') + '…→几句可姿晃次法看碍第级记障顺',
+  allText: '实用的下法' + STEPS.join('') + '…→几句可姿晃次法看碍第级记障顺',
   audio: sound, cover: coverArt
 });
 })();
