@@ -327,7 +327,7 @@ S.push(lt => {
   const seg = lt < 6 ? 0 : lt < 12 ? 1 : 2, l2 = lt - seg * 6;
   drawSky(0);
   if (seg === 0) {
-    const F = [CX + 30, H * .58], th = 9, k = ein(clamp((l2 - 2.2) / 1, 0, 1)), wob = Math.sin(lt * 9) * 4 * (1 - k);
+    const F = [CX - 60, H * .58], th = 9, k = ein(clamp((l2 - 2.2) / 1, 0, 1)), wob = Math.sin(lt * 9) * 4 * (1 - k);
     const J = side(F, th + wob, lerpPose(SP.back, SP.fallen, k), 160, -1, { scroll: (Math.min(l2, 3.2)) * 200, sth: th, sF: F, bal: 1 - k });
     feetTags(J, 1 - k);
     if (k < .5) { const h = J.M(J.Hd); lab('重心还在 L 上', h[0] + 40, h[1] - 120, 36, COL.red); }
