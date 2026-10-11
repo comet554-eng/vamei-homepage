@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>徒步不难 EP.06</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#000;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;aspect-ratio:9/16;max-width:100vw;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;aspect-ratio:auto;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="trailkit.js"></script>
+<script>
+/*
+ * 徒步不难 EP.06《出发前，天气要看什么？》（约 1 分 51 秒）
+ * 逐小时预报与雷雨 → 风 → 山上的温度与体感 → 日落与预警 → 路上遇到打雷 → 改天再去 → 三个错误
+ */
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+const T = [0, 7.6, 11.2, 23.2, 35.2, 47.2, 59.2, 71.2, 79.2, 97.2, 104.2, 110.7];
+const YH = .135, YB = .745;
+const { blue: BLUE, green: GREEN, amber: AMB, red: RED } = HB;
+
+const TX = [
+  { in: .15, out: 3.6, text: '出门一看：\n{g}大晴天{/}，走！', y: YH, size: 88, w: 900, st: .06 },
+  { in: 3.8, out: 7.4, text: '下午到了山上，\n{r}电闪雷鸣{/}。', y: YH, size: 88, w: 900 },
+  { in: 7.85, out: 10.95, text: '出发前，\n天气要看什么？', y: .3, size: 96, w: 900, st: .05 },
+  { in: 8.6, out: 10.95, text: '雷雨、风、温度、日落', y: .415, size: 42, w: 600, sub: 1 },
+  // C 逐小时 + 雷雨
+  { in: 11.4, out: 17.2, text: '看{g}逐小时预报{/}，\n别只看一个“晴”字。', y: YH, size: 80, w: 900 },
+  { in: 12.2, out: 17.2, text: '早上晴、下午雷阵雨，夏天的山里很常见。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 17.6, out: 23.0, text: '有{r}雷雨{/}，就换个日子；\n或者{g}早出发、早下山{/}。', y: YH, size: 76, w: 900 },
+  { in: 18.4, out: 23.0, text: '雷阵雨多在午后，赶在它之前下山。', y: YB, size: 42, w: 500, sub: 1 },
+  // D 风
+  { in: 23.4, out: 29.2, text: '再看{a}风{/}。', y: YH, size: 88, w: 900 },
+  { in: 24.2, out: 29.2, text: '山顶、山脊没遮没挡，风比山下大得多。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 29.6, out: 35.0, text: '预报风大，\n就别上{r}山脊、山顶{/}。', y: YH, size: 84, w: 900 },
+  { in: 30.4, out: 35.0, text: '换一条在林子里、海拔低一点的路线。', y: YB, size: 42, w: 500, sub: 1 },
+  // E 温度
+  { in: 35.4, out: 41.2, text: '看{b}温度{/}：\n看的是{b}山上{/}，不是城里。', y: YH, size: 80, w: 900 },
+  { in: 36.2, out: 41.2, text: '每升高 100 米，约降 0.6℃（第 3 集讲过）。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 41.6, out: 47.0, text: '风一吹，\n{b}体感{/}还要更低。', y: YH, size: 88, w: 900 },
+  { in: 42.4, out: 47.0, text: '预报里的“体感温度”，比实际温度更有参考价值。', y: YB, size: 42, w: 500, sub: 1 },
+  // F 日落 + 预警
+  { in: 47.4, out: 53.2, text: '查一下{a}日落时间{/}。', y: YH, size: 88, w: 900 },
+  { in: 48.2, out: 53.2, text: '天黑前一小时下山（第 1 集讲过）；\n冬天比夏天黑得早得多。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 53.6, out: 59.0, text: '还要看{r}预警{/}和{r}公告{/}。', y: YH, size: 88, w: 900 },
+  { in: 54.4, out: 59.0, text: '暴雨、大风、高温预警，景区临时封山，\n都要出发前知道。', y: YB, size: 42, w: 500, sub: 1 },
+  // G 遇到打雷
+  { in: 59.4, out: 65.2, text: '路上听到{r}打雷{/}，\n马上{g}离开高处{/}。', y: YH, size: 84, w: 900 },
+  { in: 60.2, out: 65.2, text: '山顶、山脊、空旷的地方，都别停留。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 65.6, out: 71.0, text: '别躲在{r}孤零零的大树{/}下，\n离铁栏杆、溪沟远一点。', y: YH, size: 76, w: 900 },
+  { in: 66.4, out: 71.0, text: '往低处走，找密林或房子。', y: YB, size: 42, w: 500, sub: 1 },
+  // H 改天
+  { in: 71.4, out: 79.0, text: '天气不好，\n就{g}改天再去{/}。', y: YH, size: 88, w: 900 },
+  { in: 72.2, out: 79.0, text: '山一直在那儿，不着急这一天。', y: YB, size: 42, w: 500, sub: 1 },
+  // I 三个错误
+  { in: 79.4, out: 85.0, text: '常见错误一：\n只看{r}城里{/}的天气', y: YH, size: 84, w: 900 },
+  { in: 80.2, out: 85.0, text: '山上和城里，可能是两种天气。\n搜一下山的名字或所在的镇。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 85.4, out: 91.0, text: '常见错误二：\n{r}只看一次{/}', y: YH, size: 88, w: 900 },
+  { in: 86.2, out: 91.0, text: '预报会变：前一晚看一次，出门前再看一次。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 91.4, out: 97.0, text: '常见错误三：\n变天了还{r}硬要登顶{/}', y: YH, size: 80, w: 900 },
+  { in: 92.2, out: 97.0, text: '云压下来、开始打雷，就该往回走了。', y: YB, size: 42, w: 500, sub: 1 },
+  // K
+  { in: 104.4, out: 999, text: '你在山里，\n遇到过变天吗？', y: .37, size: 84, w: 900, st: .06 },
+  { in: 105.4, out: 999, text: '评论区说说', y: .465, size: 42, w: 500, sub: 1 }
+];
+
+/* ───────── 本集画面 ───────── */
+const walkPh = (t, k) => t * Math.PI * 2 * (k || .9);
+const HOURS = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+const WX = ['sun', 'sun', 'sun', 'sun', 'cloud', 'cloud', 'storm', 'storm', 'rain', 'cloud'];
+function wxIcon(k, x, y, s, t) {
+  if (k === 'sun') sunIcon(x, y, 22 * s);
+  else if (k === 'cloud') { g.save(); g.translate(x, y); g.scale(s * .7, s * .7); cloudIcon(0, 0, '#b8c7d6'); g.restore(); }
+  else if (k === 'storm') ICO.storm(x, y, s * .7, t);
+  else ICO.rain(x, y, s * .7, t);
+}
+// 天气卡片（通用样式）
+function forecast(x, y, w, h, lt, hi) {
+  card(x, y, w, h, 40);
+  g.fillStyle = '#eaf5fd'; rrect(x + 24, y + 24, w - 48, 170, 28); g.fill();
+  sunIcon(x + 110, y + 110, 46); label('晴', x + 200, y + 92, 64, COL.ink, 900, 'left'); label('今天 · 山下', x + 200, y + 150, 30, COL.sub, 700, 'left');
+  label('26℃', x + w - 60, y + 110, 64, COL.ink, 900, 'right');
+  const cw = (w - 48) / HOURS.length, ry = y + 290;
+  HOURS.forEach((hh, i) => {
+    const a = sm((lt - .6 - i * .12) / .25); if (a <= 0) return; const cx = x + 24 + cw * (i + .5);
+    g.save(); g.globalAlpha = a;
+    if (hi && (WX[i] === 'storm' || WX[i] === 'rain')) { g.fillStyle = 'rgba(240,71,60,.12)'; rrect(cx - cw / 2 + 3, ry - 34, cw - 6, 250, 18); g.fill(); }
+    label(hh + '时', cx, ry, 28, COL.sub, 700); wxIcon(WX[i], cx, ry + 100, 1.25, lt); g.restore();
+  });
+  if (hi) pill('14～16 时：雷阵雨', x + w / 2, y + h - 110, 40, RED, '#fff', sm((lt - 3.2) / .4));
+}
+function cloudBank(t, a, dark) { g.save(); g.globalAlpha = a; for (let i = 0; i < 7; i++) cloud(((i * 210 + t * 20) % (W + 400)) - 200, H * (.18 + (i % 3) * .05), 1.3, 1); if (dark) { g.fillStyle = `rgba(60,70,90,${dark})`; g.fillRect(0, 0, W, H * .4); } g.restore(); }
+function flash(lt, t0) { const d = lt - t0; if (d < 0 || d > .5) return; g.fillStyle = `rgba(255,255,255,${(1 - d / .5) * .7})`; g.fillRect(0, 0, W, H); }
+function bolt(x, y, s, a) { g.save(); g.globalAlpha = a; g.translate(x, y); g.scale(s, s); g.fillStyle = '#ffd166'; g.strokeStyle = '#fff'; g.lineWidth = 4; g.beginPath(); g.moveTo(10, 0); g.lineTo(-30, 90); g.lineTo(0, 90); g.lineTo(-20, 180); g.lineTo(40, 70); g.lineTo(10, 70); g.lineTo(30, 0); g.closePath(); g.fill(); g.stroke(); g.restore(); }
+function warnTri(x, y, s, col, txt) { g.save(); g.translate(x, y); g.scale(s, s); g.fillStyle = col; g.beginPath(); g.moveTo(0, -70); g.lineTo(70, 54); g.lineTo(-70, 54); g.closePath(); g.fill(); label('!', 0, 10, 70, '#fff', 900); g.restore(); label(txt, x, y + 100 * s, 32, COL.ink, 900); }
+
+/* ───────── 场景 ───────── */
+const S = [];
+// A 钩子
+S.push(lt => {
+  if (lt < 3.8) {
+    bgWalk(lt, { cam: 140, hiker: { ph: walkPh(lt) }, birds: true, sun: [W * .8, H * .3] });
+    const a = eout((lt - .5) / .4); g.save(); g.globalAlpha = a; g.translate(0, (1 - a) * 40);
+    card(W * .56, H * .22, W * .36, 190, 36); sunIcon(W * .64, H * .22 + 95, 38); label('晴', W * .72, H * .22 + 80, 60, COL.ink, 900, 'left'); label('26℃', W * .72, H * .22 + 140, 36, COL.sub, 900, 'left');
+    g.restore();
+  } else {
+    const l2 = lt - 3.8, dk = sm(l2 / .8), peak = x => H * .66 - 300 * Math.exp(-Math.pow((x - W * .55) / 300, 2));
+    hikeSky(0); g.fillStyle = `rgba(55,65,85,${dk * .75})`; g.fillRect(0, 0, W, H);
+    hikeRidges(0, .4, H * .6); hikeGround(peak, 0, lt, { dusk: .5, treeGap: 220 });
+    g.fillStyle = `rgba(40,50,70,${dk * .35})`; g.fillRect(0, 0, W, H);
+    cloudBank(lt, dk, .35 * dk);
+    drawHiker(W * .55 + Math.sin(lt * 40) * 3, peak(W * .55) + 12, { s: 1.4, walk: 0, t: lt, lean: .2, tired: .6 });
+    rainFall(lt, dk, 110);
+    bolt(W * .22, H * .2, 1.4, (l2 > .9 && l2 < 1.3) || (l2 > 2.4 && l2 < 2.7) ? 1 : 0);
+    flash(l2, .9); flash(l2, 2.4);
+    topPanel(win(l2, 0, 3.6, .3, .01));
+  }
+});
+// B
+S.push(lt => titleScene(lt, '06'));
+// C 逐小时
+S.push(lt => {
+  bgPlain(lt + 20);
+  if (lt < 6.2) forecast(W * .06, H * .22, W * .88, H * .46, lt, lt > 3);
+  else {
+    const l2 = lt - 6.2; card(W * .06, H * .22, W * .88, H * .46, 40);
+    const x0 = W * .12, x1 = W * .88, ty = H * .5, hx = hh => lerp(x0, x1, (hh - 6) / 13);
+    HOURS.forEach((hh, i) => wxIcon(WX[i], hx(hh), H * .33, 1.2, lt));
+    g.fillStyle = '#e9eff4'; rrect(x0, ty - 18, x1 - x0, 36, 18); g.fill();
+    g.fillStyle = 'rgba(240,71,60,.4)'; rrect(hx(13.5), ty - 18, hx(16.5) - hx(13.5), 36, 18); g.fill();
+    const k = sm((l2 - .6) / 1.4); g.fillStyle = GREEN; rrect(hx(7), ty - 18, (hx(12) - hx(7)) * k, 36, 18); g.fill();
+    [6, 8, 10, 12, 14, 16, 18].forEach(hh => label(hh + ':00', hx(hh), ty + 54, 26, COL.sub, 700));
+    if (k > .95) { pill('7:00 出发 → 12:00 下山', hx(9.5), H * .58, 32, GREEN, '#fff'); pill('雷阵雨', hx(15), H * .42, 30, RED, '#fff'); }
+  }
+});
+// D 风
+S.push(lt => {
+  if (lt < 6.2) {
+    const peak = x => H * .72 - 520 * Math.exp(-Math.pow((x - W * .5) / 260, 2));
+    hikeSky(0); hikeClouds(lt * 4, 1, .12); hikeRidges(0, 0, H * .6); hikeGround(peak, 0, lt, { treeGap: 170 });
+    subPanel(win(lt, .8, 6.2, .3, .01));
+    drawHiker(W * .5, peak(W * .5) + 12, { s: 1.1, walk: 0, t: lt, lean: .3 + Math.sin(lt * 5) * .05 });
+    for (let i = 0; i < 5; i++) { const y = H * (.22 + i * .025), ph = (lt * 1.6 + i * .2) % 1; g.save(); g.globalAlpha = 1 - ph * .5; arrow(W * .05 + ph * 200, y, W * .05 + ph * 200 + 220, y, '#6ec3f4', 10, 30); g.restore(); }
+    for (let i = 0; i < 2; i++) { const y = H * (.6 + i * .02), ph = (lt * .6 + i * .3) % 1; g.save(); g.globalAlpha = .7; arrow(W * .02 + ph * 120, y, W * .02 + ph * 120 + 70, y, '#6ec3f4', 5, 16); g.restore(); }
+    pill('山顶：风大', W * .78, H * .23, 34, AMB, '#fff'); pill('山脚：风小', W * .8, H * .56, 30, GREEN, '#fff');
+  } else {
+    const l2 = lt - 6.2; bgPlain(lt + 40); card(W * .06, H * .22, W * .88, H * .46, 40);
+    g.save(); rrect(W * .06, H * .22, W * .88, H * .46, 40); g.clip();
+    const hy = x => H * .62 - 320 * Math.exp(-Math.pow((x - CX) / 300, 2));
+    g.fillStyle = '#c7e8c1'; g.beginPath(); g.moveTo(0, H); for (let x = 0; x <= W; x += 10) g.lineTo(x, hy(x)); g.lineTo(W, H); g.closePath(); g.fill();
+    for (let i = 0; i < 9; i++) { const x = W * (.12 + i * .1); if (Math.abs(x - CX) < 160) continue; pineTree(x, hy(x) + 30, .8, lt); }
+    // 两条路线：山脊（红）和林中（绿）
+    g.save(); g.strokeStyle = RED; g.lineWidth = 8; g.setLineDash([16, 12]); g.beginPath(); for (let x = W * .14; x <= W * .86; x += 10) { const y = hy(x) - 10; x > W * .14 ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke();
+    g.strokeStyle = GREEN; g.beginPath(); for (let x = W * .14; x <= W * .86; x += 10) { const y = Math.max(hy(x) + 110, H * .52); x > W * .14 ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke(); g.restore();
+    g.restore();
+    markX(CX, hy(CX) - 70, 32, sm((l2 - .6) / .3)); markV(CX, H * .6, 32, sm((l2 - 1.4) / .3));
+    label('山脊：风口', CX + 130, hy(CX) - 70, 32, RED, 900, 'left'); label('林子里', CX + 70, H * .6, 32, GREEN, 900, 'left');
+  }
+});
+// E 温度
+S.push(lt => {
+  bgPlain(lt + 60); card(W * .06, H * .22, W * .88, H * .46, 40);
+  if (lt < 6.2) {
+    const a1 = sm((lt - .4) / .4), a2 = sm((lt - 1.4) / .4);
+    g.save(); g.globalAlpha = a1; ICO.thermo(W * .26, H * .44, 2.4, .75, RED); label('城里 26℃', W * .26, H * .6, 40, COL.ink, 900); g.restore();
+    g.save(); g.globalAlpha = a2; ICO.thermo(W * .72, H * .44, 2.4, .45, BLUE); label('山顶 ≈ 17℃', W * .72, H * .6, 40, COL.ink, 900); label('高 1500 米', W * .72, H * .27, 30, COL.sub, 700); g.restore();
+    if (lt > 2.4) label('→', CX, H * .44, 70, COL.faint, 900);
+  } else {
+    const l2 = lt - 6.2, k = sm((l2 - .8) / 1.2);
+    ICO.thermo(W * .3, H * .44, 2.4, .45 - .15 * k, BLUE); label('实际 17℃', W * .3, H * .6, 40, COL.ink, 900);
+    windLines(lt, k, H * .3, H * .55, 8);
+    g.save(); g.globalAlpha = k; pill('体感更冷', W * .7, H * .44, 44, BLUE, '#fff'); ICO.wind(W * .7, H * .33, 1.2, lt); g.restore();
+  }
+});
+// F 日落 + 预警
+S.push(lt => {
+  bgPlain(lt + 80); card(W * .06, H * .22, W * .88, H * .46, 40);
+  if (lt < 6.2) {
+    [['夏天', 19.5, H * .34, AMB], ['冬天', 17.3, H * .52, BLUE]].forEach(([nm, ss, y, c], i) => {
+      const a = sm((lt - .4 - i * 1) / .4); if (a <= 0) return; g.save(); g.globalAlpha = a;
+      const x0 = W * .22, x1 = W * .88, hx = hh => lerp(x0, x1, (hh - 6) / 15);
+      label(nm, W * .1, y, 38, c, 900, 'left');
+      g.fillStyle = '#ffe9b3'; rrect(x0, y - 22, hx(ss) - x0, 44, 22); g.fill(); g.fillStyle = '#3d3f7e'; rrect(hx(ss), y - 22, x1 - hx(ss), 44, 22); g.fill();
+      sunIcon(hx(ss) - 24, y, 16); label('约 ' + Math.floor(ss) + ':' + (ss % 1 ? '30' : '00'), hx(ss), y + 56, 30, COL.ink, 900);
+      g.restore();
+    });
+    label('（各地不同，以当天预报为准）', CX, H * .64, 28, COL.faint, 700);
+  } else {
+    const l2 = lt - 6.2;
+    [['#2f80ed', '暴雨'], ['#ff9f1c', '大风'], ['#f0473c', '高温']].forEach(([c, t], i) => { const a = pop(l2 - .4 - i * .4); if (a <= 0) return; g.save(); g.translate(W * (.22 + i * .19), H * .38); g.scale(a, a); g.translate(-W * (.22 + i * .19), -H * .38); warnTri(W * (.22 + i * .19), H * .38, 1, c, t + '预警'); g.restore(); });
+    const b = pop(l2 - 1.8); if (b > 0) { g.save(); g.translate(W * .8, H * .4); g.scale(b, b); g.fillStyle = RED; rrect(-90, -60, 180, 100, 16); g.fill(); label('封山', 0, -10, 48, '#fff', 900); g.fillStyle = '#8b5e3c'; g.fillRect(-60, 40, 14, 80); g.fillRect(46, 40, 14, 80); g.restore(); }
+  }
+});
+// G 打雷怎么办
+S.push(lt => {
+  if (lt < 6.2) {
+    const peak = x => H * .74 - 480 * Math.exp(-Math.pow((x - W * .62) / 280, 2));
+    hikeSky(0); g.fillStyle = 'rgba(55,65,85,.6)'; g.fillRect(0, 0, W, H); hikeRidges(0, .4, H * .62); hikeGround(peak, 0, lt, { dusk: .4, treeGap: 160 });
+    g.fillStyle = 'rgba(40,50,70,.25)'; g.fillRect(0, 0, W, H); cloudBank(lt, 1, .3); rainFall(lt, .6, 60);
+    const k = sm((lt - 1.4) / 3.6), xw = lerp(W * .6, W * .2, k);
+    drawHiker(xw, peak(xw) + 12, { s: 1.2, ph: walkPh(lt, 1.2), walk: k > 0 && k < 1 ? 1 : 0, dir: -1, t: lt, slope: -slopeAt(peak, xw) });
+    bolt(W * .74, H * .2, 1.2, (lt > .5 && lt < .9) || (lt > 3.2 && lt < 3.5) ? 1 : 0); flash(lt, .5); flash(lt, 3.2);
+    if (lt > 1.2) { g.save(); g.globalAlpha = sm((lt - 1.2) / .3); arrow(W * .36, H * .36, W * .12, H * .5, GREEN, 9, 30); label('往低处', W * .2, H * .34, 36, GREEN, 900); g.restore(); }
+    topPanel(win(lt, 0, 6.2, .3, .01)); subPanel(win(lt, .8, 6.2, .3, .01));
+  } else {
+    const l2 = lt - 6.2; bgPlain(lt + 100);
+    listCards([[(x, y) => { roundTree(x, y + 46, .55, lt); }, '孤零零的大树', '最容易招雷', 'x', RED], [(x, y) => { g.strokeStyle = '#7d8ea3'; g.lineWidth = 8; g.beginPath(); for (let i = 0; i < 3; i++) { g.moveTo(x - 40 + i * 40, y - 34); g.lineTo(x - 40 + i * 40, y + 34); } g.moveTo(x - 50, y - 20); g.lineTo(x + 50, y - 20); g.stroke(); }, '铁栏杆、铁索', '离远一点', 'x', RED], [(x, y) => { g.fillStyle = '#6ec3f4'; g.beginPath(); g.moveTo(x - 50, y + 10); g.quadraticCurveTo(x, y - 20, x + 50, y + 10); g.quadraticCurveTo(x, y + 40, x - 50, y + 10); g.fill(); }, '溪沟、河道', '暴雨后可能涨水', 'x', RED]], l2, { y0: H * .23, gap: H * .15, ch: H * .13, t0: .3, dt: .9 });
+  }
+});
+// H 改天
+S.push(lt => {
+  bgPlain(lt + 120); card(W * .14, H * .22, W * .72, H * .46, 40);
+  const k = sm((lt - 1.4) / .8);
+  // 日历
+  const cx = CX, cy = H * .42;
+  g.fillStyle = RED; rrect(cx - 200, cy - 200, 400, 90, 24); g.fill(); g.fillStyle = '#f7fafc'; rrect(cx - 200, cy - 130, 400, 310, 24); g.fill();
+  label(k > .5 ? '周日' : '周六', cx, cy - 158, 44, '#fff', 900);
+  g.save(); g.globalAlpha = 1 - k; ICO.storm(cx, cy + 10, 1.6, lt); g.restore();
+  g.save(); g.globalAlpha = k; sunIcon(cx, cy + 20, 60); g.restore();
+  if (k > .9) { markV(cx + 170, cy + 150, 32, 1); label('换个好天', cx, H * .64, 40, GREEN, 900); }
+});
+// I 三个错误
+S.push(lt => {
+  const seg = lt < 6 ? 0 : lt < 12 ? 1 : 2, l2 = lt - seg * 6;
+  if (seg === 0) {
+    bgPlain(lt + 140); card(W * .06, H * .22, W * .88, H * .46, 40);
+    [[W * .28, '城里', 'sun', '晴 26℃'], [W * .72, '山上', 'storm', '雷雨 15℃']].forEach(([x, nm, k, t], i) => {
+      const a = sm((l2 - .4 - i * .8) / .4); if (a <= 0) return; g.save(); g.globalAlpha = a; pill(nm, x, H * .28, 36, i ? BLUE : AMB, '#fff'); wxIcon(k, x, H * .43, 2.2, lt); label(t, x, H * .58, 40, COL.ink, 900); g.restore();
+    });
+  } else if (seg === 1) {
+    bgPlain(lt + 140); card(W * .06, H * .22, W * .88, H * .46, 40);
+    [['前一晚', 'sun', 0], ['出门前', 'storm', 1]].forEach(([nm, k, i]) => { const a = sm((l2 - .4 - i * 1.4) / .4); if (a <= 0) return; const x = W * (.3 + i * .4); g.save(); g.globalAlpha = a; pill(nm, x, H * .28, 36, BLUE, '#fff'); wxIcon(k, x, H * .43, 2.2, lt); g.restore(); });
+    if (l2 > 2.2) { label('会变！', CX, H * .6, 48, RED, 900); label('→', CX, H * .43, 64, COL.faint, 900); }
+  } else {
+    const peak = x => H * .74 - 480 * Math.exp(-Math.pow((x - W * .7) / 280, 2)), dk = sm((l2 - .3) / 1.4);
+    hikeSky(0); g.fillStyle = `rgba(55,65,85,${.6 * dk})`; g.fillRect(0, 0, W, H); hikeRidges(0, .4 * dk, H * .62); hikeGround(peak, 0, lt, { dusk: .4 * dk, treeGap: 160 });
+    cloudBank(lt, dk, .3 * dk);
+    const xw = W * .38 + l2 * 20; hikerOn(peak, xw, 0, { s: 1.2, ph: walkPh(lt, .7), t: lt, tired: .5 });
+    bolt(W * .8, H * .18, 1.1, (l2 > 2.6 && l2 < 2.9) ? 1 : 0); flash(l2, 2.6);
+    bubble('马上就到顶了！', W * .42, H * .38, 40, RED, l2 - 1.2);
+    topPanel(win(l2, 0, 6, .3, .01)); subPanel(win(l2, .8, 6, .3, .01));
+  }
+  errorMark(l2);
+});
+// J
+S.push(lt => mottoCard(lt, [['出发前', '看逐小时预报：雷雨和风'], ['看山上', '温度更低，风更大'], ['路上', '变天就撤，不硬冲']], '山一直在，平安回来最重要。'));
+// K
+S.push(lt => endScene(lt));
+
+/* ───────── 封面 ───────── */
+function coverArt(key, w, h) {
+  hikeCover(key, w, h, {
+    ep: '06', l1: '出发前', l2: [['天气', BLUE], ['看什么？', COL.ink]], chips: [['雷雨', RED], ['风', AMB], ['温度', BLUE], ['日落', GREEN]],
+    art: (k, ww, hh) => coverHill(k, ww, hh, {}, () => {
+      const vert = k === '9x16' || k === '3x4', cx = vert ? ww * .7 : ww * .84, cy = vert ? hh * .58 : hh * .43, r = vert ? 170 : 150;
+      g.fillStyle = '#fff'; g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fill(); g.strokeStyle = AMB; g.lineWidth = 10; g.stroke();
+      sunIcon(cx - r * .3, cy - r * .3, r * .22); ICO.storm(cx + r * .15, cy + r * .05, r / 110, .1);
+    })
+  });
+}
+
+/* ───────── 声音 ───────── */
+function sound(K, c, DUR) {
+  const thunder = t0 => { K.noise(t0, 2.2, .9, 'lowpass', 160); K.noise(t0 + .05, 1.2, .5, 'lowpass', 500); };
+  hikeSound(K, c, DUR, {
+    start: 7.6, sec: t => t < 23.2 ? 'verse' : t < 35.2 ? 'chorus' : t < 47.2 ? 'verse' : t < 59.2 ? 'chorus' : t < 71.2 ? 'tense' : t < 79.2 ? 'verse' : t < 97.2 ? 'tense' : 'outro',
+    chirps: [.4, 1.8, 3, 8.4, 10.2, 72.6, 98, 105, 107.5],
+    steps: [[.3, 3.8, .55], [60.6, 64.8, .45]],
+    dings: [11.2 + 6.2 + 2, 23.2 + 6.2 + 1.4, 35.2 + 1.4, 47.2 + .4, 47.2 + 1.4, 71.2 + 2.2],
+    ticks: [11.2 + .6, 11.2 + .84, 11.2 + 1.08, 11.2 + 1.32, 11.2 + 1.56, 11.2 + 1.8, 11.2 + 2.04, 11.2 + 2.28, 11.2 + 2.52, 11.2 + 2.76],
+    wrongs: [23.2 + 6.2 + .6, 47.2 + 6.2 + .4, 59.2 + 6.2 + .6, 59.2 + 6.2 + 1.5, 59.2 + 6.2 + 2.4, 79.2 + .3, 85.2 + .3, 91.2 + .3],
+    riser: 79.2, outro: 97.2,
+    extra: K => {
+      K.wind(DUR, t => (t > 3.8 && t < 7.6) ? .7 : (t > 23.2 && t < 29.4) ? .6 : (t > 41.6 && t < 47) ? .4 : (t > 59.2 && t < 65.4) ? .5 : 0);
+      [3.8 + .9, 3.8 + 2.4, 59.2 + .5, 59.2 + 3.2, 91.2 + 2.6].forEach(thunder);
+      K.noise(3.8, 3.6, .12, 'highpass', 3000); K.noise(59.2, 6, .08, 'highpass', 3000);
+    }
+  });
+}
+
+kitRun({ T, S, TX, seed: 806, allText: SRC.replace(/[\x00-\x7f]/g, '') + '0123456789:+=≈÷→～℃！', audio: sound, cover: coverArt });
+})();
+</script>
+</body>
+</html>

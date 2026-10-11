@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>徒步不难 EP.05</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#000;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;aspect-ratio:9/16;max-width:100vw;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;aspect-ratio:auto;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="trailkit.js"></script>
+<script>
+/*
+ * 徒步不难 EP.05《登山杖：要不要买，怎么用？》（约 1 分 51 秒）
+ * 有什么用 → 长度怎么调（上短下长）→ 腕带 → 交替撑、下坡杖先落 → 怎么选 → 不用时收好 → 三个错误
+ */
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+const T = [0, 7.6, 11.2, 23.2, 35.2, 47.2, 59.2, 71.2, 79.2, 97.2, 104.2, 110.7];
+const YH = .135, YB = .745;
+const { blue: BLUE, green: GREEN, amber: AMB, red: RED } = HB;
+
+const TX = [
+  { in: .15, out: 3.6, text: '下山的时候，\n{r}膝盖疼{/}？', y: YH, size: 88, w: 900, st: .06 },
+  { in: 3.8, out: 7.4, text: '试试这两根\n{g}登山杖{/}。', y: YH, size: 88, w: 900 },
+  { in: 7.85, out: 10.95, text: '登山杖：\n要不要买，怎么用？', y: .3, size: 92, w: 900, st: .05 },
+  { in: 8.6, out: 10.95, text: '长度、腕带、怎么撑', y: .415, size: 42, w: 600, sub: 1 },
+  // C 有什么用
+  { in: 11.4, out: 17.2, text: '它有什么用？\n{g}帮腿分担{/}。', y: YH, size: 84, w: 900 },
+  { in: 12.2, out: 17.2, text: '上坡帮着推一把，下坡帮着撑一下，\n膝盖和腿都能轻松一些。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 17.6, out: 23.0, text: '两条腿 + 两根杖，\n{g}四个支点{/}更稳。', y: YH, size: 84, w: 900 },
+  { in: 18.4, out: 23.0, text: '过碎石、过小溪、走湿滑的路，尤其管用。', y: YB, size: 42, w: 500, sub: 1 },
+  // D 长度
+  { in: 23.4, out: 29.2, text: '长度怎么调？\n小臂{g}差不多水平{/}。', y: YH, size: 84, w: 900 },
+  { in: 24.2, out: 29.2, text: '平地站直，握住把手，手肘大约弯成 90°。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 29.6, out: 35.0, text: '{g}上坡调短{/}，\n{a}下坡调长{/}。', y: YH, size: 88, w: 900 },
+  { in: 30.4, out: 35.0, text: '各调 5～10 厘米，让手一直在舒服的高度。', y: YB, size: 42, w: 500, sub: 1 },
+  // E 腕带
+  { in: 35.4, out: 41.2, text: '{g}腕带{/}怎么套？\n手{g}从下往上{/}穿。', y: YH, size: 84, w: 900 },
+  { in: 36.2, out: 41.2, text: '先把手从腕带下面穿过去，再握住把手。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 41.6, out: 47.0, text: '腕带{g}托住手腕{/}，\n手不用握得死紧。', y: YH, size: 84, w: 900 },
+  { in: 42.4, out: 47.0, text: '撑的时候，力从腕带传到杖上，手不容易累。', y: YB, size: 42, w: 500, sub: 1 },
+  // F 怎么撑
+  { in: 47.6, out: 53.2, text: '怎么撑？\n和走路一样{g}左右交替{/}。', y: YH, size: 80, w: 900 },
+  { in: 48.4, out: 53.2, text: '迈右脚，出左杖；迈左脚，出右杖。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 53.6, out: 59.0, text: '下坡时，\n{g}杖先落地{/}，脚再跟上。', y: YH, size: 84, w: 900 },
+  { in: 54.4, out: 59.0, text: '杖尖撑在身前一点点，别伸太远。', y: YB, size: 42, w: 500, sub: 1 },
+  // G 怎么选
+  { in: 59.4, out: 71.0, text: '新手买一对\n{g}能伸缩{/}的就行。', y: YH, size: 84, w: 900 },
+  { in: 60.2, out: 71.0, text: '锁扣要锁得牢。铝合金结实，碳纤维更轻，\n价格也更高。', y: YB, size: 42, w: 500, sub: 1 },
+  // H 不用时
+  { in: 71.4, out: 79.0, text: '用不上的时候，\n{g}收短挂在包上{/}。', y: YH, size: 84, w: 900 },
+  { in: 72.2, out: 79.0, text: '要手脚并用的地方，杖反而碍事；\n拿在手里时杖尖朝下，别横着拿。', y: YB, size: 42, w: 500, sub: 1 },
+  // I 三个错误
+  { in: 79.4, out: 85.0, text: '常见错误一：\n长度{r}一直不调{/}', y: YH, size: 84, w: 900 },
+  { in: 80.2, out: 85.0, text: '上坡太长，手举得累；下坡太短，够不着。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 85.4, out: 91.0, text: '常见错误二：\n杖{r}撑得太远{/}', y: YH, size: 84, w: 900 },
+  { in: 86.2, out: 91.0, text: '撑在身前太远，用不上力，杖尖还容易滑。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 91.4, out: 97.0, text: '常见错误三：\n{r}全身重量{/}都压上去', y: YH, size: 80, w: 900 },
+  { in: 92.2, out: 97.0, text: '杖是帮忙的，主要还靠腿；\n杖一滑，人就跟着倒。', y: YB, size: 42, w: 500, sub: 1 },
+  // K
+  { in: 104.4, out: 999, text: '你徒步的时候，\n用登山杖吗？', y: .37, size: 84, w: 900, st: .06 },
+  { in: 105.4, out: 999, text: '评论区说说', y: .465, size: 42, w: 500, sub: 1 }
+];
+
+/* ───────── 本集画面 ───────── */
+const walkPh = (t, k) => t * Math.PI * 2 * (k || .9);
+// 示意小人（侧面，朝右站）：sl 坡度（度，正为上坡），reach 杖尖离脚的水平距离，返回各点
+function fig(cx, gy, s, sl, reach, o) {
+  o = o || {};
+  const tn = Math.tan(sl * D2R), gyAt = x => gy - (x - cx) * tn;
+  const Hp = [cx, gy - 92 * s], Sh = [cx + 6 * s, gy - 162 * s], Hd = [cx + 12 * s, gy - 196 * s];
+  const El = [cx + 8 * s, gy - 108 * s], Hn = [cx + 66 * s + (o.handDx || 0) * s, gy - 108 * s + (o.handDy || 0) * s];
+  const tipX = cx + (reach == null ? 72 : reach) * s, Tip = [tipX, gyAt(tipX)];
+  g.save(); g.lineCap = 'round'; g.lineJoin = 'round';
+  // 腿
+  g.strokeStyle = TP.pants2; g.lineWidth = 17 * s; g.beginPath(); g.moveTo(Hp[0], Hp[1]); g.lineTo(cx - 14 * s, gyAt(cx - 14 * s)); g.stroke();
+  g.strokeStyle = TP.pants; g.beginPath(); g.moveTo(Hp[0], Hp[1]); g.lineTo(cx + 14 * s, gyAt(cx + 14 * s)); g.stroke();
+  // 背包 + 身体
+  g.fillStyle = TP.pack; rrect(cx - 44 * s, gy - 170 * s, 32 * s, 64 * s, 12 * s); g.fill();
+  g.strokeStyle = TP.jacket; g.lineWidth = 32 * s; g.beginPath(); g.moveTo(Hp[0], Hp[1] - 6 * s); g.lineTo(Sh[0], Sh[1] + 6 * s); g.stroke();
+  // 头
+  g.fillStyle = TP.skin; g.beginPath(); g.arc(Hd[0], Hd[1], 18 * s, 0, Math.PI * 2); g.fill();
+  g.fillStyle = TP.hat; g.beginPath(); g.ellipse(Hd[0] + 2 * s, Hd[1] - 10 * s, 27 * s, 6 * s, 0, 0, Math.PI * 2); g.fill(); g.beginPath(); g.arc(Hd[0], Hd[1] - 11 * s, 16 * s, Math.PI, 0); g.fill();
+  g.fillStyle = '#1b2838'; g.beginPath(); g.arc(Hd[0] + 9 * s, Hd[1] - 1 * s, 2.6 * s, 0, Math.PI * 2); g.fill();
+  // 杖
+  if (!o.noPole) {
+  g.strokeStyle = '#7d8ea3'; g.lineWidth = 7 * s; g.beginPath(); g.moveTo(Hn[0], Hn[1] - 14 * s); g.lineTo(Tip[0], Tip[1]); g.stroke();
+  g.fillStyle = '#1b2838'; rrect(Hn[0] - 7 * s, Hn[1] - 26 * s, 14 * s, 30 * s, 6 * s); g.fill();
+  }
+  // 手臂
+  g.strokeStyle = TP.jacket; g.lineWidth = 13 * s; g.beginPath(); g.moveTo(Sh[0], Sh[1]); g.lineTo(El[0], El[1]); g.lineTo(Hn[0], Hn[1]); g.stroke();
+  g.fillStyle = TP.skin; g.beginPath(); g.arc(Hn[0], Hn[1] - 8 * s, 8 * s, 0, Math.PI * 2); g.fill();
+  g.restore();
+  return { Hp, Sh, El, Hn, Tip, gyAt };
+}
+function groundLine(cx, gy, sl, w) {
+  const tn = Math.tan(sl * D2R); g.fillStyle = '#c7e8c1'; g.beginPath(); g.moveTo(cx - w, gy + w * tn); g.lineTo(cx + w, gy - w * tn); g.lineTo(cx + w, H); g.lineTo(cx - w, H); g.closePath(); g.fill();
+  g.strokeStyle = TP.soil; g.lineWidth = 10; g.beginPath(); g.moveTo(cx - w, gy + w * tn); g.lineTo(cx + w, gy - w * tn); g.stroke();
+}
+function rightAngle(P, s, a) { g.save(); g.globalAlpha = a; g.strokeStyle = GREEN; g.lineWidth = 5; g.beginPath(); g.moveTo(P[0], P[1] - 34 * s); g.lineTo(P[0] + 34 * s * 0 + 0, P[1] - 34 * s); g.stroke(); g.beginPath(); g.arc(P[0], P[1], 34 * s, -Math.PI / 2, 0); g.stroke(); label('90°', P[0] + 44 * s, P[1] - 40 * s, 30 * s, GREEN, 900, 'left'); g.restore(); }
+// 俯视脚印与杖点
+function footprint(x, y, s, right, a, c) { g.save(); g.globalAlpha = a; g.translate(x, y); g.scale(s, s); g.fillStyle = c || TP.boot; g.beginPath(); g.ellipse(0, 0, 20, 34, 0, 0, Math.PI * 2); g.fill(); g.beginPath(); g.ellipse(0, -48, 15, 14, 0, 0, Math.PI * 2); g.fill(); g.restore(); }
+function poleDot(x, y, a, c) { g.save(); g.globalAlpha = a; g.fillStyle = c || '#7d8ea3'; g.beginPath(); g.arc(x, y, 18, 0, Math.PI * 2); g.fill(); g.strokeStyle = '#fff'; g.lineWidth = 4; g.stroke(); g.restore(); }
+// 腕带特写
+function strapClose(cx, cy, k, k2, t) {
+  // 把手
+  g.fillStyle = '#1b2838'; rrect(cx - 40, cy - 150, 80, 260, 30); g.fill(); g.fillStyle = '#7d8ea3'; g.fillRect(cx - 12, cy + 110, 24, 300);
+  // 腕带
+  g.strokeStyle = COL.amber; g.lineWidth = 18; g.beginPath(); g.moveTo(cx - 30, cy - 140); g.bezierCurveTo(cx - 230, cy - 120, cx - 220, cy + 60 - 30 * k2, cx - 40, cy - 110 + 140 * k2 * 0); g.stroke();
+  // 手：从下往上穿过腕带
+  const hx = cx - 150 + 80 * k2, hy = lerp(cy + 300, cy - 10, k);
+  g.fillStyle = TP.skin; g.strokeStyle = '#e8b48f'; g.lineWidth = 4;
+  rrect(hx - 70, hy - 70, 140, 120, 50); g.fill(); g.stroke();
+  g.fillStyle = TP.jacket; rrect(hx - 60, hy + 40, 120, 220, 30); g.fill();
+  if (k2 > .5) { g.fillStyle = TP.skin; for (let i = 0; i < 4; i++) { rrect(cx + 20, hy - 60 + i * 30, 50 * (k2 - .5) * 2, 24, 12); g.fill(); } }
+}
+
+/* ───────── 场景 ───────── */
+const S = [];
+// A 钩子
+S.push(lt => {
+  if (lt < 3.8) {
+    const hy = x => H * .4 + x * .4;
+    const R = bgWalk(lt, { cam: 110, hy, hiker: { pole: false, ph: walkPh(lt, .8), tired: .5, lean: -.1 }, sun: [W * .2, H * .3] });
+    const J = R.J, kx = J.hip[0] + 14 * 1.4, ky = J.hip[1] + 46 * 1.4;
+    glow(kx, ky, 70, '240,71,60', .5 + .4 * Math.abs(Math.sin(lt * 6)));
+    bubble('嘶……', J.head[0] + 120, J.head[1] - 60, 46, RED, lt - 1.2);
+  } else {
+    const l2 = lt - 3.8;
+    bgPlain(lt);
+    const a = pop(l2 - .2); g.save(); g.translate(CX, H * .46); g.scale(a, a); g.rotate(Math.sin(l2 * 2) * .08);
+    [-1, 1].forEach(sd => { g.save(); g.translate(sd * 70, 0); g.rotate(sd * .12); g.strokeStyle = '#7d8ea3'; g.lineWidth = 16; g.lineCap = 'round'; g.beginPath(); g.moveTo(0, -200); g.lineTo(0, 300); g.stroke(); g.strokeStyle = '#5b6b7c'; g.lineWidth = 22; g.beginPath(); g.moveTo(0, 20); g.lineTo(0, 30); g.moveTo(0, 130); g.lineTo(0, 140); g.stroke(); g.fillStyle = '#1b2838'; rrect(-22, -300, 44, 120, 18); g.fill(); g.strokeStyle = AMB; g.lineWidth = 10; g.beginPath(); g.moveTo(-18, -290); g.quadraticCurveTo(-80, -260, -18, -200); g.stroke(); g.restore(); });
+    g.restore();
+    for (let i = 0; i < 8; i++) { const ang = i / 8 * Math.PI * 2 + l2, r = 340 + Math.sin(l2 * 3 + i) * 20; g.fillStyle = AMB; g.globalAlpha = .5 * sm((l2 - .4) / .4); g.beginPath(); g.arc(CX + Math.cos(ang) * r, H * .46 + Math.sin(ang) * r * .9, 10, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
+  }
+});
+// B
+S.push(lt => titleScene(lt, '05'));
+// C 有什么用
+S.push(lt => {
+  bgPlain(lt + 20);
+  if (lt < 6.2) {
+    [[W * .28, false, '不用杖', RED], [W * .72, true, '用杖', GREEN]].forEach(([cx, pole, nm, c], i) => {
+      const a = eout((lt - .3 - i * .5) / .4); if (a <= 0) return;
+      g.save(); g.globalAlpha = a; card(cx - W * .21, H * .22, W * .42, H * .46, 36);
+      g.save(); rrect(cx - W * .21, H * .22, W * .42, H * .46, 36); g.clip();
+      groundLine(cx, H * .58, -22, 300);
+      const P = fig(cx - 20, H * .58 + 20 * Math.tan(22 * D2R), 1.25, -22, 92, { noPole: !pole, handDx: pole ? 0 : -40, handDy: pole ? 0 : 40 });
+      g.restore();
+      pill(nm, cx, H * .26, 36, c, '#fff');
+      const kx = cx - 2, ky = H * .58 - 40;
+      const ka = sm((lt - 1.4 - i * .5) / .4);
+      g.globalAlpha = a * ka; arrow(kx + 50, ky - 120, kx + 50, ky - (pole ? 60 : 20), RED, pole ? 8 : 18, pole ? 24 : 42);
+      if (pole) arrow(P.Hn[0] + 30, P.Hn[1] - 100, P.Hn[0] + 30, P.Hn[1] - 30, GREEN, 12, 32);
+      label(pole ? '腿：轻一些' : '腿：全扛', cx, H * .655, 34, c, 900);
+      g.restore();
+    });
+  } else {
+    const l2 = lt - 6.2; card(W * .08, H * .22, W * .84, H * .46, 40);
+    const cx = CX, cy = H * .45, A = [cx - 50, cy + 60], B = [cx + 50, cy - 30], P1 = [cx - 150, cy - 120], P2 = [cx + 150, cy - 140];
+    const two = sm((l2 - 2.4) / .6);
+    g.save(); g.globalAlpha = 1 - two * .7; g.strokeStyle = RED; g.lineWidth = 8; g.setLineDash([12, 10]); g.beginPath(); g.moveTo(A[0], A[1]); g.lineTo(B[0], B[1]); g.stroke(); g.restore();
+    if (two > 0) { g.save(); g.globalAlpha = two; g.fillStyle = 'rgba(18,166,121,.22)'; g.strokeStyle = GREEN; g.lineWidth = 6; g.beginPath(); g.moveTo(A[0], A[1]); g.lineTo(P1[0], P1[1]); g.lineTo(P2[0], P2[1]); g.lineTo(B[0], B[1]); g.closePath(); g.fill(); g.stroke(); g.restore(); }
+    footprint(A[0], A[1], 1.3, false, 1); footprint(B[0], B[1], 1.3, true, 1);
+    poleDot(P1[0], P1[1], two); poleDot(P2[0], P2[1], two);
+    label(two > .5 ? '四个支点：一大片' : '两只脚：一条线', CX, H * .63, 40, two > .5 ? GREEN : RED, 900);
+  }
+});
+// D 长度
+S.push(lt => {
+  bgPlain(lt + 40);
+  card(W * .06, H * .22, W * .88, H * .46, 40);
+  g.save(); rrect(W * .06, H * .22, W * .88, H * .46, 40); g.clip();
+  if (lt < 6.2) {
+    groundLine(CX, H * .62, 0, 500);
+    const P = fig(CX - 40, H * .62, 1.9, 0, 66, {});
+    rightAngle(P.El, 1.9, sm((lt - 1.4) / .4));
+    const a = sm((lt - 2.4) / .4); g.save(); g.globalAlpha = a; g.strokeStyle = GREEN; g.lineWidth = 4; g.setLineDash([10, 8]); g.beginPath(); g.moveTo(P.El[0] - 40, P.El[1]); g.lineTo(P.Hn[0] + 100, P.Hn[1]); g.stroke(); g.restore();
+    g.save(); g.globalAlpha = a; label('小臂水平', P.Hn[0] + 110, P.Hn[1] - 30, 36, GREEN, 900, 'left'); g.restore();
+  } else {
+    const l2 = lt - 6.2;
+    [[W * .3, 22, '上坡：短', GREEN], [W * .72, -22, '下坡：长', AMB]].forEach(([cx, sl, nm, c], i) => {
+      const a = eout((l2 - .3 - i * .6) / .4); if (a <= 0) return; g.save(); g.globalAlpha = a;
+      g.beginPath(); g.rect(cx - W * .2, H * .22, W * .4, H * .46); g.clip();
+      const gy = H * .58; groundLine(cx, gy, sl, 220);
+      const P = fig(cx - 30, gy + 30 * Math.tan(sl * D2R), 1.15, sl, 70, {});
+      g.strokeStyle = c; g.lineWidth = 6; g.setLineDash([8, 6]); g.beginPath(); g.moveTo(P.Hn[0] + 26, P.Hn[1] - 14); g.lineTo(P.Tip[0] + 26, P.Tip[1]); g.stroke(); g.setLineDash([]);
+      pill(nm, cx, H * .27, 36, c, '#fff');
+      g.restore();
+    });
+  }
+  g.restore();
+});
+// E 腕带
+S.push(lt => {
+  bgPlain(lt + 60); card(W * .1, H * .22, W * .8, H * .46, 40);
+  g.save(); rrect(W * .1, H * .22, W * .8, H * .46, 40); g.clip();
+  if (lt < 6.2) {
+    const k = sm((lt - .8) / 2.2), k2 = sm((lt - 3.2) / 1.2);
+    strapClose(CX + 60, H * .43, k, k2, lt);
+    if (lt > .8 && lt < 3.2) arrow(W * .26, H * .62, W * .26, H * .5, GREEN, 8, 28);
+  } else {
+    const l2 = lt - 6.2; strapClose(CX + 60, H * .43, 1, 1, lt);
+    const a = sm((l2 - .6) / .4); g.save(); g.globalAlpha = a; arrow(CX - 140, H * .36, CX - 140, H * .45, GREEN, 10, 30); arrow(CX + 60, H * .52, CX + 60, H * .62, GREEN, 10, 30); label('托住手腕', CX - 150, H * .32, 36, GREEN, 900); label('力传到杖上', CX + 200, H * .6, 32, GREEN, 900); g.restore();
+  }
+  g.restore();
+});
+// F 怎么撑
+S.push(lt => {
+  if (lt < 6.2) {
+    bgPlain(lt + 80); card(W * .1, H * .22, W * .8, H * .46, 40);
+    g.save(); rrect(W * .1, H * .22, W * .8, H * .46, 40); g.clip();
+    g.fillStyle = '#eef6ec'; g.fillRect(W * .1, H * .22, W * .8, H * .46);
+    // 从下往上走：右脚 + 左杖，左脚 + 右杖
+    const step = Math.floor(Math.max(0, lt - .4) / .7);
+    for (let i = 0; i <= Math.min(step, 5); i++) {
+      const right = i % 2 === 0, y = H * .63 - i * 105, fx = CX + (right ? 56 : -56), px = CX + (right ? -170 : 170);
+      const a = i === step ? sm((lt - .4 - i * .7) / .25) : 1, fade = 1 - (step - i) * .12;
+      footprint(fx, y, 1.4, right, a * fade, right ? TP.jacket : TP.pack); poleDot(px, y - 60, a * fade, right ? TP.pack : TP.jacket);
+    }
+    g.restore();
+    label('右脚', W * .66, H * .66, 30, TP.jacket, 900); label('左杖', W * .26, H * .66, 30, TP.pack, 900);
+  } else {
+    const l2 = lt - 6.2, hy = x => H * .38 + x * .38;
+    const R = bgWalk(lt, { cam: 90, hy, hiker: { pole: true, ph: walkPh(lt, .7), lean: -.05 }, sun: [W * .2, H * .3] });
+    subPanel(win(l2, .8, 6, .3, .01));
+    const J = R.J; bubble('杖先落', J.head[0] + 140, J.head[1] - 70, 40, GREEN, l2 - .8);
+  }
+});
+// G 怎么选
+S.push(lt => {
+  bgPlain(lt + 100);
+  listCards([
+    [(x, y) => ICO.pole(x, y, 1), '能伸缩', '长度随时调，收起来短', 'v', GREEN],
+    [(x, y) => { g.fillStyle = '#1b2838'; rrect(x - 26, y - 20, 52, 40, 10); g.fill(); g.fillStyle = AMB; rrect(x + 14, y - 30, 22, 60, 8); g.fill(); }, '锁扣锁得牢', '翻扣式的，调起来快', 'v', AMB],
+    [(x, y) => { ICO.pole(x - 16, y, .8); ICO.pole(x + 16, y, .8); }, '一对比一根稳', '一根也能用，一对更平衡', 'v', BLUE]
+  ], lt, { y0: H * .23, gap: H * .15, ch: H * .13, t0: .8, dt: 1.6 });
+});
+// H 不用时
+S.push(lt => {
+  bgPlain(lt + 120);
+  card(W * .06, H * .22, W * .88, H * .46, 40);
+  if (lt < 4) {
+    ICO.pack(CX, H * .46, 3.6);
+    const k = sm((lt - .6) / 1.2);
+    [-1, 1].forEach(sd => { g.save(); g.translate(CX + sd * 70 + (1 - k) * sd * 200, H * .44 - (1 - k) * 200); g.rotate(sd * .1); g.strokeStyle = '#7d8ea3'; g.lineWidth = 12; g.lineCap = 'round'; g.beginPath(); g.moveTo(0, -150); g.lineTo(0, 200); g.stroke(); g.fillStyle = '#1b2838'; rrect(-16, -200, 32, 70, 12); g.fill(); g.restore(); });
+    if (k > .95) markV(W * .78, H * .3, 34, 1);
+  } else {
+    const l2 = lt - 4;
+    g.save(); rrect(W * .06, H * .22, W * .88, H * .46, 40); g.clip();
+    groundLine(CX, H * .62, 0, 500);
+    drawHiker(W * .3, H * .62, { s: 1.2, ph: walkPh(lt), t: lt, pole: false });
+    g.strokeStyle = '#7d8ea3'; g.lineWidth = 8; g.lineCap = 'round'; g.beginPath(); g.moveTo(W * .2, H * .53); g.lineTo(W * .52, H * .53); g.stroke();
+    drawHiker(W * .7, H * .62, { s: 1.2, walk: 0, t: lt, jacket: BLUE, dir: -1 });
+    g.restore();
+    markX(W * .52, H * .47, 30, sm((l2 - .6) / .3)); label('横着拿，戳到人', CX, H * .66, 34, RED, 900);
+  }
+});
+// I 三个错误
+S.push(lt => {
+  const seg = lt < 6 ? 0 : lt < 12 ? 1 : 2, l2 = lt - seg * 6;
+  bgPlain(lt + 140); card(W * .06, H * .22, W * .88, H * .46, 40);
+  g.save(); rrect(W * .06, H * .22, W * .88, H * .46, 40); g.clip();
+  if (seg === 0) {
+    groundLine(CX, H * .6, 24, 500);
+    const P = fig(CX - 60, H * .6 + 60 * Math.tan(24 * D2R), 1.6, 24, 70, { handDy: -60 });
+    glow(P.Sh[0], P.Sh[1], 60, '240,71,60', .4 + .3 * Math.sin(lt * 6));
+    label('手举太高', P.Hn[0] + 90, P.Hn[1] - 40, 36, RED, 900, 'left');
+  } else if (seg === 1) {
+    groundLine(CX, H * .6, 0, 500);
+    const k = sm((l2 - .4) / .8), slip = sm((l2 - 2) / .6);
+    const P = fig(W * .3, H * .6, 1.6, 0, lerp(70, 300 + 60 * slip, k), { handDx: 60 * k, handDy: -10 * k });
+    if (slip > 0) { label('滑！', P.Tip[0] + 40, P.Tip[1] - 70, 48, RED, 900); arrow(P.Tip[0] - 30, P.Tip[1] - 20, P.Tip[0] + 60, P.Tip[1] - 20, RED, 6, 22); }
+  } else {
+    groundLine(CX, H * .6, 0, 500);
+    const k = sm((l2 - .4) / .8);
+    const P = fig(W * .4, H * .6, 1.6, 0, 120, { handDx: 20 });
+    g.save(); g.globalAlpha = k; arrow(P.Hn[0], P.Hn[1] - 200, P.Hn[0], P.Hn[1] - 40, RED, 20, 46); label('全压上去', P.Hn[0] + 50, P.Hn[1] - 160, 38, RED, 900, 'left'); g.restore();
+  }
+  g.restore();
+  errorMark(l2);
+});
+// J
+S.push(lt => mottoCard(lt, [['长度', '平地站直，小臂水平'], ['坡上', '上坡短、下坡长'], ['走法', '左右交替，下坡杖先落']], '用对了，膝盖会轻松不少。'));
+// K
+S.push(lt => endScene(lt));
+
+/* ───────── 封面 ───────── */
+function coverArt(key, w, h) {
+  hikeCover(key, w, h, {
+    ep: '05', l1: '登山杖', l2: [['要不要买？', COL.ink], ['怎么用', GREEN]], chips: [['长度', GREEN], ['腕带', AMB], ['怎么撑', BLUE]],
+    art: (k, ww, hh) => coverHill(k, ww, hh, {}, () => {
+      const vert = k === '9x16' || k === '3x4', cx = vert ? ww * .72 : ww * .85, cy = vert ? hh * .58 : hh * .43, s = vert ? 1 : .85;
+      g.save(); g.translate(cx, cy); g.scale(s, s);
+      [-1, 1].forEach(sd => { g.save(); g.translate(sd * 40, 0); g.rotate(sd * .14); g.strokeStyle = '#7d8ea3'; g.lineWidth = 12; g.lineCap = 'round'; g.beginPath(); g.moveTo(0, -120); g.lineTo(0, 200); g.stroke(); g.fillStyle = '#1b2838'; rrect(-17, -190, 34, 86, 14); g.fill(); g.strokeStyle = AMB; g.lineWidth = 8; g.beginPath(); g.moveTo(-14, -184); g.quadraticCurveTo(-64, -160, -14, -112); g.stroke(); g.restore(); });
+      g.restore();
+    })
+  });
+}
+
+/* ───────── 声音 ───────── */
+function sound(K, c, DUR) {
+  hikeSound(K, c, DUR, {
+    start: 7.6, sec: t => t < 23.2 ? 'verse' : t < 35.2 ? 'chorus' : t < 47.2 ? 'verse' : t < 59.2 ? 'chorus' : t < 79.2 ? 'verse' : t < 97.2 ? 'tense' : 'outro',
+    chirps: [8.4, 10.2, 60, 72, 98, 105, 107.5],
+    steps: [[.3, 3.8, .55], [53.4, 59.2, .55]],
+    dings: [3.8 + .3, 11.2 + 1.9, 11.2 + 2.4, 11.2 + 8.6, 23.2 + 1.6, 23.2 + 6.5, 23.2 + 7.1, 35.2 + 4.2, 35.2 + 6.8, 59.2 + 1.3, 59.2 + 2.9, 59.2 + 4.5, 71.2 + 1.8],
+    ticks: [47.2 + .6, 47.2 + 1.5, 47.2 + 2.4, 47.2 + 3.3, 47.2 + 4.2, 47.2 + 5.1],
+    wrongs: [1.4, 71.2 + 4.6, 79.2 + .3, 85.2 + .3, 91.2 + .3, 85.2 + 2],
+    whoosh: [3.8 + .2], riser: 79.2, outro: 97.2
+  });
+}
+
+kitRun({ T, S, TX, seed: 705, allText: SRC.replace(/[\x00-\x7f]/g, '') + '0123456789:+=≈÷→～°', audio: sound, cover: coverArt });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>徒步不难 EP.02</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#000;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;aspect-ratio:9/16;max-width:100vw;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;aspect-ratio:auto;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="trailkit.js"></script>
+<script>
+/*
+ * 徒步不难 EP.02《徒步鞋怎么选？》（约 1 分 46 秒）
+ * 看路选鞋 → 鞋底（抓地、软硬）→ 高帮还是低帮 → 试鞋与系鞋带 → 新鞋磨合 → 三个错误
+ */
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+const T = [0, 7.6, 11.2, 24.2, 37.2, 50.2, 66.2, 74.2, 92.2, 99.2, 105.7];
+const YH = .135, YB = .745;
+const { blue: BLUE, green: GREEN, amber: AMB, red: RED } = HB;
+
+const TX = [
+  { in: .15, out: 3.6, text: '穿着小白鞋\n去爬山？', y: YH, size: 88, w: 900, st: .06 },
+  { in: 3.8, out: 7.4, text: '下坡一踩{r}碎石{/}，\n{r}一路打滑{/}。', y: YH, size: 84, w: 900 },
+  { in: 7.85, out: 10.95, text: '徒步鞋\n怎么选？', y: .3, size: 104, w: 900, st: .05 },
+  { in: 8.6, out: 10.95, text: '看路、看鞋底、看合不合脚', y: .415, size: 42, w: 600, sub: 1 },
+  // C 看路选鞋
+  { in: 11.4, out: 17.4, text: '先想想：\n你要走{a}什么样的路{/}？', y: YH, size: 80, w: 900 },
+  { in: 17.8, out: 24.0, text: '路越难走，\n鞋越要{g}抓地、有支撑{/}。', y: YH, size: 80, w: 900 },
+  { in: 18.6, out: 24.0, text: '背的东西越重，也越需要支撑。', y: YB, size: 42, w: 500, sub: 1 },
+  // D 鞋底
+  { in: 24.4, out: 30.4, text: '最要紧的是{g}鞋底{/}。', y: YH, size: 84, w: 900 },
+  { in: 25.2, out: 30.4, text: '花纹深、有齿，\n踩在湿石头和泥地上才抓得住。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 30.8, out: 37.0, text: '鞋底也别太软：\n{a}折一折{/}试试。', y: YH, size: 80, w: 900 },
+  { in: 31.6, out: 37.0, text: '一折就对折的，踩到尖石头会硌脚；\n前掌能弯、中间不塌，刚好。', y: YB, size: 42, w: 500, sub: 1 },
+  // E 高帮
+  { in: 37.4, out: 43.4, text: '{a}高帮{/}是不是更好？', y: YH, size: 84, w: 900 },
+  { in: 38.2, out: 43.4, text: '高帮把脚踝包住，\n走碎石、背重包时更稳一些。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 43.8, out: 50.0, text: '但它{r}更重、更闷{/}。\n好走的路，{g}低帮就够{/}。', y: YH, size: 80, w: 900 },
+  { in: 44.6, out: 50.0, text: '新手走成熟步道，不一定非要高帮。', y: YB, size: 42, w: 500, sub: 1 },
+  // F 试鞋
+  { in: 50.4, out: 56.4, text: '试鞋：{g}下午{/}去，\n穿着{g}徒步袜{/}试。', y: YH, size: 80, w: 900 },
+  { in: 51.2, out: 56.4, text: '走了一天脚会胀一点，下午试更准。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 56.8, out: 62.4, text: '脚趾前面\n留{g}一指宽{/}。', y: YH, size: 84, w: 900 },
+  { in: 57.6, out: 62.4, text: '下坡时脚会往前冲，\n鞋太短，脚趾就顶上了。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 62.8, out: 66.0, text: '{g}鞋带系紧{/}，\n脚后跟不晃。', y: YH, size: 84, w: 900 },
+  // G 磨合
+  { in: 66.4, out: 74.0, text: '新鞋别直接上山，\n先{g}穿着走几天{/}。', y: YH, size: 80, w: 900 },
+  { in: 67.2, out: 74.0, text: '在小区、公园里走几次，\n哪里磨脚，出发前就知道。', y: YB, size: 42, w: 500, sub: 1 },
+  // I 三个错误
+  { in: 74.4, out: 80.0, text: '常见错误一：\n鞋买得{r}刚刚好{/}', y: YH, size: 80, w: 900 },
+  { in: 75.2, out: 80.0, text: '平地刚好，一下坡就顶脚趾，\n走一天指甲都会顶黑。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 80.4, out: 86.0, text: '常见错误二：\n穿{r}薄棉袜{/}', y: YH, size: 84, w: 900 },
+  { in: 81.2, out: 86.0, text: '棉袜吸了汗不干，\n湿着来回磨，最容易起水泡。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 86.4, out: 92.0, text: '常见错误三：\n{r}鞋带松着下山{/}', y: YH, size: 80, w: 900 },
+  { in: 87.2, out: 92.0, text: '脚在鞋里前后滑，\n脚趾和脚后跟一起遭罪。', y: YB, size: 42, w: 500, sub: 1 },
+  // K
+  { in: 99.4, out: 999, text: '你现在穿什么鞋\n去徒步？', y: .37, size: 84, w: 900, st: .06 },
+  { in: 100.4, out: 999, text: '评论区说说', y: .465, size: 42, w: 500, sub: 1 }
+];
+
+/* ───────── 本集画面 ───────── */
+const walkPh = (t, k) => t * Math.PI * 2 * (k || .9);
+function pebbles(hy, cam, seed) {
+  g.fillStyle = '#9aa7b4';
+  for (let k = Math.floor(cam / 40); k < (cam + W) / 40; k++) { const x = k * 40 + hash(k + seed) * 30 - cam; const y = hy(x + cam) + 10 + hash(k + 9) * 8; g.beginPath(); g.ellipse(x, y, 6 + hash(k) * 8, 4 + hash(k + 3) * 4, 0, 0, Math.PI * 2); g.fill(); }
+}
+// 脚在鞋里（侧面剖视）：tilt 弧度（正为鞋头朝下），slide 往前滑的距离，len 鞋内长
+function footInShoe(x, y, s, tilt, slide, roomy, t, warn) {
+  g.save(); g.translate(x, y); g.scale(s, s); g.rotate(tilt);
+  const wall = roomy ? 118 : 96;
+  // 鞋
+  g.fillStyle = '#2b3440'; rrect(-120, 0, wall + 150, 26, 12); g.fill();
+  g.fillStyle = 'rgba(43,52,64,.08)'; g.strokeStyle = '#ff7a3d'; g.lineWidth = 7;
+  g.beginPath(); g.moveTo(-116, 0); g.lineTo(-116, -120); g.quadraticCurveTo(-90, -134, -60, -120); g.lineTo(-40, -70); g.quadraticCurveTo(wall - 40, -78, wall + 10, -36); g.quadraticCurveTo(wall + 32, -10, wall + 22, 0); g.closePath(); g.fill(); g.stroke();
+  // 脚
+  const fx = -104 + slide;
+  g.fillStyle = '#ffc9a3'; g.strokeStyle = '#c98a64'; g.lineWidth = 4;
+  g.beginPath(); g.moveTo(fx, -6); g.lineTo(fx - 4, -110); g.lineTo(fx + 40, -110); g.lineTo(fx + 66, -62); g.quadraticCurveTo(fx + 150, -54, fx + 196, -26); g.quadraticCurveTo(fx + 214, -10, fx + 200, -4); g.closePath(); g.fill(); g.stroke();
+  const toe = fx + 206, hit = toe >= wall + 14;
+  if (warn && hit) { glow(wall + 8, -18, 70, '240,71,60', .6 + .3 * Math.sin(t * 14)); }
+  if (roomy && !hit) { g.save(); g.setLineDash([6, 6]); g.strokeStyle = GREEN; g.lineWidth = 4; g.beginPath(); g.moveTo(toe, -44); g.lineTo(toe, 0); g.moveTo(wall + 16, -44); g.lineTo(wall + 16, 0); g.stroke(); g.restore(); }
+  g.restore();
+  return hit;
+}
+function finger(x, y, s) { g.save(); g.translate(x, y); g.scale(s, s); g.fillStyle = TP.skin; g.strokeStyle = '#e8b48f'; g.lineWidth = 3; rrect(-14, -70, 28, 90, 14); g.fill(); g.stroke(); g.fillStyle = '#fff3ea'; rrect(-9, -64, 18, 18, 6); g.fill(); g.restore(); }
+// 鞋底折一折：bend 0~1
+function soleBend(cx, cy, w, bend, soft, color) {
+  const N = 40, R = bend * (soft ? 1.15 : .35);
+  g.save(); g.lineCap = 'round'; g.lineJoin = 'round';
+  const pt = k => { const u = (k - .5) * w; const ang = R * (k - .5) * 2; const c = soft ? Math.sign(k - .5) * Math.pow(Math.abs(k - .5) * 2, 1.2) * R : (k > .3 ? (k - .3) / .7 * R : 0); return [cx + Math.sin(c * 1) * 0 + u * Math.cos(c * .9), cy - Math.abs(u) * Math.sin(Math.abs(c) * .9) * (soft ? 1 : 1)]; };
+  g.strokeStyle = '#2b3440'; g.lineWidth = 34; g.beginPath(); for (let i = 0; i <= N; i++) { const p = pt(i / N); i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]); } g.stroke();
+  g.strokeStyle = color; g.lineWidth = 22; g.beginPath(); for (let i = 0; i <= N; i++) { const p = pt(i / N); i ? g.lineTo(p[0], p[1] - 18) : g.moveTo(p[0], p[1] - 18); } g.stroke();
+  g.restore();
+  return [pt(0), pt(1)];
+}
+function scale(cx, cy, tiltK, a) {
+  g.save(); g.globalAlpha = a; const ang = tiltK * .22;
+  g.fillStyle = '#8aa1b3'; g.beginPath(); g.moveTo(cx - 60, cy + 220); g.lineTo(cx + 60, cy + 220); g.lineTo(cx + 10, cy); g.lineTo(cx - 10, cy); g.closePath(); g.fill();
+  g.translate(cx, cy); g.rotate(ang); g.strokeStyle = '#5b6b7c'; g.lineWidth = 12; g.lineCap = 'round'; g.beginPath(); g.moveTo(-300, 0); g.lineTo(300, 0); g.stroke();
+  [-1, 1].forEach(sd => { g.save(); g.translate(sd * 260, 0); g.rotate(-ang); g.strokeStyle = '#8aa1b3'; g.lineWidth = 4; g.beginPath(); g.moveTo(0, 0); g.lineTo(-90, 110); g.moveTo(0, 0); g.lineTo(90, 110); g.stroke(); g.fillStyle = '#c9d6e2'; rrect(-120, 108, 240, 22, 10); g.fill(); g.restore(); });
+  g.restore();
+  return ang;
+}
+
+/* ───────── 场景 ───────── */
+const S = [];
+// A 钩子：小白鞋下坡打滑
+S.push(lt => {
+  const slip = sm((lt - 4) / .5), hy = x => H * .42 + x * .42, xw = W * .3 + lt * 70 + Math.max(0, lt - 4) * 160 * slip;
+  const cam = xw - W * .36;
+  hikeSky(0); hikeSun(W * .2, H * .3, 52, lt, 0); hikeClouds(lt, 1, .14); hikeRidges(cam, 0, H * .5);
+  hikeGround(hy, cam, lt, { treeGap: 260, noFlowers: true });
+  pebbles(hy, cam, 1);
+  const J = hikerOn(hy, xw, cam, { s: 1.5, ph: walkPh(lt, lt > 4 ? 0 : .8), walk: lt > 4 ? .2 : .9, t: lt, boot: '#f4f6f8', lean: -.35 * slip, tired: 0 });
+  if (slip > 0) {
+    const fx = xw - cam, fy = hy(xw) + 14;
+    g.save(); g.globalAlpha = slip; g.strokeStyle = '#8b6a4f'; g.lineWidth = 6; g.lineCap = 'round';
+    for (let i = 0; i < 3; i++) { g.beginPath(); g.moveTo(fx - 60 - i * 70, fy - 30 - i * 30 + 6); g.lineTo(fx - 20 - i * 70, fy - 14 - i * 30 + 6); g.stroke(); }
+    g.restore();
+    burst(fx + 30, fy - 10, (lt - 4.1) % 1.6, 18, .5);
+    bubble('滑！', J.head[0] + 120, J.head[1] - 80, 54, RED, lt - 4.3);
+  } else {
+    // 鞋的特写小圆窗
+    const a = sm((lt - 1.2) / .4); if (a > 0) {
+      g.save(); g.globalAlpha = a; const cx = W * .76, cy = H * .3; g.fillStyle = '#fff'; g.beginPath(); g.arc(cx, cy, 130, 0, Math.PI * 2); g.fill(); g.strokeStyle = AMB; g.lineWidth = 8; g.stroke();
+      g.beginPath(); g.arc(cx, cy, 124, 0, Math.PI * 2); g.clip(); shoe(cx, cy + 30, .95, 'sneaker'); g.restore();
+      g.save(); g.globalAlpha = a; label('鞋底平平的', W * .76, H * .3 + 170, 36, COL.sub, 900); g.restore();
+    }
+  }
+});
+// B 标题
+S.push(lt => { titleScene(lt, '02', { boot: '#ff7a3d' }); });
+// C 看路选鞋
+const ROADS = [['sneaker', '运动鞋', '公园步道、铺好的台阶'], ['trail', '低帮徒步鞋 / 越野跑鞋', '土路、好走的山路'], ['mid', '中高帮徒步鞋', '碎石、泥地、背得重']];
+S.push(lt => {
+  bgPlain(lt + 20);
+  ROADS.forEach(([ty, t1, t2], i) => {
+    const a = eout((lt - .8 - i * 1.6) / .45); if (a <= 0) return; const y = H * (.225 + i * .158), ch = H * .14;
+    g.save(); g.globalAlpha = a; g.translate((1 - a) * 80, 0);
+    card(W * .06, y, W * .88, ch, 36);
+    g.fillStyle = ['#dfe7ee', '#fff1e8', '#f3ece6'][i]; rrect(W * .08, y + 18, W * .3, ch - 36, 26); g.fill();
+    shoe(W * .225, y + ch * .7, 1.1, ty);
+    label(t1, W * .42, y + ch * .36, ty === 'trail' ? 40 : 46, COL.ink, 900, 'left'); label(t2, W * .42, y + ch * .7, 34, COL.sub, 700, 'left');
+    g.restore();
+  });
+  // 难度箭头
+});
+// D 鞋底
+S.push(lt => {
+  bgPlain(lt + 40);
+  if (lt < 6.4) {
+    // 湿石头上：平底滑，有齿抓住
+    [[W * .28, 'sneaker', false], [W * .72, 'trail', true]].forEach(([cx, ty, grip], i) => {
+      const y0 = H * .5, a = eout((lt - .3 - i * .4) / .4); if (a <= 0) return;
+      g.save(); g.globalAlpha = a;
+      card(cx - W * .21, H * .22, W * .42, H * .46, 36);
+      // 石头
+      g.fillStyle = '#9aa7b4'; g.beginPath(); g.moveTo(cx - 200, y0 + 170); g.quadraticCurveTo(cx - 150, y0 + 40, cx, y0 + 30); g.quadraticCurveTo(cx + 150, y0 + 40, cx + 200, y0 + 170); g.closePath(); g.fill();
+      g.fillStyle = 'rgba(110,195,244,.5)'; g.beginPath(); g.ellipse(cx, y0 + 46, 140, 14, 0, 0, Math.PI * 2); g.fill();
+      const k = clamp((lt - 1.4) / 3, 0, 1), dx = grip ? 0 : ein(k) * 120 * (Math.sin(lt * 2) * .2 + 1);
+      g.save(); g.translate(cx + dx, y0 + 30); g.rotate(grip ? 0 : k * .15); shoe(0, -20, 1.05, ty); g.restore();
+      if (k > .3) { if (grip) markV(cx, H * .29, 34, sm((k - .3) / .2)); else { markX(cx, H * .29, 34, sm((k - .3) / .2)); arrow(cx + 40, y0 - 70, cx + 150, y0 - 70, RED, 7, 24); } }
+      label(grip ? '有齿，抓得住' : '平底，打滑', cx, H * .65, 36, grip ? GREEN : RED, 900);
+      g.restore();
+    });
+  } else {
+    const l2 = lt - 6.4, b = sm((l2 - .6) / 1.4) * (1 - .15 * Math.sin(l2 * 3) * sm((l2 - 2) / .5));
+    [[W * .28, true, RED, '太软：一折就对折'], [W * .72, false, GREEN, '刚好：前掌能弯']].forEach(([cx, soft, c, tx], i) => {
+      card(cx - W * .21, H * .22, W * .42, H * .46, 36);
+      const ends = soleBend(cx, H * .5, 300, b, soft, soft ? '#f4f6f8' : '#ff7a3d');
+      g.fillStyle = TP.skin; ends.forEach(p => { g.beginPath(); g.arc(p[0], p[1] - 30, 22, 0, Math.PI * 2); g.fill(); });
+      if (l2 > 2.2) { const m = sm((l2 - 2.2) / .3); if (soft) markX(cx, H * .29, 34, m); else markV(cx, H * .29, 34, m); }
+      label(tx, cx, H * .62, 34, c, 900);
+    });
+  }
+});
+// E 高帮
+S.push(lt => {
+  bgPlain(lt + 60);
+  if (lt < 6.4) {
+    // 脚踩在斜石头上：脚踝歪多少
+    [[W * .28, 'trail', 1, '低帮'], [W * .72, 'high', .45, '高帮']].forEach(([cx, ty, roll, nm], i) => {
+      card(cx - W * .21, H * .22, W * .42, H * .46, 36);
+      pill(nm, cx, H * .26, 36, i ? GREEN : AMB, '#fff');
+      const cy = H * .52, k = (Math.sin(lt * 2.4) * .5 + .5) * sm((lt - .6) / .6), ang = k * roll * .5;
+      g.fillStyle = '#9aa7b4'; g.beginPath(); g.moveTo(cx - 170, cy + 150); g.lineTo(cx - 170, cy + 90); g.lineTo(cx + 170, cy + 30); g.lineTo(cx + 170, cy + 150); g.closePath(); g.fill();
+      // 正面看：小腿 + 鞋（简化成一块）
+      g.save(); g.translate(cx, cy + 60); g.rotate(-.18);
+      g.fillStyle = '#2b3440'; rrect(-70, 0, 140, 22, 10); g.fill();
+      const hh = ty === 'high' ? 130 : 66; g.fillStyle = ty === 'high' ? '#6b4a32' : '#ff7a3d'; rrect(-60, -hh, 120, hh + 4, 24); g.fill();
+      g.translate(0, -hh + 10); g.rotate(ang * (ty === 'high' ? 1 : 1)); g.fillStyle = TP.pants; rrect(-34, -230 + hh, 68, 240 - hh, 30); g.fill();
+      g.restore();
+      // 角度
+      g.save(); g.strokeStyle = i ? GREEN : RED; g.lineWidth = 5; g.setLineDash([8, 8]); g.beginPath(); g.moveTo(cx, cy - 160); g.lineTo(cx, cy + 40); g.stroke(); g.restore();
+      label(i ? '稳一些' : '容易崴', cx, H * .64, 38, i ? GREEN : RED, 900);
+    });
+  } else {
+    const l2 = lt - 6.4, tilt = sm((l2 - .8) / .8);
+    card(W * .05, H * .22, W * .9, H * .46, 36);
+    const ang = scale(CX, H * .38, tilt, 1);
+    const ex = Math.cos(ang) * 260, ey = Math.sin(ang) * 260;
+    shoe(CX - ex, H * .38 - ey + 98, .5, 'trail'); shoe(CX + ex, H * .38 + ey + 98, .55, 'high');
+    label('轻 · 透气', CX - ex, H * .38 - ey + 170, 34, GREEN, 900); label('重 · 闷脚', CX + ex, H * .38 + ey + 170, 34, RED, 900);
+  }
+});
+// F 试鞋：下午 + 徒步袜 / 一指宽 / 系紧鞋带
+S.push(lt => {
+  bgPlain(lt + 80);
+  if (lt < 6.4) {
+    listCards([[(x, y) => clockIcon(x, y, 46, 4, 1), '下午去试', '脚走了一天，会比早上胀一点', 'v', BLUE], [(x, y) => ICO.sock(x - 6, y, .9, '#12a679'), '穿徒步袜试', '厚一点的袜子，鞋要留出空间', 'v', GREEN]], lt, { y0: H * .26, gap: H * .19, ch: H * .15, t0: .5, dt: 1.6 });
+  } else if (lt < 12.6) {
+    const l2 = lt - 6.4, k = sm((l2 - .8) / 1), tilt = .32 * k;
+    card(W * .05, H * .22, W * .9, H * .46, 36);
+    label('鞋刚好', W * .1, H * .26, 36, RED, 900, 'left'); label('留一指', W * .1, H * .46, 36, GREEN, 900, 'left');
+    const hit = footInShoe(W * .52, H * .37, 1.15, tilt, 14 * k + 4 * k * Math.sin(l2 * 8), false, lt, true);
+    footInShoe(W * .52, H * .58, 1.15, tilt, 10 * k, true, lt, true);
+    if (hit) label('顶！', W * .86, H * .31, 52, RED, 900);
+    if (l2 > 2.2) { finger(W * .84, H * .63, 1.3); markV(W * .86, H * .48, 28, sm((l2 - 2.2) / .3)); }
+    label('下坡 ↘', W * .9, H * .66, 30, COL.sub, 700, 'right');
+  } else {
+    const l2 = lt - 12.6, k = sm((l2 - .4) / 1.2);
+    card(W * .05, H * .22, W * .9, H * .46, 36);
+    shoe(CX - 10, H * .5, 2.1, 'mid');
+    // 鞋带勒紧：鞋带线变绿
+    g.save(); g.strokeStyle = mixHex('#ffd166', '#12a679', k); g.lineWidth = 9; g.lineCap = 'round';
+    for (let i = 0; i < 5; i++) { const x = CX - 10 + (-70 + i * 20 - 30 + i * 4) * 2.1, y = H * .5 + (-55 - 4 + i * 15) * 2.1 * (1 - .04 * k); g.beginPath(); g.moveTo(x - 30, y + 10); g.lineTo(x + 30, y - 10 + k * 6); g.stroke(); }
+    g.restore();
+    arrow(CX - 230, H * .32, CX - 150, H * .38, GREEN, 7, 24); arrow(CX + 10, H * .3, CX - 60, H * .37, GREEN, 7, 24);
+    if (k > .9) label('脚后跟锁住了', CX, H * .62, 40, GREEN, 900);
+  }
+});
+// G 磨合：在城里走几天
+S.push(lt => {
+  const R = bgWalk(lt, { cam: 120, hiker: { boot: '#8b6a4f', pole: false, walk: .9 }, sun: [W * .8, H * .3], panel: [.8, 8], seed: 90 });
+  ['第 1 天', '第 2 天', '第 3 天'].forEach((d, i) => { const a = sm((lt - 1 - i * 1.4) / .3); if (a > 0) pill(d, W * (.25 + i * .25), H * .27, 36, i === 2 ? GREEN : BLUE, '#fff', a); });
+  if (lt > 5.4) { const b = sm((lt - 5.4) / .4); markV(W * .75, H * .35, 32, b); g.save(); g.globalAlpha = b; label('哪里磨脚，心里有数', W * .5, H * .35, 38, GREEN, 900); g.restore(); }
+});
+// I 三个错误
+S.push(lt => {
+  const seg = lt < 6 ? 0 : lt < 12 ? 1 : 2, l2 = lt - seg * 6;
+  bgPlain(lt + 120);
+  if (seg === 0) {
+    card(W * .05, H * .22, W * .9, H * .46, 36);
+    const k = sm((l2 - .6) / .8), hit = footInShoe(W * .5, H * .45, 1.5, .34 * k, 16 * k + 6 * k * Math.sin(l2 * 9), false, lt, true);
+    if (hit) { label('顶！', W * .84, H * .33, 60, RED, 900); }
+    label('下坡 ↘', W * .88, H * .63, 32, COL.sub, 700, 'right');
+  } else if (seg === 1) {
+    card(W * .05, H * .22, W * .9, H * .46, 36);
+    ICO.sock(W * .33, H * .43, 3, '#e9eff4');
+    g.fillStyle = '#6ec3f4'; for (let i = 0; i < 6; i++) { const ph = (l2 * .8 + i / 6) % 1; g.globalAlpha = 1 - ph; const x = W * (.24 + (i % 3) * .07), y = H * (.36 + Math.floor(i / 3) * .08) + ph * 40; g.beginPath(); g.moveTo(x, y - 14); g.quadraticCurveTo(x + 10, y, x, y + 6); g.quadraticCurveTo(x - 10, y, x, y - 14); g.fill(); }
+    g.globalAlpha = 1; label('湿', W * .33, H * .3, 40, BLUE, 900);
+    // 脚后跟水泡
+    const b = sm((l2 - 2) / .6); g.fillStyle = TP.skin; g.beginPath(); g.ellipse(W * .7, H * .45, 120, 70, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = `rgba(255,120,120,${.6 * b})`; g.beginPath(); g.arc(W * .63, H * .45, 30 * b, 0, Math.PI * 2); g.fill(); g.fillStyle = `rgba(255,255,255,${.7 * b})`; g.beginPath(); g.arc(W * .625, H * .44, 14 * b, 0, Math.PI * 2); g.fill();
+    if (b > .5) label('水泡', W * .7, H * .56, 40, RED, 900);
+    label('脚后跟', W * .76, H * .38, 30, COL.sub, 700);
+  } else {
+    card(W * .05, H * .22, W * .9, H * .46, 36);
+    const k = Math.sin(l2 * 5) * .5 + .5;
+    footInShoe(W * .5, H * .45, 1.5, .3, 6 + 26 * k, true, lt, false);
+    arrow(W * .3, H * .32, W * .5, H * .36 + 10, RED, 7, 24); arrow(W * .5, H * .3, W * .3, H * .27, RED, 7, 24);
+    g.save(); g.strokeStyle = '#ffd166'; g.lineWidth = 6; g.lineCap = 'round'; const sx = W * .44, sy = H * .33;
+    g.beginPath(); g.moveTo(sx, sy); g.quadraticCurveTo(sx + 40, sy - 60 + Math.sin(l2 * 7) * 20, sx + 90, sy - 30 + Math.sin(l2 * 7 + 1) * 30); g.moveTo(sx, sy); g.quadraticCurveTo(sx - 30, sy - 70 + Math.sin(l2 * 6) * 20, sx - 70, sy - 40 + Math.sin(l2 * 6 + 1) * 30); g.stroke(); g.restore();
+    label('来回滑', W * .5, H * .62, 40, RED, 900);
+  }
+  errorMark(l2);
+});
+// J 口诀
+S.push(lt => mottoCard(lt, [['好走的路', '低帮徒步鞋、越野跑鞋'], ['碎石、背重', '中高帮，鞋底要硬'], ['试鞋', '下午试，前面留一指']], '鞋合脚，路才走得远。'));
+// K 结尾
+S.push(lt => endScene(lt, { boot: '#ff7a3d' }));
+
+/* ───────── 封面 ───────── */
+function coverArt(key, w, h) {
+  hikeCover(key, w, h, {
+    ep: '02', l1: '徒步鞋', l2: [['怎么', COL.ink], ['选', GREEN], ['？', COL.ink]], chips: [['看路', GREEN], ['看鞋底', AMB], ['合不合脚', BLUE]],
+    art: (k, ww, hh) => coverHill(k, ww, hh, { boot: '#ff7a3d' }, (x, y, mx) => {
+      const vert = k === '9x16' || k === '3x4', cx = vert ? ww * .68 : ww * .83, cy = vert ? hh * .62 : hh * .45, r = vert ? 170 : 150;
+      g.fillStyle = '#fff'; g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fill(); g.strokeStyle = AMB; g.lineWidth = 10; g.stroke();
+      g.save(); g.beginPath(); g.arc(cx, cy, r - 8, 0, Math.PI * 2); g.clip(); shoe(cx - 4, cy + 50, r / 125, 'mid'); g.restore();
+    })
+  });
+}
+
+/* ───────── 声音 ───────── */
+function sound(K, c, DUR) {
+  hikeSound(K, c, DUR, {
+    start: 7.6, sec: t => t < 24.2 ? 'verse' : t < 37.2 ? 'chorus' : t < 50.2 ? 'verse' : t < 66.2 ? 'chorus' : t < 74.2 ? 'verse' : t < 92.2 ? 'tense' : 'outro',
+    chirps: [.5, 2.4, 8.4, 10.1, 67, 70.5, 93, 100, 102.4],
+    steps: [[.3, 4, .6], [66.4, 74, .55]],
+    whoosh: [4.0, 4.6], wrongs: [4.3, 11.2 + 0, 24.2 + 1.7 + .3, 74.2 + .3, 80.2 + .3, 86.2 + .3, 50.2 + 6.4 + 1.4].slice(0).filter(t => t !== 11.2),
+    dings: [11.2 + .8, 11.2 + 2.4, 11.2 + 4, 24.2 + 1.9, 24.2 + 8.8, 37.2 + 6.4 + 1.6, 50.2 + 1, 50.2 + 2.6, 50.2 + 6.4 + 2.4, 50.2 + 12.6 + 1.6, 66.2 + 5.4],
+    ticks: [66.2 + 1, 66.2 + 2.4, 66.2 + 3.8],
+    riser: 74.2, outro: 92.2,
+    extra: K => { K.noise(4.0, 1.2, .25, 'bandpass', 1800); }
+  });
+}
+
+kitRun({ T, S, TX, seed: 402, allText: SRC.replace(/[\x00-\x7f]/g, '') + '0123456789:+=≈÷→～↘', audio: sound, cover: coverArt });
+})();
+</script>
+</body>
+</html>

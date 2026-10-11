@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>徒步不难 EP.03</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#000;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;aspect-ratio:9/16;max-width:100vw;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;aspect-ratio:auto;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="trailkit.js"></script>
+<script>
+/*
+ * 徒步不难 EP.03《徒步穿什么？》（约 1 分 51 秒）
+ * 别穿纯棉 → 三层：排汗、保暖、防风雨 → 洋葱式穿脱、海拔降温 → 帽子裤子袜子 → 三个错误
+ */
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+const T = [0, 7.6, 11.2, 23.2, 35.2, 47.2, 59.2, 71.2, 79.2, 97.2, 104.2, 110.7];
+const YH = .135, YB = .745;
+const { blue: BLUE, green: GREEN, amber: AMB, red: RED } = HB;
+const C1 = '#12a679', C2 = '#ff9f1c', C3 = '#2f80ed', COTTON = '#c9d1d9';
+
+const TX = [
+  { in: .15, out: 3.6, text: '爬坡的时候，\n{r}一身汗{/}。', y: YH, size: 88, w: 900, st: .06 },
+  { in: 3.8, out: 7.4, text: '到了山顶风一吹，\n{r}冷得发抖{/}。', y: YH, size: 84, w: 900 },
+  { in: 7.85, out: 10.95, text: '徒步\n穿什么？', y: .3, size: 104, w: 900, st: .05 },
+  { in: 8.6, out: 10.95, text: '三层穿法：排汗、保暖、防风雨', y: .415, size: 42, w: 600, sub: 1 },
+  // C 别穿纯棉
+  { in: 11.4, out: 17.2, text: '先记住一条：\n{r}别穿纯棉{/}。', y: YH, size: 84, w: 900 },
+  { in: 12.2, out: 17.2, text: '棉吸汗很快，可是干得很慢。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 17.6, out: 23.0, text: '湿衣服贴在身上，\n风一吹，{r}热量跑得飞快{/}。', y: YH, size: 76, w: 900 },
+  { in: 18.4, out: 23.0, text: '速干面料、羊毛，能把汗导出去，干得快。', y: YB, size: 42, w: 500, sub: 1 },
+  // D 第一层
+  { in: 23.4, out: 29.2, text: '第一层：\n{g}排汗层{/}', y: YH, size: 88, w: 900 },
+  { in: 24.2, out: 29.2, text: '贴身穿：速干 T 恤，或者羊毛内衣。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 29.6, out: 35.0, text: '它的活儿：\n把汗{g}运走{/}，皮肤干爽。', y: YH, size: 80, w: 900 },
+  { in: 30.4, out: 35.0, text: '天热的时候，往往这一层就够了。', y: YB, size: 42, w: 500, sub: 1 },
+  // E 第二层
+  { in: 35.4, out: 41.2, text: '第二层：\n{a}保暖层{/}', y: YH, size: 88, w: 900 },
+  { in: 36.2, out: 41.2, text: '抓绒衣、薄羽绒，轻、暖、好塞进包里。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 41.6, out: 47.0, text: '冷了穿，\n{a}热了就脱{/}。', y: YH, size: 88, w: 900 },
+  { in: 42.4, out: 47.0, text: '停下休息、到了山顶穿上；\n开始爬坡前先脱掉。', y: YB, size: 42, w: 500, sub: 1 },
+  // F 第三层
+  { in: 47.4, out: 53.2, text: '第三层：\n{b}防风防雨{/}', y: YH, size: 88, w: 900 },
+  { in: 48.2, out: 53.2, text: '冲锋衣、防风外套，或者一件雨衣。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 53.6, out: 59.0, text: '天气再好，\n也{b}塞一件进背包{/}。', y: YH, size: 84, w: 900 },
+  { in: 54.4, out: 59.0, text: '山顶风大，山里的雨说来就来。', y: YB, size: 42, w: 500, sub: 1 },
+  // G 为什么分层
+  { in: 59.4, out: 65.2, text: '为什么分三层？\n{g}好穿好脱{/}。', y: YH, size: 84, w: 900 },
+  { in: 60.2, out: 65.2, text: '像剥洋葱：热了脱一层，冷了加一层。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 65.6, out: 71.0, text: '而且越往上{r}越冷{/}：\n每升高 100 米，约降 {r}0.6℃{/}。', y: YH, size: 76, w: 900 },
+  { in: 66.4, out: 71.0, text: '再加上风，山顶会比山下冷得多。', y: YB, size: 42, w: 500, sub: 1 },
+  // H 头、腿、脚
+  { in: 71.4, out: 79.0, text: '别忘了\n{g}头、腿和脚{/}。', y: YH, size: 88, w: 900 },
+  { in: 72.2, out: 79.0, text: '露在外面的地方，最容易晒伤、刮伤。', y: YB, size: 42, w: 500, sub: 1 },
+  // I 三个错误
+  { in: 79.4, out: 85.0, text: '常见错误一：\n穿{r}纯棉 T 恤{/}', y: YH, size: 84, w: 900 },
+  { in: 80.2, out: 85.0, text: '一出汗就湿透，一停下来就冷。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 85.4, out: 91.0, text: '常见错误二：\n一出发就{r}穿最厚{/}', y: YH, size: 80, w: 900 },
+  { in: 86.2, out: 91.0, text: '走十分钟就满身大汗。\n出发时觉得“有点凉”，刚刚好。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 91.4, out: 97.0, text: '常见错误三：\n天气好就{r}不带外套{/}', y: YH, size: 80, w: 900 },
+  { in: 92.2, out: 97.0, text: '山顶的风、午后的雨，\n可不管你出门时天气多好。', y: YB, size: 42, w: 500, sub: 1 },
+  // K
+  { in: 104.4, out: 999, text: '你徒步一般\n穿几层？', y: .37, size: 84, w: 900, st: .06 },
+  { in: 105.4, out: 999, text: '评论区说说', y: .465, size: 42, w: 500, sub: 1 }
+];
+
+/* ───────── 本集画面 ───────── */
+const walkPh = (t, k) => t * Math.PI * 2 * (k || .9);
+const LAYER = [['排汗层', C1], ['保暖层', C2], ['防风雨', C3]];
+// 身体横截面：中间是皮肤，外面一圈圈衣服
+function layers(cx, cy, n, lt, focus) {
+  const R0 = 120, dR = 62;
+  for (let i = 0; i < Math.min(n, 3); i++) {
+    const a = i === n - 1 ? sm((lt - .2) / .5) : 1, r = R0 + (i + 1) * dR, col = focus == null || focus === i ? LAYER[i][1] : mixHex(LAYER[i][1], '#ffffff', .55);
+    g.save(); g.globalAlpha = a; g.fillStyle = col; g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.arc(cx, cy, r - dR, 0, Math.PI * 2, true); g.fill();
+    g.strokeStyle = '#fff'; g.lineWidth = 4; g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.stroke(); g.restore();
+  }
+  g.fillStyle = TP.skin; g.beginPath(); g.arc(cx, cy, R0, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#ffb59a'; g.beginPath(); g.arc(cx, cy, R0 * .6, 0, Math.PI * 2); g.fill();
+  label('身体', cx, cy, 38, '#c0603f', 900);
+  for (let i = 0; i < Math.min(n, 3); i++) { const r = R0 + (i + .5) * dR; g.save(); g.globalAlpha = i === n - 1 ? sm((lt - .4) / .4) : 1; label(LAYER[i][0], cx, cy - r, 28, '#fff', 900); g.restore(); }
+  return R0 + n * dR;
+}
+function sweatOut(cx, cy, r0, r1, lt, a) {
+  g.save(); g.fillStyle = '#6ec3f4';
+  for (let i = 0; i < 16; i++) { const ang = i / 16 * Math.PI * 2 + .2, ph = (lt * .5 + hash(i)) % 1, r = lerp(r0, r1 + 50, ph); g.globalAlpha = a * (ph < .85 ? 1 : (1 - ph) / .15); g.beginPath(); g.arc(cx + Math.cos(ang) * r, cy + Math.sin(ang) * r, 9, 0, Math.PI * 2); g.fill(); }
+  g.restore();
+}
+function shiver(t, k) { return Math.sin(t * 50) * 4 * k; }
+function puffy(o) { return Object.assign({ jacket: C2, bulk: 10 }, o); }
+
+/* ───────── 场景 ───────── */
+const S = [];
+// A 钩子
+S.push(lt => {
+  if (lt < 3.8) {
+    const R = bgWalk(lt, { cam: 120, hy: x => H * .86 - x * .45, hiker: { jacket: COTTON, tired: .9, ph: walkPh(lt, .8) }, sun: [W * .2, H * .3] });
+    tee(W * .78, H * .33, 1.2, COTTON, sm((lt - .6) / 2), lt); label('纯棉 T 恤', W * .78, H * .43, 36, COL.sub, 900);
+  } else {
+    const l2 = lt - 3.8, cold = sm(l2 / .8), peak = x => H * .62 - 160 * Math.exp(-Math.pow((x - CX) / 340, 2));
+    hikeSky(.15); hikeClouds(lt * 3, 1, .2); hikeRidges(0, .1, H * .62);
+    hikeGround(peak, 0, lt, { treeGap: 220 });
+    flagPole(CX + 140, peak(CX + 140) + 6, 1, lt * 3, RED);
+    drawHiker(CX - 40 + shiver(lt, cold), peak(CX - 40) + 12, { s: 1.6, walk: 0, t: lt, jacket: COTTON, lean: .15 });
+    g.fillStyle = `rgba(110,170,230,${cold * .22})`; g.fillRect(0, 0, W, H);
+    windLines(lt, cold, H * .25, H * .62);
+    bubble('好冷……', CX + 170, H * .34, 48, BLUE, l2 - 1);
+  }
+});
+// B 标题
+S.push(lt => titleScene(lt, '03', { jacket: C3 }));
+// C 别穿纯棉：同样出汗，谁先干
+S.push(lt => {
+  bgPlain(lt + 20);
+  const k = clamp((lt - 1.2) / 8, 0, 1);
+  [[W * .28, COTTON, '纯棉', RED, 1 - k * .15], [W * .72, C1, '速干', GREEN, 1 - sm(k * 1.6)]].forEach(([cx, col, nm, c, wet], i) => {
+    card(cx - W * .21, H * .22, W * .42, H * .46, 36);
+    pill(nm, cx, H * .26, 38, c, '#fff');
+    tee(cx, H * .41, 1.55, col, lt < 1.2 ? sm(lt / 1.2) : wet, lt);
+    const bx = cx - 150, by = H * .56;
+    label('湿', bx - 10, by, 32, COL.sub, 900, 'right');
+    g.fillStyle = '#e9eff4'; rrect(bx, by - 18, 300, 36, 18); g.fill(); g.fillStyle = BLUE; rrect(bx, by - 18, Math.max(36, 300 * (lt < 1.2 ? sm(lt / 1.2) : wet)), 36, 18); g.fill();
+    if (k > .55) { const m = sm((k - .55) / .1); if (i) markV(cx, H * .63, 30, m); else markX(cx, H * .63, 30, m); }
+  });
+  if (lt > 6.4) { const a = sm((lt - 6.4) / .4); g.save(); g.globalAlpha = a; windLines(lt, .9, H * .3, H * .5, 8); g.restore(); }
+  clockIcon(CX, H * .33, 40, 9 + k * 2, 1);
+});
+// D 第一层
+S.push(lt => {
+  bgPlain(lt + 40);
+  const r = layers(CX, H * .43, 1, lt + 1, 0);
+  sweatOut(CX, H * .43, 100, r, lt, sm((lt - .8) / .5));
+  if (lt > 6.4) { const a = sm((lt - 6.4) / .4); g.save(); g.globalAlpha = a; label('汗 → 往外走', CX, H * .64, 44, BLUE, 900); g.restore(); }
+  else { const a = sm((lt - 1.2) / .4); pill('速干 T 恤', W * .32, H * .64, 36, C1, '#fff', a); pill('羊毛内衣', W * .68, H * .64, 36, C1, '#fff', a); }
+});
+// E 第二层
+S.push(lt => {
+  if (lt < 6.2) {
+    bgPlain(lt + 60);
+    const r = layers(CX, H * .43, 2, lt, 1);
+    glow(CX, H * .43, r * .9, '255,159,28', .25 + .1 * Math.sin(lt * 3));
+    for (let i = 0; i < 8; i++) { const ang = i / 8 * Math.PI * 2, rr = r - 30 + Math.sin(lt * 3 + i) * 6; arrow(CX + Math.cos(ang) * (rr + 40), H * .43 + Math.sin(ang) * (rr + 40), CX + Math.cos(ang) * (rr - 10), H * .43 + Math.sin(ang) * (rr - 10), 'rgba(240,71,60,.7)', 5, 18); }
+    label('热量留在里面', CX, H * .64, 44, AMB, 900);
+  } else {
+    const l2 = lt - 6.2;
+    bgPlain(lt + 60);
+    [[W * .28, '爬坡：脱', true], [W * .72, '休息：穿', false]].forEach(([cx, nm, walk], i) => {
+      const a = eout((l2 - .2 - i * .6) / .4); if (a <= 0) return;
+      g.save(); g.globalAlpha = a; card(cx - W * .21, H * .22, W * .42, H * .46, 36);
+      g.save(); rrect(cx - W * .21, H * .22, W * .42, H * .46, 36); g.clip();
+      const gy = x => H * .6 - (walk ? (x - cx) * .3 : 0);
+      g.fillStyle = '#c7e8c1'; g.beginPath(); g.moveTo(cx - 260, H); for (let x = cx - 260; x <= cx + 260; x += 10) g.lineTo(x, gy(x)); g.lineTo(cx + 260, H); g.closePath(); g.fill();
+      if (walk) drawHiker(cx, gy(cx) + 12, { s: 1.2, ph: walkPh(lt), t: lt, jacket: C1, slope: 17 });
+      else drawHiker(cx, gy(cx) + 12, puffy({ s: 1.2, walk: 0, t: lt }));
+      g.restore();
+      pill(nm, cx, H * .26, 38, walk ? C1 : C2, '#fff');
+      if (walk) { g.save(); g.translate(cx + 110, H * .38); ICO.jacket(0, 0, .8, C2); g.restore(); label('塞包里', cx + 110, H * .44, 28, COL.sub, 900); }
+      g.restore();
+    });
+  }
+});
+// F 第三层
+S.push(lt => {
+  bgPlain(lt + 80);
+  if (lt < 6.2) {
+    const r = layers(CX, H * .43, 3, lt, 2);
+    // 风和雨被挡在外面
+    for (let i = 0; i < 6; i++) { const y = H * .43 - r + 60 + i * (2 * r - 120) / 5, ph = (lt * 1.2 + i * .17) % 1, dx = Math.sqrt(Math.max(0, r * r - Math.pow(y - H * .43, 2))); const x0 = CX - dx - 260 + ph * 240; g.save(); g.globalAlpha = sm((lt - .6) / .4); arrow(x0, y, Math.min(x0 + 90, CX - dx - 6), y, '#6ec3f4', 6, 20); g.restore(); }
+    g.save(); g.globalAlpha = sm((lt - .6) / .4); g.fillStyle = '#2f80ed';
+    for (let i = 0; i < 10; i++) { const ang = -Math.PI * (.15 + i * .07), ph = (lt * 1.4 + hash(i)) % 1, rr = r + 8; const px = CX + Math.cos(ang) * rr, py = H * .43 + Math.sin(ang) * rr; g.globalAlpha = (1 - ph) * sm((lt - .6) / .4); g.beginPath(); g.arc(px + Math.cos(ang + Math.PI / 2) * ph * 60 * (i < 5 ? -1 : 1), py - 40 + ph * 70, 8, 0, Math.PI * 2); g.fill(); }
+    g.restore();
+    label('挡风 · 挡雨', CX, H * .66, 44, BLUE, 900);
+  } else {
+    const l2 = lt - 6.2, k = sm((l2 - .6) / 1.4);
+    card(W * .1, H * .22, W * .8, H * .46, 40);
+    ICO.pack(CX, H * .48, 3.4);
+    const jx = lerp(W * .78, CX, k), jy = lerp(H * .3, H * .44, k), js = lerp(1.6, .6, k);
+    if (k < .98) { g.save(); g.globalAlpha = 1 - sm((k - .85) / .13); ICO.jacket(jx, jy, js, C3); g.restore(); }
+    if (k > .95) { markV(W * .74, H * .36, 34, sm((l2 - 2.2) / .3)); label('不占地方，也不重', CX, H * .64, 40, GREEN, 900); }
+    sunIcon(W * .22, H * .29, 34);
+  }
+});
+// G 洋葱 + 海拔降温
+S.push(lt => {
+  if (lt < 6.2) {
+    bgPlain(lt + 100);
+    const stages = [['出发', { jacket: C2, bulk: 6 }, true], ['爬坡', { jacket: C1 }, true], ['休息', { jacket: C2, bulk: 8 }, false], ['山顶', { jacket: C3, bulk: 12 }, false]];
+    card(W * .04, H * .22, W * .92, H * .46, 36);
+    g.strokeStyle = '#c7e8c1'; g.lineWidth = 12; g.beginPath(); g.moveTo(W * .08, H * .58); g.lineTo(W * .92, H * .58); g.stroke();
+    stages.forEach(([nm, o, walk], i) => {
+      const a = eout((lt - .5 - i * 1.1) / .35); if (a <= 0) return; const x = W * (.16 + i * .228);
+      g.save(); g.globalAlpha = a; drawHiker(x, H * .58, Object.assign({ s: .95, walk: walk ? .8 : 0, ph: walkPh(lt), t: lt, pole: false }, o));
+      pill(nm, x, H * .28, 32, o.jacket, '#fff'); label(['外套', '一层', '+保暖', '全穿上'][i], x, H * .62, 28, COL.sub, 900); g.restore();
+      if (i < 3 && a > .9) label('→', x + W * .114, H * .45, 40, COL.faint, 900);
+    });
+  } else {
+    const l2 = lt - 6.2, hy = x => H * .7 - 560 * Math.exp(-Math.pow((x - W * .62) / 300, 2));
+    hikeSky(0); hikeClouds(lt, 1, .1); hikeRidges(0, 0, H * .6); hikeGround(hy, 0, lt, { treeGap: 200 });
+    flagPole(W * .62, hy(W * .62) + 6, 1, lt, RED);
+    subPanel(win(l2, .4, 6, .3, .01));
+    windLines(lt, sm((l2 - 2.6) / .5), H * .18, H * .3, 8);
+    const t1 = sm((l2 - .4) / .4), t2 = sm((l2 - 1.6) / .4);
+    g.save(); g.globalAlpha = t1; card(W * .05, H * .54, 260, 110, 30); ICO.thermo(W * .05 + 50, H * .54 + 56, .9, .7, RED); label('山下 20℃', W * .05 + 90, H * .54 + 56, 36, COL.ink, 900, 'left'); g.restore();
+    g.save(); g.globalAlpha = t2; card(W * .62 - 170, H * .2 + 40, 340, 110, 30); ICO.thermo(W * .62 - 120, H * .2 + 96, .9, .35, BLUE); label('+1000 米 ≈ 14℃', W * .62 - 80, H * .2 + 96, 34, COL.ink, 900, 'left'); g.restore();
+    if (l2 > 2.8) { const a = sm((l2 - 2.8) / .4); pill('有风：体感更冷', W * .3, H * .38, 34, BLUE, '#fff', a); }
+  }
+});
+// H 头、腿、脚
+S.push(lt => {
+  bgPlain(lt + 120);
+  listCards([[(x, y) => ICO.hat(x, y, .9), '帽子', '遮太阳，防晒伤', 'v', AMB], [(x, y) => { g.fillStyle = TP.pants; rrect(x - 26, y - 44, 22, 88, 8); g.fill(); rrect(x + 4, y - 44, 22, 88, 8); g.fill(); g.fillRect(x - 26, y - 44, 52, 24); }, '速干长裤', '防刮、防虫，比短裤安心', 'v', BLUE], [(x, y) => ICO.sock(x - 6, y, .9, C1), '徒步袜', '袜子也别穿纯棉的', 'v', GREEN]], lt, { y0: H * .23, gap: H * .15, ch: H * .13, t0: .6, dt: 1.4 });
+});
+// I 三个错误
+S.push(lt => {
+  const seg = lt < 6 ? 0 : lt < 12 ? 1 : 2, l2 = lt - seg * 6;
+  if (seg === 0) {
+    bgPlain(lt + 140);
+    card(W * .1, H * .22, W * .8, H * .46, 40);
+    tee(W * .38, H * .43, 2, COTTON, sm(l2 / 1.5), lt);
+    drawHiker(W * .74 + shiver(lt, sm((l2 - 2) / .5)), H * .6, { s: 1.1, walk: 0, t: lt, jacket: COTTON });
+    if (l2 > 2.2) { windLines(lt, .8, H * .3, H * .55, 6); bubble('冷', W * .74, H * .38, 44, BLUE, l2 - 2.4); }
+  } else if (seg === 1) {
+    bgWalk(lt, { cam: 130, hy: x => H * .66 - x * .25, hiker: puffy({ jacket: RED, bulk: 16, tired: sm((l2 - 1) / 2), ph: walkPh(lt, .75) }), sun: [W * .8, H * .3] });
+    subPanel(win(l2, .8, 6, .3, .01));
+    ICO.thermo(W * .16, H * .3, 1.4, .2 + .7 * sm((l2 - .6) / 3), RED); label('好热！', W * .16, H * .38, 38, RED, 900);
+  } else {
+    const bad = sm((l2 - 1.4) / 1.4);
+    bgWalk(lt, { cam: 0, hiker: { jacket: C1, walk: 0, lean: .1 }, hx: W * .45, sun: [W * .8, lerp(H * .3, H * .5, bad)] });
+    g.fillStyle = `rgba(70,80,100,${bad * .4})`; g.fillRect(0, 0, W, H);
+    ICO.storm(W * .7, H * .3, 1.6 * bad + .01, lt); rainFall(lt, bad * .9, 80);
+    subPanel(win(l2, .8, 6, .3, .01));
+    bubble('没带外套……', W * .5, H * .38, 44, BLUE, l2 - 2.6);
+  }
+  errorMark(l2);
+});
+// J 口诀
+S.push(lt => mottoCard(lt, [['第一层', '速干或羊毛，不穿棉', C1], ['第二层', '抓绒、薄羽绒，冷了穿', C2], ['第三层', '冲锋衣，天好也带上', C3]], '热了脱、冷了加，就不会错。'));
+// K
+S.push(lt => endScene(lt, { jacket: C3 }));
+
+/* ───────── 封面 ───────── */
+function coverArt(key, w, h) {
+  hikeCover(key, w, h, {
+    ep: '03', l1: '徒步穿什么？', l2: [['记住', COL.ink], ['三层', GREEN]], chips: [['排汗', C1], ['保暖', C2], ['防风雨', C3]],
+    art: (k, ww, hh) => coverHill(k, ww, hh, { jacket: C3 }, () => {
+      const vert = k === '9x16' || k === '3x4', cx = vert ? ww * .72 : ww * .85, cy = vert ? hh * .6 : hh * .42, s = vert ? .62 : .5;
+      const R0 = 120 * s, dR = 62 * s;
+      for (let i = 2; i >= 0; i--) { g.fillStyle = LAYER[i][1]; g.beginPath(); g.arc(cx, cy, R0 + (i + 1) * dR, 0, Math.PI * 2); g.fill(); }
+      g.strokeStyle = '#fff'; g.lineWidth = 8; g.beginPath(); g.arc(cx, cy, R0 + 3 * dR, 0, Math.PI * 2); g.stroke();
+      g.fillStyle = TP.skin; g.beginPath(); g.arc(cx, cy, R0, 0, Math.PI * 2); g.fill();
+      label('1', cx + R0 + dR * .5, cy, 40 * s / .6, '#fff', 900); label('2', cx + R0 + dR * 1.5, cy, 40 * s / .6, '#fff', 900); label('3', cx + R0 + dR * 2.5, cy, 40 * s / .6, '#fff', 900);
+    })
+  });
+}
+
+/* ───────── 声音 ───────── */
+function sound(K, c, DUR) {
+  hikeSound(K, c, DUR, {
+    start: 7.6, sec: t => t < 23.2 ? 'verse' : t < 35.2 ? 'chorus' : t < 47.2 ? 'verse' : t < 59.2 ? 'chorus' : t < 71.2 ? 'verse' : t < 79.2 ? 'chorus' : t < 97.2 ? 'tense' : 'outro',
+    chirps: [.4, 2.2, 8.4, 10.2, 72, 98, 105, 107.5],
+    steps: [[.3, 3.8, .62], [85.2, 91.2, .66]],
+    heart: [4.4, 7.4],
+    dings: [11.2 + 6.6, 23.2 + 6.4, 35.2 + .4, 47.2 + .4, 47.2 + 8.4, 59.2 + .6, 59.2 + 1.7, 59.2 + 2.8, 59.2 + 3.9, 59.2 + 7.8, 71.2 + 1.1, 71.2 + 2.5, 71.2 + 3.9],
+    wrongs: [11.2 + 6.6 + .1, 79.2 + .3, 85.2 + .3, 91.2 + .3],
+    whoosh: [53.2 + .8],
+    riser: 79.2, outro: 97.2,
+    extra: K => { K.wind(DUR, t => t > 3.8 && t < 7.6 ? .8 : (t > 65.4 && t < 71 ? .35 : 0)); }
+  });
+}
+
+kitRun({ T, S, TX, seed: 503, allText: SRC.replace(/[\x00-\x7f]/g, '') + '0123456789:+=≈÷→～℃', audio: sound, cover: coverArt });
+})();
+</script>
+</body>
+</html>

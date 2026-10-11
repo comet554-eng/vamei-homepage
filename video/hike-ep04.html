@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>徒步不难 EP.04</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#000;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;aspect-ratio:9/16;max-width:100vw;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;aspect-ratio:auto;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="trailkit.js"></script>
+<script>
+/*
+ * 徒步不难 EP.04《一日徒步，背包里装什么？》（约 1 分 53 秒）
+ * 水 → 吃的 → 衣服与防晒 → 安全用品 → 怎么装 → 包多大 → 三个错误
+ */
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+const T = [0, 7.6, 11.2, 23.2, 35.2, 47.2, 63.2, 75.2, 81.2, 99.2, 106.2, 112.7];
+const YH = .135, YB = .745;
+const { blue: BLUE, green: GREEN, amber: AMB, red: RED } = HB;
+
+const TX = [
+  { in: .15, out: 3.6, text: '要么背得\n{r}像搬家{/}，', y: YH, size: 88, w: 900, st: .06 },
+  { in: 3.8, out: 7.4, text: '要么走到一半，\n{r}水喝完了{/}。', y: YH, size: 84, w: 900 },
+  { in: 7.85, out: 10.95, text: '一日徒步，\n背包里装什么？', y: .3, size: 96, w: 900, st: .05 },
+  { in: 8.6, out: 10.95, text: '水、吃的、衣服、安全，四类就够', y: .415, size: 42, w: 600, sub: 1 },
+  // C 水
+  { in: 11.4, out: 17.2, text: '第一样：{b}水{/}', y: YH, size: 88, w: 900 },
+  { in: 12.2, out: 17.2, text: '一般每走 1 小时，喝 0.5 升左右；\n天热、爬升多，还要更多。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 17.6, out: 23.0, text: '走 4 小时，\n至少带 {b}2 升{/}。', y: YH, size: 88, w: 900 },
+  { in: 18.4, out: 23.0, text: '路上能买水、有水源的话可以少带，\n但要先确认清楚。', y: YB, size: 42, w: 500, sub: 1 },
+  // D 吃的
+  { in: 23.4, out: 29.2, text: '第二样：{a}吃的{/}', y: YH, size: 88, w: 900 },
+  { in: 24.2, out: 29.2, text: '坚果、巧克力、能量棒、面包、水果；\n小包装，一路随手吃。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 29.6, out: 35.0, text: '比你以为的，\n{a}再多带一份{/}。', y: YH, size: 84, w: 900 },
+  { in: 30.4, out: 35.0, text: '走得慢了、绕了路，它就是你的备用体力。', y: YB, size: 42, w: 500, sub: 1 },
+  // E 衣服
+  { in: 35.4, out: 41.2, text: '第三样：{b}衣服{/}', y: YH, size: 88, w: 900 },
+  { in: 36.2, out: 41.2, text: '防风外套或雨衣，再加一件保暖层。\n第 3 集讲过：天气再好也带上。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 41.6, out: 47.0, text: '还有{a}防晒{/}三件套。', y: YH, size: 88, w: 900 },
+  { in: 42.4, out: 47.0, text: '帽子、墨镜、防晒霜：\n山上没遮没挡，比城里晒得多。', y: YB, size: 42, w: 500, sub: 1 },
+  // F 安全
+  { in: 47.4, out: 53.2, text: '第四样：{r}安全用品{/}', y: YH, size: 84, w: 900 },
+  { in: 48.2, out: 53.2, text: '平时用不上，用上的时候就很要紧。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 53.6, out: 58.4, text: '{g}头灯{/}：\n就算打算当天回，也要带。', y: YH, size: 80, w: 900 },
+  { in: 54.4, out: 58.4, text: '万一天黑了还没下山，手机电筒撑不了多久。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 58.8, out: 63.0, text: '手机{g}充满电{/}，\n再带个{g}充电宝{/}。', y: YH, size: 84, w: 900 },
+  { in: 59.6, out: 63.0, text: '导航、拍照、求救，都靠它。', y: YB, size: 42, w: 500, sub: 1 },
+  // G 怎么装
+  { in: 63.4, out: 69.2, text: '怎么装？\n{g}重的贴着背{/}。', y: YH, size: 84, w: 900 },
+  { in: 64.2, out: 69.2, text: '水、吃的这些重东西，放在靠背、中间偏上；\n轻的衣服放下面和外侧。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 69.6, out: 75.0, text: '常用的放{g}外袋{/}，\n{g}腰带扣上{/}。', y: YH, size: 84, w: 900 },
+  { in: 70.4, out: 75.0, text: '水和零食随手拿；腰带扣好，\n重量落到胯上，肩膀轻松很多。', y: YB, size: 42, w: 500, sub: 1 },
+  // H 包多大
+  { in: 75.4, out: 81.0, text: '一日徒步，\n{g}20～30 升{/}的包就够。', y: YH, size: 84, w: 900 },
+  { in: 76.2, out: 81.0, text: '装好以后背起来不吃力，就是合适的重量。', y: YB, size: 42, w: 500, sub: 1 },
+  // I 三个错误
+  { in: 81.4, out: 87.0, text: '常见错误一：\n只带{r}一瓶水{/}', y: YH, size: 84, w: 900 },
+  { in: 82.2, out: 87.0, text: '一瓶 500 毫升，大概只够走一个小时。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 87.4, out: 93.0, text: '常见错误二：\n“当天就回”，{r}不带头灯{/}', y: YH, size: 76, w: 900 },
+  { in: 88.2, out: 93.0, text: '走慢一点、绕个路，天就黑了。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 93.4, out: 99.0, text: '常见错误三：\n什么都带，{r}背得太重{/}', y: YH, size: 80, w: 900 },
+  { in: 94.2, out: 99.0, text: '每样都“万一用得上”，\n结果一路累得不想走。', y: YB, size: 42, w: 500, sub: 1 },
+  // K
+  { in: 106.4, out: 999, text: '你的背包里，\n一定会带什么？', y: .37, size: 84, w: 900, st: .06 },
+  { in: 107.4, out: 999, text: '评论区说说', y: .465, size: 42, w: 500, sub: 1 }
+];
+
+/* ───────── 本集画面 ───────── */
+const walkPh = (t, k) => t * Math.PI * 2 * (k || .9);
+const choc = (x, y, s) => { g.save(); g.translate(x, y); g.scale(s, s); g.fillStyle = '#7a4a2a'; rrect(-44, -30, 88, 60, 8); g.fill(); g.strokeStyle = '#5c361d'; g.lineWidth = 4; for (let i = 1; i < 4; i++) { g.beginPath(); g.moveTo(-44 + i * 22, -30); g.lineTo(-44 + i * 22, 30); g.stroke(); } g.beginPath(); g.moveTo(-44, 0); g.lineTo(44, 0); g.stroke(); g.fillStyle = '#e8e8e8'; g.beginPath(); g.moveTo(10, 30); g.lineTo(44, -6); g.lineTo(44, 30); g.closePath(); g.fill(); g.restore(); };
+const bread = (x, y, s) => { g.save(); g.translate(x, y); g.scale(s, s); g.fillStyle = '#e0a458'; g.beginPath(); g.ellipse(0, 4, 54, 30, 0, 0, Math.PI * 2); g.fill(); g.fillStyle = '#f2c27d'; g.beginPath(); g.ellipse(0, -2, 50, 24, 0, Math.PI, 0); g.fill(); g.strokeStyle = '#b8792f'; g.lineWidth = 4; [-24, 0, 24].forEach(d => { g.beginPath(); g.moveTo(d - 8, -16); g.lineTo(d + 8, 0); g.stroke(); }); g.restore(); };
+const apple = (x, y, s) => { g.save(); g.translate(x, y); g.scale(s, s); g.fillStyle = '#f0473c'; g.beginPath(); g.arc(-12, 6, 30, 0, Math.PI * 2); g.arc(12, 6, 30, 0, Math.PI * 2); g.fill(); g.strokeStyle = '#6b4a32'; g.lineWidth = 5; g.beginPath(); g.moveTo(0, -18); g.lineTo(4, -36); g.stroke(); g.fillStyle = '#12a679'; g.beginPath(); g.ellipse(18, -32, 14, 7, -.4, 0, Math.PI * 2); g.fill(); g.restore(); };
+const nuts = (x, y, s) => { g.save(); g.translate(x, y); g.scale(s, s); g.fillStyle = '#c98b55'; [[-20, 6], [6, -6], [24, 10], [-2, 18], [-26, -14]].forEach(([dx, dy], i) => { g.beginPath(); g.ellipse(dx, dy, 16, 11, i, 0, Math.PI * 2); g.fill(); }); g.restore(); };
+function itemGrid(items, lt, t0, dt, cols, y0, cellH) {
+  cols = cols || 3; cellH = cellH || H * .15;
+  const cw = W * .84 / cols;
+  items.forEach(([fn, nm], i) => {
+    const a = pop(lt - t0 - i * dt); if (a <= 0) return; const cx = W * .08 + cw * (i % cols + .5), cy = y0 + cellH * Math.floor(i / cols) + cellH * .4;
+    g.save(); g.translate(cx, cy); g.scale(a, a); g.fillStyle = '#fff'; g.shadowColor = 'rgba(27,40,56,.12)'; g.shadowBlur = 24; g.beginPath(); g.arc(0, 0, 92, 0, Math.PI * 2); g.fill(); g.shadowBlur = 0;
+    fn(0, 0); g.restore();
+    g.save(); g.globalAlpha = clamp(a, 0, 1); label(nm, cx, cy + 128, 34, COL.ink, 900); g.restore();
+  });
+}
+// 背包侧面剖视（人背在左边）
+function packSection(cx, cy, s, lt, mode) {
+  g.save(); g.translate(cx, cy); g.scale(s, s);
+  // 背
+  g.fillStyle = TP.jacket; rrect(-230, -260, 70, 520, 35); g.fill();
+  g.fillStyle = TP.skin; g.beginPath(); g.arc(-180, -330, 60, 0, Math.PI * 2); g.fill();
+  // 包
+  g.fillStyle = '#d7e6f7'; g.strokeStyle = TP.pack; g.lineWidth = 10; rrect(-160, -250, 260, 470, 50); g.fill(); g.stroke();
+  const z = (x, y, w, h, c, t, a) => { g.save(); g.globalAlpha = a; g.fillStyle = c; rrect(x, y, w, h, 20); g.fill(); label(t, x + w / 2, y + h / 2, 34, '#fff', 900); g.restore(); };
+  const k = i => sm((lt - .4 - i * .7) / .4);
+  z(-140, -90, 110, 200, '#1f62c4', '重', k(0));
+  z(-20, -230, 100, 150, '#8fb8e8', '轻', k(1));
+  z(-140, 130, 220, 70, '#8fb8e8', '轻', k(2));
+  z(-20, -70, 100, 180, '#5a92dc', '中', k(3));
+  if (mode === 2) {
+    // 外袋水壶 + 腰带
+    ICO.bottle(140, 40, 1.2, .7);
+    const b = sm((lt - .6) / .6); g.strokeStyle = TP.pack2; g.lineWidth = 22; g.lineCap = 'round'; g.beginPath(); g.moveTo(-160, 180); g.lineTo(lerp(-260, -230, b), 200); g.stroke();
+    g.fillStyle = b > .95 ? COL.green : '#8aa1b3'; rrect(-290, 180, 50, 40, 8); g.fill();
+  }
+  g.restore();
+}
+
+/* ───────── 场景 ───────── */
+const S = [];
+// A 钩子
+S.push(lt => {
+  if (lt < 3.8) {
+    const R = bgWalk(lt, { cam: 50, hiker: { packScale: 2.4, tired: 1, ph: walkPh(lt, .5), walk: .6, lean: .25 }, hx: W * .42 });
+    const items = [[ICO.bottle, .9], [ICO.food, .8], [ICO.jacket, .7], [ICO.lamp, .7], [ICO.aid, .7], [ICO.power, .7]];
+    items.forEach(([f, s], i) => { const a = pop(lt - .5 - i * .35); if (a <= 0) return; g.save(); g.translate(W * (.62 + (i % 2) * .2), H * (.26 + Math.floor(i / 2) * .09)); g.scale(a, a); f(0, 0, s); g.restore(); });
+  } else {
+    const l2 = lt - 3.8;
+    const R = bgWalk(lt, { cam: 0, hiker: { walk: 0, tired: .8, lean: -.05 }, hx: W * .42 });
+    const shake = Math.sin(l2 * 16) * 14 * sm(l2 / .4);
+    g.save(); g.translate(W * .64, H * .44); g.rotate(Math.PI * .85 + shake * .01); ICO.bottle(0, 0, 1.4, 0); g.restore();
+    bubble('没水了……', W * .66, H * .33, 48, BLUE, l2 - .6);
+    sunIcon(W * .16, H * .3, 40);
+  }
+});
+// B 标题
+S.push(lt => titleScene(lt, '04'));
+// C 水
+S.push(lt => {
+  bgPlain(lt + 20);
+  card(W * .06, H * .22, W * .88, H * .46, 40);
+  const hrs = 4, x0 = W * .14, x1 = W * .86, ty = H * .56;
+  g.fillStyle = '#e9eff4'; rrect(x0, ty - 14, x1 - x0, 28, 14); g.fill();
+  const k = clamp((lt - .8) / 4.4, 0, 1); g.fillStyle = BLUE; rrect(x0, ty - 14, Math.max(28, (x1 - x0) * k), 28, 14); g.fill();
+  for (let i = 0; i <= hrs; i++) label(i + ' 小时', lerp(x0, x1, i / hrs), ty + 52, 30, COL.sub, 700);
+  for (let i = 0; i < hrs; i++) {
+    const a = pop(lt - 1.6 - i * 1.1); if (a <= 0) continue; const x = lerp(x0, x1, (i + .5) / hrs);
+    g.save(); g.translate(x, H * .4); g.scale(a, a); ICO.bottle(0, 0, 1.25, .85); g.restore();
+    g.save(); g.globalAlpha = clamp(a, 0, 1); label('0.5 升', x, H * .47, 32, BLUE, 900); g.restore();
+  }
+  if (lt > 6.6) popText('≈ 2 升', CX, H * .28, 72, BLUE, lt - 6.6);
+  if (lt > 8.4) { const a = sm((lt - 8.4) / .4); sunIcon(W * .2, H * .28, 30, a); g.save(); g.globalAlpha = a; label('天热 +', W * .25, H * .28, 34, AMB, 900, 'left'); g.restore(); }
+});
+// D 吃的
+S.push(lt => {
+  bgPlain(lt + 40);
+  card(W * .05, H * .22, W * .9, H * .46, 40);
+  const F = [[(x, y) => nuts(x, y, 1.2), '坚果'], [(x, y) => choc(x, y, 1), '巧克力'], [(x, y) => ICO.food(x, y, 1), '能量棒'], [(x, y) => bread(x, y, 1), '面包'], [(x, y) => apple(x, y, 1), '水果']];
+  if (lt < 6.2) itemGrid(F, lt, .6, .45, 3, H * .25, H * .2);
+  else {
+    const l2 = lt - 6.2;
+    itemGrid(F.slice(0, 3), 99, 0, 0, 3, H * .25, H * .2);
+    const a = pop(l2 - .5); if (a > 0) { g.save(); g.translate(CX, H * .55); g.scale(a, a); g.fillStyle = AMB; g.beginPath(); g.arc(0, 0, 80, 0, Math.PI * 2); g.fill(); label('+1 份', 0, 0, 44, '#fff', 900); g.restore(); }
+    if (l2 > 1.6) { const b = sm((l2 - 1.6) / .4); g.save(); g.globalAlpha = b; label('备用体力', CX, H * .64, 38, AMB, 900); g.restore(); }
+  }
+});
+// E 衣服 + 防晒
+S.push(lt => {
+  bgPlain(lt + 60);
+  card(W * .05, H * .22, W * .9, H * .46, 40);
+  if (lt < 6.2) itemGrid([[(x, y) => ICO.jacket(x, y, 1.05, BLUE), '防风外套'], [(x, y) => ICO.jacket(x, y, 1, AMB), '保暖层'], [(x, y) => ICO.rain(x, y + 6, .9, lt), '雨衣（可选）']], lt, .6, .6, 3, H * .3, H * .2);
+  else { const l2 = lt - 6.2; itemGrid([[(x, y) => ICO.hat(x, y, 1.1), '帽子'], [(x, y) => ICO.glasses(x, y, 1.3), '墨镜'], [(x, y) => ICO.sunscreen(x, y, 1.1), '防晒霜']], l2, .4, .6, 3, H * .3, H * .2); hikeSun(W * .82, H * .27, 32, lt, 0); }
+});
+// F 安全
+const SAFE = [[(x, y) => ICO.lamp(x, y, 1.1), '头灯'], [(x, y) => ICO.power(x, y, 1), '充电宝'], [(x, y) => ICO.phone(x, y, 1), '离线轨迹'], [(x, y) => ICO.whistle(x, y, 1), '哨子'], [(x, y) => ICO.aid(x, y, 1), '创可贴、绷带'], [(x, y) => ICO.idcard(x, y, 1.1), '证件、少量现金']];
+S.push(lt => {
+  if (lt < 6.2) {
+    bgPlain(lt + 80); card(W * .05, H * .22, W * .9, H * .46, 40);
+    itemGrid(SAFE, lt, .6, .6, 3, H * .245, H * .215);
+  } else if (lt < 11.2) {
+    const l2 = lt - 6.2, dusk = .55;
+    const R = bgWalk(lt, { cam: 70, dusk, hiker: { lamp: sm((l2 - .8) / .5), tired: .4, ph: walkPh(lt, .7) }, sun: [W * .9, H * .55], panel: null });
+    moonIcon(W * .2, H * .28, 36, .9);
+    subPanel(win(l2, .6, 5, .3, .01)); topPanel(win(l2, .2, 5, .3, .01));
+  } else {
+    const l2 = lt - 11.2; bgPlain(lt + 80); card(W * .1, H * .22, W * .8, H * .46, 40);
+    ICO.phone(W * .34, H * .44, 2.6); ICO.power(W * .66, H * .44, 2.4);
+    const k = sm((l2 - .4) / 1.6);
+    g.fillStyle = COL.green; rrect(W * .34 - 52, H * .6 - 14, 104 * k, 28, 14); g.fill(); g.strokeStyle = '#8aa1b3'; g.lineWidth = 3; rrect(W * .34 - 52, H * .6 - 14, 104, 28, 14); g.stroke();
+    label(Math.round(lerp(40, 100, k)) + '%', W * .34, H * .64, 36, COL.green, 900);
+    label('+', CX, H * .44, 70, COL.sub, 900);
+  }
+});
+// G 怎么装
+S.push(lt => {
+  bgPlain(lt + 100); card(W * .06, H * .22, W * .88, H * .46, 40);
+  if (lt < 6.2) {
+    packSection(W * .58, H * .48, .85, lt, 1);
+    if (lt > 3.4) { const a = sm((lt - 3.4) / .4); g.save(); g.globalAlpha = a; arrow(W * .86, H * .58, W * .56, H * .5, COL.green, 8, 28); label('重的贴着背', W * .8, H * .62, 36, COL.green, 900); g.restore(); }
+  } else {
+    const l2 = lt - 6.2; packSection(W * .56, H * .48, .85, l2, 2);
+    const b = sm((l2 - 1.4) / .4);
+    if (b > 0) { g.save(); g.globalAlpha = b; label('外袋：随手拿', W * .76, H * .3, 34, BLUE, 900); label('腰带扣好', W * .3, H * .65, 34, COL.green, 900); g.restore(); }
+  }
+});
+// H 包多大
+S.push(lt => {
+  bgPlain(lt + 120); card(W * .06, H * .22, W * .88, H * .46, 40);
+  [[W * .22, 1.1, '10 升', COL.sub], [CX, 1.7, '20～30 升', COL.green], [W * .78, 2.4, '50 升以上', COL.sub]].forEach(([x, s, t, c], i) => {
+    const a = pop(lt - .4 - i * .5); if (a <= 0) return; g.save(); g.translate(x, H * .5); g.scale(a, a); ICO.pack(0, -s * 40, s, i === 1 ? TP.pack : '#9fb3c8'); g.restore();
+    g.save(); g.globalAlpha = clamp(a, 0, 1); label(t, x, H * .6, 38, c, 900); g.restore();
+  });
+  if (lt > 2.4) { const a = sm((lt - 2.4) / .3); markV(CX, H * .27, 34, a); g.save(); g.globalAlpha = a; label('太小装不下', W * .22, H * .64, 28, COL.faint, 700); label('太大容易装多', W * .78, H * .64, 28, COL.faint, 700); g.restore(); }
+});
+// I 三个错误
+S.push(lt => {
+  const seg = lt < 6 ? 0 : lt < 12 ? 1 : 2, l2 = lt - seg * 6;
+  if (seg === 0) {
+    bgPlain(lt + 140); card(W * .1, H * .22, W * .8, H * .46, 40);
+    const k = clamp((l2 - .6) / 3.4, 0, 1); ICO.bottle(W * .34, H * .44, 3, 1 - k);
+    clockIcon(W * .68, H * .41, 80, 1 + k, 1); label(k >= 1 ? '1 小时：空了' : '喝着喝着……', W * .68, H * .53, 38, k >= 1 ? RED : COL.sub, 900);
+  } else if (seg === 1) {
+    const dusk = sm((l2 - .4) / 3);
+    bgWalk(lt, { cam: 60, dusk, hiker: { tired: .6, ph: walkPh(lt, .6) }, sun: [W * .85, lerp(H * .3, H * .58, dusk)] });
+    g.fillStyle = `rgba(20,20,60,${dusk * .35})`; g.fillRect(0, 0, W, H);
+    subPanel(win(l2, .8, 6, .3, .01)); topPanel(win(l2, .1, 6, .3, .01));
+    bubble('看不见路了……', W * .62, H * .36, 44, BLUE, l2 - 3.2);
+  } else {
+    bgWalk(lt, { cam: 40, hiker: { packScale: 2.6, tired: 1, ph: walkPh(lt, .45), walk: .5, lean: .28 }, hx: W * .45 });
+    subPanel(win(l2, .8, 6, .3, .01));
+    const kg = Math.round(lerp(3, 14, sm((l2 - .3) / 2.4)));
+    card(W * .62, H * .26, W * .32, 150, 36); label(`${kg} 公斤`, W * .78, H * .26 + 75, 52, kg > 9 ? RED : COL.ink, 900);
+  }
+  errorMark(l2);
+});
+// J
+S.push(lt => mottoCard(lt, [['水', '每走 1 小时约 0.5 升', BLUE], ['吃的', '小包装，再多带一份', AMB], ['必带', '外套、头灯、充电宝', GREEN]], '背得轻松，才走得开心。'));
+// K
+S.push(lt => endScene(lt));
+
+/* ───────── 封面 ───────── */
+function coverArt(key, w, h) {
+  hikeCover(key, w, h, {
+    ep: '04', l1: '背包里装什么？', l2: [['一日徒步', COL.ink], ['清单', GREEN]], chips: [['水', BLUE], ['吃的', AMB], ['衣服', GREEN], ['安全', RED]],
+    art: (k, ww, hh) => coverHill(k, ww, hh, {}, () => {
+      const vert = k === '9x16' || k === '3x4', cx = vert ? ww * .7 : ww * .84, cy = vert ? hh * .6 : hh * .45, r = vert ? 175 : 150;
+      g.fillStyle = '#fff'; g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fill(); g.strokeStyle = AMB; g.lineWidth = 10; g.stroke();
+      const s = r / 175;
+      ICO.bottle(cx - 60 * s, cy - 40 * s, 1.1 * s, .8); ICO.lamp(cx + 60 * s, cy - 50 * s, .9 * s); ICO.food(cx - 50 * s, cy + 70 * s, .9 * s); ICO.jacket(cx + 60 * s, cy + 60 * s, .75 * s, BLUE);
+    })
+  });
+}
+
+/* ───────── 声音 ───────── */
+function sound(K, c, DUR) {
+  hikeSound(K, c, DUR, {
+    start: 7.6, sec: t => t < 23.2 ? 'verse' : t < 35.2 ? 'chorus' : t < 47.2 ? 'verse' : t < 63.2 ? 'chorus' : t < 81.2 ? 'verse' : t < 99.2 ? 'tense' : 'outro',
+    chirps: [.4, 8.4, 10.2, 76, 100, 107, 109.5],
+    steps: [[.3, 3.8, .95], [53.4, 58.4, .7], [93.4, 99, 1.0]],
+    ticks: [.5, .85, 1.2, 1.55, 1.9, 2.25, 23.2 + .6, 23.2 + 1.05, 23.2 + 1.5, 23.2 + 1.95, 23.2 + 2.4, 47.2 + .6, 47.2 + 1.2, 47.2 + 1.8, 47.2 + 2.4, 47.2 + 3, 47.2 + 3.6],
+    dings: [11.2 + 1.6, 11.2 + 2.7, 11.2 + 3.8, 11.2 + 4.9, 11.2 + 6.6, 23.2 + 6.7, 35.2 + .6, 35.2 + 1.2, 35.2 + 1.8, 41.4 + .4, 41.4 + 1, 41.4 + 1.6, 58.4 + 2, 63.2 + 3.6, 63.2 + 7.8, 75.2 + 2.4],
+    wrongs: [3.8 + .6, 81.2 + .3, 87.2 + .3, 93.2 + .3],
+    riser: 81.2, outro: 99.2
+  });
+}
+
+kitRun({ T, S, TX, seed: 604, allText: SRC.replace(/[\x00-\x7f]/g, '') + '0123456789:+=≈÷→～%', audio: sound, cover: coverArt });
+})();
+</script>
+</body>
+</html>
