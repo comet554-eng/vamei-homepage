@@ -51,3 +51,7 @@
 - EP.13 单板《反脚也要会滑》：`video/ski-ep13-sb.html`（侧面镜像表现反着滑，L/R 两脚分色）。
 - EP.14 单板《小跳：第一个 ollie》：`video/ski-ep14-sb.html`。
 - EP.15 单板《第一次上中级道：先看再滑》：`video/ski-ep15-sb.html`。
+- EP.16 单板《单板最常伤哪里：手腕和尾椎》：`video/ski-ep16-sb.html`（横截面小人往前、往后摔，护具部件）。
+- EP.17 单板《平花入门：压板头、压板尾》：`video/ski-ep17-sb.html`（侧面压板 `placePress()`、板弯弧线）。
+- EP.16 双板《双板最常伤哪里：膝盖》：`video/ski-ep16-ski.html`（杠杆特写、固定器脱离示意）。
+- EP.17 双板《小回转：节奏快一点的连续转弯》：`video/ski-ep17-ski.html`（俯视上身朝下、板左右转，走廊路线）。
