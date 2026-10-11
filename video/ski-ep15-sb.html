@@ -101,7 +101,7 @@ const RS = 1.0; // 地图上人的大小（乘以 V.z）
 /* ───────── 俯视：一条雪道的"地图" ───────── */
 const ML = 960; // u 从 0 到 1 的长度（z = 1 时，像素）
 const tc = u => 60 * Math.sin(u * 5.2 + .5);
-const nar = u => sm((u - .58) / .05) * (1 - sm((u - .68) / .05));
+const nar = u => sm((u - .55) / .08) * (1 - sm((u - .67) / .08));
 const thw = u => 250 - 100 * nar(u);
 const STEEP = [.34, .5];
 const ICE = [[.455, .42, 1], [.8, -.5, .7]];
@@ -227,7 +227,7 @@ const steady = n => k => 15 - 5 * Math.cos(2 * k * n * Math.PI - .5);
 const zig = (k, n, A) => { const p = k * n, i = Math.floor(p), f = p - i, e = sm(f); return (i % 2 ? 1 - 2 * e : -1 + 2 * e) * A; };
 
 /* ───────── 侧面：坡顶 ───────── */
-const X0 = W * .4, Y0 = H * .44, TN = Math.tan(30 * D2R), R0 = 140;
+const X0 = W * .4, Y0 = H * .5, TN = Math.tan(30 * D2R), R0 = 140;
 const hill = x => { const d = x - X0; return d <= 0 ? Y0 : d < R0 ? Y0 + d * d / (2 * R0) * TN : Y0 + (R0 / 2 + d - R0) * TN; };
 function crestScene() {
   drawSky(0);
@@ -358,7 +358,7 @@ S.push(lt => {
   }
 });
 // G 心态：累了就停
-const VG = view(-.02, .38, H * .22, H * .6, CX - 50);
+const VG = view(-.02, .38, H * .22, H * .6, CX + 50);
 S.push(lt => {
   drawMap(VG, { crowd: 0 });
   drawRoute(VG, 0, 1, 'rgba(18,166,121,.4)', true, 5); stopMark(VG, 1, 1, 1.2);
@@ -379,8 +379,8 @@ S.push(lt => {
   if (cur <= 0) {
     slopeTop(lt * 20);
     [[W * .3, 2.8, 0, '后刃停'], [W * .7, 5.5, Math.PI, '前刃停']].forEach(([x, t0, endA, name]) => {
-      const t = lt - t0; if (t < 0 && cur >= 0) return; const tt = cur < 0 ? 0 : t;
-      const y = H * .27 + 300 * eout(clamp(tt / 1.5, 0, 1)), turn = sm((tt - .9) / .45), ang = lerp(Math.PI / 2, endA, turn);
+      const t = lt - t0; if (t < 0) return; const tt = t;
+      const y = H * .31 + 300 * eout(clamp(tt / 1.5, 0, 1)), turn = sm((tt - .9) / .45), ang = lerp(Math.PI / 2, endA, turn);
       if (cur >= 0) snowSpray(x, y + 10, Math.PI / 2, lt, turn * (1 - sm((tt - 1.6) / .6)), 1);
       topR(x, y, ang, 1.2, { face: 1 });
       if (tt > 1.4) { g.save(); g.globalAlpha = sm((tt - 1.4) / .3); markV(x, y + 120, 26, 1); label(name, x, y + 180, 38, COL.green, 900); g.restore(); }
@@ -399,7 +399,7 @@ S.push(lt => {
     const l2 = lt - 13, xa = clamp(l2 / 4 * 1.6 + .3, 0, SEGM.length), xb = Math.max(0, xa - .35);
     const pa = routePt(VF, xa), pb = routePt(VF, xb);
     topRider(pa[0], pa[1], routeHd(VF, xa), RS * VF.z * .75, { jacket: BLUE }); topRider(pb[0], pb[1], routeHd(VF, xb), RS * VF.z * .75);
-    pill('人少的时候', W * .16, H * .25, 30, COL.green, '#fff'); pill('有人陪', W * .16, H * .305, 30, BLUE, '#fff');
+    pill('人少的时候', W * .16, H * .29, 30, COL.green, '#fff'); pill('有人陪', W * .16, H * .34, 30, BLUE, '#fff');
   }
   stepChips(STEPS, H * .235 + (cur === 2 ? 0 : 0), cur, eout((lt - .3) / .4), 34);
 });

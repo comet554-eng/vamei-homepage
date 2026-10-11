@@ -257,12 +257,12 @@ S.push(lt => {
   } else {
     const l2 = lt - 8, e = eC(l2), v = slipV(e) / 240;
     drawSky(0);
-    crossSlip([CX + 30, H * .58], 22, e, e, lt, { scroll: scC(lt), slide: v, arc: 1 });
+    crossSlip([CX + 30, H * .58], 22, e, e, lt, { scroll: scC(lt), slide: v });
     const stop = e > 15;
     pill(stop ? '立刃 → 停住' : '放平 → 往下滑', CX, H * .235, 38, stop ? COL.green : COL.amber, '#fff');
     if (stop) markV(W * .84, H * .36, 36, sm((l2 - 3.1) / .3));
     else label('往下蹭', W * .82, H * .36, 38, COL.amber, 900);
-    label('顺着板看 · 雪坡往右下', CX, H * .7, 30, COL.sub, 700);
+    label('顺着板看 · 雪坡往右下', CX, H * .69, 30, COL.sub, 700);
   }
 });
 // D 站姿
@@ -297,12 +297,12 @@ const eE = l => pw(l, [[0, E_STOP], [.8, E_STOP], [2.0, E_FLAT], [8.6, E_FLAT], 
 const scE = makeScroll(lt => slipV(eE(lt)), 0, 16.5);
 S.push(lt => {
   drawSky(0);
-  const e = eE(lt), v = slipV(e) / 240, J = crossSlip([CX + 30, H * .58], 22, e, e, lt, { scroll: scE(lt), slide: v, arc: 1 });
+  const e = eE(lt), v = slipV(e) / 240, J = crossSlip([CX + 30, H * .58], 22, e, e, lt, { scroll: scE(lt), slide: v });
   if (lt < 8.2) {
     const a = sm((lt - .6) / .4);
     g.save(); g.globalAlpha = a; ring(J.K[1][0], J.K[1][1], 34, COL.amber, 1); arrow(J.K[1][0] + 44, J.K[1][1] + 10, J.K[1][0] + 170, J.K[1][1] + 62, COL.amber, 7, 24); g.restore();
     g.save(); g.globalAlpha = a; pill('膝盖、脚踝往山下放', CX, H * .235, 36, COL.amber, '#fff'); g.restore();
-    if (lt > 2.2) { g.save(); g.globalAlpha = sm((lt - 2.2) / .4); label('板一平 → 往下滑', W * .76, H * .38, 36, COL.amber, 900); g.restore(); }
+    if (lt > 2.2) { g.save(); g.globalAlpha = sm((lt - 2.2) / .4); label('板一平 → 往下滑', W * .8, H * .29, 36, COL.amber, 900); g.restore(); }
   } else if (lt < 12.4) {
     const a = sm((lt - 8.4) / .4);
     g.save(); g.globalAlpha = a; ring(J.K[0][0], J.K[0][1], 34, COL.green, 1); arrow(J.K[0][0] - 44, J.K[0][1] - 6, J.K[0][0] - 170, J.K[0][1] - 58, COL.green, 7, 24); g.restore();
@@ -354,7 +354,7 @@ S.push(lt => {
   const cur = lt < 2.4 ? -1 : lt < 9 ? 0 : lt < 15 ? 1 : lt < 19.8 ? 2 : 3;
   if (cur <= 0) {
     drawSky(0); const e = eG(lt), v = slipV(e) / 240;
-    crossSlip([CX + 30, H * .6], 10, e, e, lt, { scroll: scG(lt), slide: v * .7, arc: 1 });
+    crossSlip([CX + 30, H * .6], 10, e, e, lt, { scroll: scG(lt), slide: v * .7 });
     pill('缓坡', W * .16, H * .36, 34, '#fff', COL.ink);
     if (cur === 0) label(e > 15 ? '立刃 · 停' : '放平 · 动', W * .8, H * .36, 40, e > 15 ? COL.green : COL.amber, 900);
   } else if (cur === 1) {
@@ -435,10 +435,10 @@ function coverArt(key, w, h) {
     line([['侧滑', COL.green], ['：横着慢慢蹭下去', COL.ink]], y2, size * .56);
     label('站姿 · 放平立刃 · 练法 · 三个错误', cx, subY, subSize, COL.sub, 700);
   };
-  if (key === '9x16') { title(CX, h * .26, h * .345, 140, h * .405, 42, h * .165, 42); art(w * .5, h * .48, h * .74, 1.5); }
+  if (key === '9x16') { title(CX, h * .26, h * .345, 140, h * .405, 42, h * .165, 42); art(w * .5, h * .49, h * .76, 1.7); }
   else if (key === '3x4') { title(CX, h * .2, h * .3, 132, h * .37, 40, h * .085, 40); art(w * .5, h * .47, h * .74, 1.2); }
   else {
-    const s = key === '16x9' ? .95 : .85; art(w * .74, h * .14, h * .6, s);
+    const s = key === '16x9' ? .95 : .85; art(w * .74, h * .2, h * .68, s);
     const fade = g.createLinearGradient(0, 0, w * .6, 0); fade.addColorStop(0, 'rgba(248,251,253,.95)'); fade.addColorStop(1, 'rgba(248,251,253,.3)'); g.fillStyle = fade; g.fillRect(0, 0, w * .52, h);
     const size = key === '16x9' ? 126 : 100;
     title(w * .27, h * .43, h * .58, size, h * .7, key === '16x9' ? 36 : 30, h * .25, key === '16x9' ? 38 : 34);
