@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>徒步不难 EP.08</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#000;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;aspect-ratio:9/16;max-width:100vw;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;aspect-ratio:auto;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="trailkit.js"></script>
+<script>
+/*
+ * 徒步不难 EP.08《下坡怎么走，不伤膝盖？》（约 1 分 51 秒）
+ * 下坡在“刹车” → 膝盖微弯、小步 → 重心别后仰、看清落脚 → 杖先撑、陡坡侧身 → 台阶与鞋带 → 留体力 → 三个错误
+ */
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+const T = [0, 7.6, 11.2, 23.2, 35.2, 47.2, 59.2, 71.2, 79.2, 97.2, 104.2, 110.7];
+const YH = .135, YB = .745;
+const { blue: BLUE, green: GREEN, amber: AMB, red: RED } = HB;
+
+const TX = [
+  { in: .15, out: 3.6, text: '下山的时候，\n{r}一路小跑{/}，', y: YH, size: 88, w: 900, st: .06 },
+  { in: 3.8, out: 7.4, text: '第二天下楼梯，\n{r}膝盖疼、腿发软{/}。', y: YH, size: 80, w: 900 },
+  { in: 7.85, out: 10.95, text: '下坡怎么走，\n不伤膝盖？', y: .3, size: 100, w: 900, st: .05 },
+  { in: 8.6, out: 10.95, text: '膝盖微弯、步子小、慢慢来', y: .415, size: 42, w: 600, sub: 1 },
+  // C 为什么
+  { in: 11.4, out: 17.2, text: '下坡为什么累膝盖？\n每一步都在{r}刹车{/}。', y: YH, size: 80, w: 900 },
+  { in: 12.2, out: 17.2, text: '身体往下冲，大腿前侧要一直用力把它拉住。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 17.6, out: 23.0, text: '步子越大、越快，\n膝盖{r}挨的冲击越大{/}。', y: YH, size: 80, w: 900 },
+  { in: 18.4, out: 23.0, text: '一步一步“砸”下去，最伤。', y: YB, size: 42, w: 500, sub: 1 },
+  // D 膝盖微弯 + 小步
+  { in: 23.4, out: 29.2, text: '{g}膝盖微微弯着{/}，\n像弹簧一样。', y: YH, size: 84, w: 900 },
+  { in: 24.2, out: 29.2, text: '脚落地时膝盖别伸直，让腿缓一缓。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 29.6, out: 35.0, text: '{g}步子放小{/}，\n脚轻轻放下去。', y: YH, size: 88, w: 900 },
+  { in: 30.4, out: 35.0, text: '下坡的步子，比平路还要小一点。', y: YB, size: 42, w: 500, sub: 1 },
+  // E 重心 + 落脚
+  { in: 35.4, out: 41.2, text: '身体{r}别往后仰{/}。', y: YH, size: 88, w: 900 },
+  { in: 36.2, out: 41.2, text: '稍微前倾，重心压在脚上；\n往后一坐，脚下最容易滑。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 41.6, out: 47.0, text: '看清{g}下一步踩哪儿{/}，\n踩稳了再换脚。', y: YH, size: 80, w: 900 },
+  { in: 42.4, out: 47.0, text: '碎石、落叶、湿泥，都要多看一眼。', y: YB, size: 42, w: 500, sub: 1 },
+  // F 杖 + 陡坡
+  { in: 47.6, out: 53.2, text: '{g}登山杖{/}先撑住，\n脚再下去。', y: YH, size: 84, w: 900 },
+  { in: 48.4, out: 53.2, text: '下坡把杖调长一点（第 5 集讲过）。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 53.6, out: 59.0, text: '特别陡的地方：\n{g}侧着身{/}、{g}走之字{/}。', y: YH, size: 80, w: 900 },
+  { in: 54.4, out: 59.0, text: '比正对着往下冲，稳得多。', y: YB, size: 42, w: 500, sub: 1 },
+  // G 台阶 + 鞋带
+  { in: 59.4, out: 65.2, text: '下台阶：\n{g}整只脚{/}踩上去。', y: YH, size: 88, w: 900 },
+  { in: 60.2, out: 65.2, text: '别只用脚尖或脚后跟，挂在台阶边上。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 65.6, out: 71.0, text: '下山之前，\n{g}鞋带再系紧{/}。', y: YH, size: 88, w: 900 },
+  { in: 66.4, out: 71.0, text: '脚不在鞋里往前滑，脚趾就不顶（第 2 集讲过）。', y: YB, size: 42, w: 500, sub: 1 },
+  // H 留体力
+  { in: 71.4, out: 79.0, text: '{g}留着力气下山{/}。', y: YH, size: 88, w: 900 },
+  { in: 72.2, out: 79.0, text: '登顶不是终点；腿软了再下坡，最容易摔。', y: YB, size: 42, w: 500, sub: 1 },
+  // I 三个错误
+  { in: 79.4, out: 85.0, text: '常见错误一：\n一路{r}往下冲{/}', y: YH, size: 88, w: 900 },
+  { in: 80.2, out: 85.0, text: '速度一快就刹不住，膝盖和脚都遭罪。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 85.4, out: 91.0, text: '常见错误二：\n腿{r}伸得笔直{/}往下踩', y: YH, size: 80, w: 900 },
+  { in: 86.2, out: 91.0, text: '每一步的冲击，全砸在膝盖上。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 91.4, out: 97.0, text: '常见错误三：\n{r}往后仰{/}着走', y: YH, size: 88, w: 900 },
+  { in: 92.2, out: 97.0, text: '重心一往后，脚就往前滑，一屁股坐下去。', y: YB, size: 42, w: 500, sub: 1 },
+  // K
+  { in: 104.4, out: 999, text: '你下山的时候，\n膝盖疼过吗？', y: .37, size: 84, w: 900, st: .06 },
+  { in: 105.4, out: 999, text: '评论区说说', y: .465, size: 42, w: 500, sub: 1 }
+];
+
+/* ───────── 本集画面 ───────── */
+const walkPh = (t, k) => t * Math.PI * 2 * (k || .9);
+const downHill = x => H * .38 + x * .42;
+function kneeOf(J, s) { return [J.hip[0] + 14 * s, J.hip[1] + 46 * s]; }
+function spring(x, y0, y1, comp, c) {
+  const n = 8, w = 34; g.save(); g.strokeStyle = c; g.lineWidth = 8; g.lineCap = 'round'; g.lineJoin = 'round'; g.beginPath(); g.moveTo(x, y0);
+  for (let i = 1; i < n * 2; i++) { const y = lerp(y0, y1, i / (n * 2)); g.lineTo(x + (i % 2 ? w : -w), y); } g.lineTo(x, y1); g.stroke(); g.restore();
+}
+function stairs(x0, y0, n, sw, sh) { g.fillStyle = '#d9c6a5'; g.beginPath(); g.moveTo(x0, y0 - n * sh); for (let i = 0; i < n; i++) { g.lineTo(x0 + (i + 1) * sw, y0 - (n - i) * sh); g.lineTo(x0 + (i + 1) * sw, y0 - (n - i - 1) * sh); } g.lineTo(x0 + n * sw + 200, y0); g.lineTo(x0 + n * sw + 200, y0 + 60); g.lineTo(x0, y0 + 60); g.closePath(); g.fill(); g.strokeStyle = '#b89a6c'; g.lineWidth = 4; g.stroke(); }
+function impactBars(x, y, w, h, vals, c, k) { const bw = w / vals.length; vals.forEach((v, i) => { if (i / vals.length > k) return; g.fillStyle = c; rrect(x + i * bw + 6, y + h - v * h, bw - 12, v * h, 8); g.fill(); }); }
+function stone(x, y, r, loose) { g.fillStyle = loose ? '#b0a493' : '#8a97a5'; g.beginPath(); g.ellipse(x, y, r, r * .7, .3, 0, Math.PI * 2); g.fill(); }
+function leaf(x, y, a) { g.save(); g.translate(x, y); g.rotate(a); g.fillStyle = '#d9962b'; g.beginPath(); g.ellipse(0, 0, 22, 10, 0, 0, Math.PI * 2); g.fill(); g.restore(); }
+
+/* ───────── 场景 ───────── */
+const S = [];
+// A 钩子
+S.push(lt => {
+  if (lt < 3.8) {
+    const R = bgWalk(lt, { cam: 300, hy: downHill, cad: 1.9, hiker: { ph: walkPh(lt, 1.9), lean: -.2, pole: false }, sun: [W * .2, H * .3] });
+    const K = kneeOf(R.J, 1.4); glow(K[0], K[1], 60, '240,71,60', .3 + .5 * Math.abs(Math.sin(lt * 9)));
+    speedLines([W * .4, H * .5], 22, lt, .6, .5);
+  } else {
+    const l2 = lt - 3.8; bgPlain(lt);
+    card(W * .08, H * .22, W * .84, H * .46, 40);
+    g.save(); rrect(W * .08, H * .22, W * .84, H * .46, 40); g.clip();
+    g.fillStyle = '#f3ede4'; g.fillRect(W * .08, H * .22, W * .84, H * .46);
+    stairs(W * .14, H * .66, 6, 110, 60);
+    const st = Math.min(4, Math.floor(l2 / .9)), fx = W * .14 + (st + .5) * 110, fy = H * .66 - (6 - st - 1) * 60 - 60;
+    const J = drawHiker(fx, fy + 12, { s: 1.3, walk: .4, ph: l2 * 3, t: lt, tired: .6, lean: -.05, pack: '#9fb3c8' });
+    g.restore();
+    glow(J.hip[0] + 18, J.hip[1] + 60, 60, '240,71,60', .4 + .4 * Math.abs(Math.sin(lt * 6)));
+    bubble('哎哟……', J.head[0] + 120, J.head[1] - 60, 44, RED, l2 - .8);
+  }
+});
+// B
+S.push(lt => titleScene(lt, '08'));
+// C 为什么
+S.push(lt => {
+  if (lt < 6.2) {
+    const R = bgWalk(lt, { cam: 80, hy: downHill, hiker: { ph: walkPh(lt, .7), pole: false }, sun: [W * .2, H * .3] });
+    subPanel(win(lt, .8, 6.2, .3, .01));
+    const K = kneeOf(R.J, 1.4), a = sm((lt - 1) / .4);
+    g.save(); g.globalAlpha = a; arrow(K[0] + 80, K[1] + 90, K[0] + 160, K[1] + 160, '#9fb6ca', 8, 26); label('往下冲', K[0] + 190, K[1] + 190, 32, COL.sub, 900, 'left');
+    arrow(K[0] + 10, K[1] - 10, K[0] - 50, K[1] - 80, RED, 10, 30); label('大腿：刹车', K[0] + 40, K[1] - 110, 38, RED, 900, 'left'); g.restore();
+  } else {
+    const l2 = lt - 6.2; bgPlain(lt + 20);
+    card(W * .06, H * .22, W * .88, H * .46, 40);
+    const k = clamp((l2 - .4) / 3, 0, 1);
+    label('大步、快', W * .12, H * .27, 38, RED, 900, 'left'); impactBars(W * .12, H * .29, W * .76, H * .14, [.9, .85, 1, .9, .95, .88, 1, .92], 'rgba(240,71,60,.85)', k);
+    label('小步、慢', W * .12, H * .48, 38, GREEN, 900, 'left'); impactBars(W * .12, H * .5, W * .76, H * .14, [.35, .3, .38, .32, .36, .3, .34, .33, .31, .36, .32, .35], 'rgba(18,166,121,.85)', k);
+    label('膝盖挨的冲击（示意）', W * .88, H * .66, 28, COL.faint, 700, 'right');
+  }
+});
+// D 膝盖微弯 + 小步
+S.push(lt => {
+  if (lt < 6.2) {
+    bgPlain(lt + 40);
+    [[W * .28, false, '伸直：硬碰硬', RED], [W * .72, true, '微弯：有缓冲', GREEN]].forEach(([cx, soft, nm, c], i) => {
+      const a = eout((lt - .3 - i * .5) / .4); if (a <= 0) return;
+      g.save(); g.globalAlpha = a; card(cx - W * .21, H * .22, W * .42, H * .46, 36);
+      const ph = (lt * 1.2) % 1, hit = ph < .2, comp = soft ? (hit ? .5 + .5 * Math.sin(ph / .2 * Math.PI) : 0) : 0;
+      const top = H * .3 + (soft ? comp * 40 : 0), bot = H * .58;
+      g.fillStyle = TP.pants; rrect(cx - 30, top - 30, 60, 50, 20); g.fill();
+      if (soft) spring(cx, top + 20, bot - 30, comp, GREEN); else { g.strokeStyle = '#5b6b7c'; g.lineWidth = 22; g.lineCap = 'round'; g.beginPath(); g.moveTo(cx, top + 20); g.lineTo(cx, bot - 30); g.stroke(); }
+      g.fillStyle = TP.boot; rrect(cx - 50, bot - 30, 110, 40, 14); g.fill();
+      g.fillStyle = '#c7e8c1'; g.fillRect(cx - W * .19, bot + 10, W * .38, 20);
+      if (!soft && hit) { g.fillStyle = RED; for (let j = 0; j < 8; j++) { const an = j / 8 * Math.PI * 2; g.beginPath(); g.moveTo(cx + Math.cos(an) * 20, top + Math.sin(an) * 20); g.lineTo(cx + Math.cos(an + .2) * 60, top + Math.sin(an + .2) * 60); g.lineTo(cx + Math.cos(an - .2) * 60, top + Math.sin(an - .2) * 60); g.fill(); } }
+      label(nm, cx, H * .64, 34, c, 900);
+      g.restore();
+    });
+  } else {
+    const l2 = lt - 6.2;
+    bgWalk(lt, { cam: 70, hy: downHill, cad: 1.4, hiker: { ph: walkPh(lt, 1.4), walk: .55, pole: false }, sun: [W * .2, H * .3] });
+    subPanel(win(l2, .8, 6, .3, .01));
+    pill('小步 · 慢', W * .74, H * .27, 40, GREEN, '#fff', sm((l2 - .6) / .4));
+  }
+});
+// E 重心 + 落脚
+S.push(lt => {
+  if (lt < 6.2) {
+    bgPlain(lt + 60);
+    [[W * .28, -.7, '往后仰', RED], [W * .72, .3, '稍微前倾', GREEN]].forEach(([cx, ln, nm, c], i) => {
+      const a = eout((lt - .3 - i * .5) / .4); if (a <= 0) return;
+      g.save(); g.globalAlpha = a; card(cx - W * .21, H * .22, W * .42, H * .46, 36);
+      g.save(); rrect(cx - W * .21, H * .22, W * .42, H * .46, 36); g.clip();
+      const gy = x => H * .52 + (x - cx) * .45;
+      g.fillStyle = '#c7e8c1'; g.beginPath(); g.moveTo(cx - 300, gy(cx - 300)); g.lineTo(cx + 300, gy(cx + 300)); g.lineTo(cx + 300, H); g.lineTo(cx - 300, H); g.closePath(); g.fill();
+      const slip = i === 0 ? sm((lt - 2) / .8) * 40 * Math.abs(Math.sin(lt * 2)) : 0;
+      drawHiker(cx + slip, gy(cx + slip) + 12, { s: 1.4, walk: .3, ph: 1, t: lt, slope: -24, lean: ln + .13 });
+      g.restore();
+      pill(nm, cx, H * .26, 36, c, '#fff');
+      if (i === 0) { const b = sm((lt - 2) / .4); g.save(); g.globalAlpha = b; label('脚下打滑', cx, H * .64, 34, RED, 900); g.restore(); }
+      else label('脚踩得住', cx, H * .64, 34, GREEN, 900);
+      g.restore();
+    });
+  } else {
+    const l2 = lt - 6.2; bgPlain(lt + 60); card(W * .08, H * .22, W * .84, H * .46, 40);
+    g.save(); rrect(W * .08, H * .22, W * .84, H * .46, 40); g.clip();
+    g.fillStyle = '#e9dcc6'; g.fillRect(W * .3, H * .22, W * .4, H * .46);
+    for (let i = 0; i < 9; i++) leaf(W * (.34 + hash(i) * .32), H * (.26 + hash(i + 4) * .4), hash(i + 2) * 3);
+    const spots = [[W * .44, H * .62, false], [W * .58, H * .54, false], [W * .42, H * .46, false], [W * .56, H * .38, false], [W * .45, H * .3, false]];
+    const loose = [[W * .56, H * .62], [W * .44, H * .53], [W * .58, H * .45], [W * .43, H * .38]];
+    loose.forEach(([x, y]) => stone(x, y, 26, true));
+    spots.forEach(([x, y], i) => { stone(x, y, 40, false); const a = sm((l2 - .6 - i * .8) / .3); if (a > 0) { g.save(); g.globalAlpha = a; g.fillStyle = TP.boot; g.beginPath(); g.ellipse(x, y, 18, 30, 0, 0, Math.PI * 2); g.fill(); g.restore(); markV(x + 50, y - 20, 18, a); } });
+    if (l2 > 1) loose.slice(0, 2).forEach(([x, y]) => markX(x + 36, y - 20, 18, sm((l2 - 1) / .3)));
+    g.restore();
+    label('踩稳的', W * .82, H * .4, 32, GREEN, 900); label('别踩活石头', W * .82, H * .46, 28, RED, 900);
+  }
+});
+// F 杖 + 陡坡
+S.push(lt => {
+  if (lt < 6.2) {
+    const R = bgWalk(lt, { cam: 70, hy: downHill, hiker: { ph: walkPh(lt, .7), pole: true }, sun: [W * .2, H * .3] });
+    subPanel(win(lt, .8, 6.2, .3, .01));
+    bubble('杖先落', R.J.head[0] + 140, R.J.head[1] - 60, 40, GREEN, lt - .8);
+  } else {
+    const l2 = lt - 6.2; bgPlain(lt + 80); card(W * .06, H * .22, W * .88, H * .46, 40);
+    const cx = CX, top = H * .26, bot = H * .64, k = clamp((l2 - .6) / 3.6, 0, 1);
+    g.save(); g.strokeStyle = RED; g.lineWidth = 8; g.setLineDash([14, 10]); g.beginPath(); g.moveTo(cx - 220, top); g.lineTo(cx - 220, bot); g.stroke(); g.restore(); markX(cx - 220, (top + bot) / 2, 28, sm((l2 - .3) / .3));
+    const zz = u => { const n = 4, p = u * n, i = Math.floor(p), f = p - i; const xa = i % 2 ? 300 : 20, xb = i % 2 ? 20 : 300; return [cx + lerp(xa, xb, f) * .8 - 40, lerp(top, bot, u)]; };
+    g.save(); g.strokeStyle = GREEN; g.lineWidth = 9; g.lineJoin = 'round'; g.beginPath(); for (let i = 0; i <= 200 * k; i++) { const p = zz(i / 200); i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]); } g.stroke(); g.restore();
+    if (k > .05) { const p = zz(k); g.fillStyle = TP.jacket; g.strokeStyle = '#fff'; g.lineWidth = 5; g.beginPath(); g.arc(p[0], p[1], 18, 0, Math.PI * 2); g.fill(); g.stroke(); }
+    label('正对着冲', cx - 220, H * .665, 30, RED, 900); label('之字、侧身', cx + 100, H * .665, 30, GREEN, 900);
+    label('↓ 下坡', W * .14, H * .3, 30, COL.sub, 700, 'left');
+  }
+});
+// G 台阶 + 鞋带
+S.push(lt => {
+  bgPlain(lt + 100); card(W * .06, H * .22, W * .88, H * .46, 40);
+  if (lt < 6.2) {
+    [[W * .28, false, '脚尖挂边上', RED], [W * .72, true, '整只脚踩上', GREEN]].forEach(([cx, full, nm, c], i) => {
+      const a = eout((lt - .3 - i * .5) / .4); if (a <= 0) return; g.save(); g.globalAlpha = a;
+      g.fillStyle = '#d9c6a5'; g.fillRect(cx - 190, H * .48, 200, 40); g.fillRect(cx - 190, H * .48, 380, 200 * 0 + 0); g.fillRect(cx + 10, H * .56, 180, 40); g.fillRect(cx - 190, H * .52, 380, 140);
+      g.fillStyle = TP.boot; const fx = full ? cx - 140 : cx - 30; rrect(fx, H * .48 - 40, 160, 40, 14); g.fill();
+      g.fillStyle = TP.pants; rrect(fx + 20, H * .48 - 230, 50, 200, 20); g.fill();
+      if (!full) { markX(cx, H * .33, 26, 1); arrow(cx + 120, H * .45, cx + 170, H * .5, RED, 6, 22); } else markV(cx, H * .33, 26, 1);
+      label(nm, cx, H * .64, 34, c, 900); g.restore();
+    });
+  } else {
+    const l2 = lt - 6.2, k = sm((l2 - .4) / 1.2);
+    shoe(CX - 10, H * .5, 2.1, 'mid');
+    g.save(); g.strokeStyle = mixHex('#ffd166', '#12a679', k); g.lineWidth = 9; g.lineCap = 'round';
+    for (let i = 0; i < 5; i++) { const x = CX - 10 + (-70 + i * 20 - 30 + i * 4) * 2.1, y = H * .5 + (-55 - 4 + i * 15) * 2.1; g.beginPath(); g.moveTo(x - 30, y + 10); g.lineTo(x + 30, y - 10 + k * 6); g.stroke(); }
+    g.restore();
+    if (k > .9) { markV(W * .8, H * .3, 30, 1); label('脚不往前滑', CX, H * .62, 40, GREEN, 900); }
+  }
+});
+// H 留体力
+S.push(lt => {
+  const peak = x => H * .66 - 300 * Math.exp(-Math.pow((x - W * .5) / 320, 2));
+  hikeSky(.1); hikeSun(W * .82, H * .32, 52, lt, .1); hikeClouds(lt, 1, .14); hikeRidges(0, 0, H * .6); hikeGround(peak, 0, lt, { treeGap: 200 });
+  flagPole(W * .56, peak(W * .56) + 6, 1, lt, RED); drawHiker(W * .46, peak(W * .46) + 12, { s: 1.3, walk: 0, t: lt });
+  subPanel(win(lt, .8, 8, .3, .01));
+  const a = sm((lt - .6) / .4); g.save(); g.globalAlpha = a; card(W * .1, H * .22, W * .8, 150, 36);
+  const bx = W * .16, bw = W * .68, k = sm((lt - 1.2) / 1.4);
+  g.fillStyle = '#e9eff4'; rrect(bx, H * .22 + 70, bw, 44, 22); g.fill();
+  g.fillStyle = AMB; rrect(bx, H * .22 + 70, bw * .5 * k + 1, 44, 22); g.fill(); g.fillStyle = GREEN; rrect(bx + bw * .5 + 6, H * .22 + 70, (bw * .5 - 6) * sm((lt - 2.8) / 1), 44, 22); g.fill();
+  label('上山用一半', bx + bw * .25, H * .22 + 40, 30, AMB, 900); label('留一半下山', bx + bw * .75, H * .22 + 40, 30, GREEN, 900);
+  g.restore();
+});
+// I 三个错误
+S.push(lt => {
+  const seg = lt < 6 ? 0 : lt < 12 ? 1 : 2, l2 = lt - seg * 6;
+  if (seg === 0) {
+    const R = bgWalk(lt, { cam: 320, hy: downHill, cad: 2, hiker: { ph: walkPh(lt, 2), lean: -.15, pole: false }, sun: [W * .2, H * .3] });
+    speedLines([W * .4, H * .5], 22, lt, .7, .6); subPanel(win(l2, .8, 6, .3, .01));
+    const K = kneeOf(R.J, 1.4); glow(K[0], K[1], 60, '240,71,60', .3 + .5 * Math.abs(Math.sin(lt * 9)));
+  } else if (seg === 1) {
+    bgPlain(lt + 140); card(W * .2, H * .22, W * .6, H * .46, 40);
+    const ph = (lt * 1.2) % 1, hit = ph < .2;
+    g.strokeStyle = '#5b6b7c'; g.lineWidth = 26; g.lineCap = 'round'; g.beginPath(); g.moveTo(CX, H * .3); g.lineTo(CX, H * .56); g.stroke();
+    g.fillStyle = TP.boot; rrect(CX - 60, H * .56, 130, 44, 14); g.fill(); g.fillStyle = '#c7e8c1'; g.fillRect(W * .22, H * .6, W * .56, 20);
+    const kn = [CX, H * .43]; glow(kn[0], kn[1], 80, '240,71,60', hit ? .9 : .3); label('膝盖', CX + 60, H * .43, 34, RED, 900, 'left');
+    if (hit) { g.fillStyle = RED; for (let j = 0; j < 8; j++) { const an = j / 8 * Math.PI * 2; g.beginPath(); g.moveTo(CX + Math.cos(an) * 30, H * .6 + Math.sin(an) * 14); g.lineTo(CX + Math.cos(an + .2) * 80, H * .6 + Math.sin(an + .2) * 30); g.lineTo(CX + Math.cos(an - .2) * 80, H * .6 + Math.sin(an - .2) * 30); g.fill(); } }
+  } else {
+    const slip = sm((l2 - 1.4) / .6);
+    const R = bgWalk(lt, { cam: 40 * (1 - slip), hy: downHill, hiker: { ph: walkPh(lt, .7), walk: 1 - slip, lean: -.45 - slip * .3, pole: false }, sun: [W * .2, H * .3] });
+    subPanel(win(l2, .8, 6, .3, .01));
+    if (slip > 0) { bubble('啊！', R.J.head[0] + 100, R.J.head[1] - 60, 48, RED, l2 - 1.6); burst(R.J.hip[0] + 60, R.J.hip[1] + 100, (l2 - 1.6) % 1.6, 14, .4); }
+  }
+  errorMark(l2);
+});
+// J
+S.push(lt => mottoCard(lt, [['膝盖', '微微弯着，像弹簧'], ['步子', '小步、慢、踩稳再走'], ['工具', '杖调长，鞋带系紧']], '下山慢一点，膝盖会谢谢你。'));
+// K
+S.push(lt => endScene(lt));
+
+/* ───────── 封面 ───────── */
+function coverArt(key, w, h) {
+  hikeCover(key, w, h, {
+    ep: '08', l1: '下坡怎么走', l2: [['不伤', COL.ink], ['膝盖', GREEN], ['？', COL.ink]], chips: [['膝盖微弯', GREEN], ['小步', AMB], ['别后仰', RED]],
+    art: (k, ww, hh) => {
+      const vert = k === '9x16' || k === '3x4', mx = vert ? .4 : .62;
+      hikeSky(0); hikeSun(ww * .82, hh * .2, 70, 1, 0); for (let i = 0; i < 3; i++) cloud(ww * (.12 + i * .34), hh * (.12 + (i % 2) * .08), .8, .95);
+      const oy = vert ? hh * .06 : 0; g.save(); g.translate(0, oy);
+      hikeRidges(200, 0, hh * .62);
+      const mw = Math.min(ww, hh) * .32, hy = x => hh * .9 - hh * .22 * Math.exp(-Math.pow((x - ww * mx) / mw, 2));
+      hikeGround(hy, 0, 1, { treeGap: 200 });
+      flagPole(ww * mx, hy(ww * mx) + 6, 1.2, 1, RED);
+      const xh = ww * mx + mw * .7; const J = hikerOn(hy, xh, 0, { s: 1.6, ph: 1.2, t: 0, pole: true });
+      const cx = vert ? ww * .78 : ww * .88, cy = vert ? hh * .5 : hh * .36; ring(cx, cy, 90, GREEN, 1); spring(cx, cy - 60, cy + 60, 0, GREEN);
+      g.restore();
+    }
+  });
+}
+
+/* ───────── 声音 ───────── */
+function sound(K, c, DUR) {
+  hikeSound(K, c, DUR, {
+    start: 7.6, sec: t => t < 23.2 ? 'verse' : t < 35.2 ? 'chorus' : t < 47.2 ? 'verse' : t < 59.2 ? 'chorus' : t < 71.2 ? 'verse' : t < 79.2 ? 'chorus' : t < 97.2 ? 'tense' : 'outro',
+    chirps: [8.4, 10.2, 72, 98, 105, 107.5],
+    steps: [[.2, 3.8, .26], [3.8, 7.4, .9], [29.6, 35.2, .4], [47.4, 53.2, .7], [79.4, 85.2, .25]],
+    dings: [23.2 + 1.3, 35.2 + 6.2 + .6, 35.2 + 6.2 + 1.4, 35.2 + 6.2 + 2.2, 35.2 + 6.2 + 3, 35.2 + 6.2 + 3.8, 59.2 + .8, 59.2 + 6.2 + 1.6, 71.2 + 3.8],
+    wrongs: [4.6, 23.2 + 1, 35.2 + 2.2, 47.2 + 6.2 + .3, 59.2 + .3, 79.2 + .3, 85.2 + .3, 91.2 + .3, 91.2 + 1.6],
+    riser: 79.2, outro: 97.2,
+    extra: K => { for (let t = 23.4; t < 29.2; t += 1 / 1.2) K.thud(t, .25); for (let t = 85.4; t < 91; t += 1 / 1.2) K.thud(t, .35); }
+  });
+}
+
+kitRun({ T, S, TX, seed: 1008, allText: SRC.replace(/[\x00-\x7f]/g, '') + '0123456789:+=≈÷→～…↓', audio: sound, cover: coverArt });
+})();
+</script>
+</body>
+</html>

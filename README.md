@@ -60,3 +60,13 @@
 
 - 画面沿用 `video/snowkit.js` 的字幕、转场、配乐与导出框架，徒步专用画面在 `video/trailkit.js`：天空与日落 `hikeSky()`、太阳、云、飞鸟、远山、草地小路与花树 `hikeGround()`、背包小人 `drawHiker()`（步伐、坡度、累、挥手、头灯）、海拔剖面 `profile()`、路牌、时钟。
 - EP.01《第一次徒步：选什么路线？》：`video/hike-ep01.html`，约 2 分 06 秒（距离、累计爬升、估时与日落时间轴、两条路线对比）。
+- EP.02 起：`trailkit.js` 里加了系列模板（`bgWalk` 走路场景、`titleScene`、`listCards`、`mottoCard`、`endScene`、`hikeCover` 封面、`hikeSound` 声音）和物品图标 `ICO.*`、鞋 `shoe()`、T 恤 `tee()`、风雨 `windLines()` / `rainFall()`。
+- EP.02《徒步鞋怎么选？》：`video/hike-ep02.html`（看路选鞋、鞋底抓地与软硬、高帮低帮、脚在鞋里的剖视 `footInShoe()`）。
+- EP.03《徒步穿什么？》：`video/hike-ep03.html`（三层衣服的横截面圆环 `layers()`、洋葱式穿脱、海拔降温）。
+- EP.04《一日徒步，背包里装什么？》：`video/hike-ep04.html`（饮水时间轴、物品宫格 `itemGrid()`、背包剖视 `packSection()`）。
+- EP.05《登山杖：要不要买，怎么用？》：`video/hike-ep05.html`（示意小人 `fig()` 演示杖长与 90°、腕带特写、脚印与杖点交替）。
+- EP.06《出发前，天气要看什么？》：`video/hike-ep06.html`（逐小时预报卡片、雷雨闪电、风口与林中路线、日落与预警）。
+- EP.07《上坡怎么走才不喘？》：`video/hike-ep07.html`（台阶大步小步、说话测试、呼吸节奏、之字路与休息步）。
+- EP.08《下坡怎么走，不伤膝盖？》：`video/hike-ep08.html`（刹车受力、冲击柱状图、弹簧缓冲 `spring()`、落脚点）。
+- EP.09《路上怎么歇、怎么吃喝？》：`video/hike-ep09.html`（休息时间轴、补水与体力曲线 `curve()`、尿色示意）。
+- EP.10《路标和轨迹怎么看？走岔了怎么办》：`video/hike-ep10.html`（俯视树林岔路 `forestBG()`、路标种类、手机轨迹偏离、原路退回）。

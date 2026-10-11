@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>徒步不难 EP.07</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#000;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;aspect-ratio:9/16;max-width:100vw;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;aspect-ratio:auto;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="trailkit.js"></script>
+<script>
+/*
+ * 徒步不难 EP.07《上坡怎么走才不喘？》（约 1 分 51 秒）
+ * 小步、脚踩平 → 匀速与说话测试 → 呼吸跟着步子 → 微微前倾、用杖 → 之字路与休息步 → 身体信号 → 三个错误
+ */
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+const T = [0, 7.6, 11.2, 23.2, 35.2, 47.2, 59.2, 71.2, 79.2, 97.2, 104.2, 110.7];
+const YH = .135, YB = .745;
+const { blue: BLUE, green: GREEN, amber: AMB, red: RED } = HB;
+
+const TX = [
+  { in: .15, out: 3.6, text: '一开始\n{r}冲得飞快{/}，', y: YH, size: 88, w: 900, st: .06 },
+  { in: 3.8, out: 7.4, text: '十分钟后，\n{r}喘得说不出话{/}。', y: YH, size: 84, w: 900 },
+  { in: 7.85, out: 10.95, text: '上坡怎么走\n才不喘？', y: .3, size: 100, w: 900, st: .05 },
+  { in: 8.6, out: 10.95, text: '小步、匀速、跟着呼吸', y: .415, size: 42, w: 600, sub: 1 },
+  // C 小步
+  { in: 11.4, out: 17.2, text: '第一招：\n{g}步子迈小{/}。', y: YH, size: 88, w: 900 },
+  { in: 12.2, out: 17.2, text: '步子越大，每一步要把身体抬得越高，最费劲。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 17.6, out: 23.0, text: '{g}整个脚掌踩稳{/}，\n再把身体送上去。', y: YH, size: 84, w: 900 },
+  { in: 18.4, out: 23.0, text: '像上楼梯一样，一级一级来。', y: YB, size: 42, w: 500, sub: 1 },
+  // D 匀速
+  { in: 23.4, out: 29.2, text: '第二招：\n{g}匀速{/}，别忽快忽慢。', y: YH, size: 84, w: 900 },
+  { in: 24.2, out: 29.2, text: '慢一点没关系，最累的是冲一段、歇一段。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 29.6, out: 35.0, text: '速度刚不刚好？\n试试{g}能不能说话{/}。', y: YH, size: 80, w: 900 },
+  { in: 30.4, out: 35.0, text: '能说完整的句子：正好；\n只能蹦几个字：太快了。', y: YB, size: 42, w: 500, sub: 1 },
+  // E 呼吸
+  { in: 35.4, out: 41.2, text: '第三招：\n{g}呼吸跟着步子走{/}。', y: YH, size: 84, w: 900 },
+  { in: 36.2, out: 41.2, text: '比如两步一吸、两步一呼，找到自己的节奏。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 41.6, out: 47.0, text: '{g}嘴和鼻子一起{/}呼吸，\n{r}别憋气{/}。', y: YH, size: 84, w: 900 },
+  { in: 42.4, out: 47.0, text: '坡越陡，步子越小，让呼吸跟得上。', y: YB, size: 42, w: 500, sub: 1 },
+  // F 姿势
+  { in: 47.6, out: 53.2, text: '身体{g}微微前倾{/}，\n重心在脚的上方。', y: YH, size: 84, w: 900 },
+  { in: 48.4, out: 53.2, text: '别弯腰驼背，也别往后仰。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 53.6, out: 59.0, text: '用上{g}登山杖{/}，\n手臂帮着推。', y: YH, size: 88, w: 900 },
+  { in: 54.4, out: 59.0, text: '上坡把杖调短一点（第 5 集讲过）。', y: YB, size: 42, w: 500, sub: 1 },
+  // G 之字 + 休息步
+  { in: 59.4, out: 65.2, text: '路修成{g}之字形{/}，\n就是为了省力。', y: YH, size: 84, w: 900 },
+  { in: 60.2, out: 65.2, text: '顺着路走，别抄直上直下的近道。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 65.6, out: 71.0, text: '还是喘？\n{g}放慢，但别停{/}。', y: YH, size: 88, w: 900 },
+  { in: 66.4, out: 71.0, text: '每迈一步，后腿伸直、停半秒，让腿歇一下。\n这叫“休息步”。', y: YB, size: 42, w: 500, sub: 1 },
+  // H 身体信号
+  { in: 71.4, out: 79.0, text: '有点喘是正常的；\n{r}胸闷、头晕{/}就要停。', y: YH, size: 80, w: 900 },
+  { in: 72.2, out: 79.0, text: '找个安全的地方歇一歇，不舒服就别硬撑。', y: YB, size: 42, w: 500, sub: 1 },
+  // I 三个错误
+  { in: 79.4, out: 85.0, text: '常见错误一：\n一开始就{r}冲{/}', y: YH, size: 88, w: 900 },
+  { in: 80.2, out: 85.0, text: '前十分钟慢慢走，让身体先热起来。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 85.4, out: 91.0, text: '常见错误二：\n台阶{r}一步跨两级{/}', y: YH, size: 80, w: 900 },
+  { in: 86.2, out: 91.0, text: '看着快，腿很快就酸了。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 91.4, out: 97.0, text: '常见错误三：\n一停就{r}停很久{/}', y: YH, size: 84, w: 900 },
+  { in: 92.2, out: 97.0, text: '歇太久身体就凉了，再走更难；\n站着喘几口气，就接着慢慢走。', y: YB, size: 42, w: 500, sub: 1 },
+  // K
+  { in: 104.4, out: 999, text: '你爬坡的时候，\n最难受的是哪一段？', y: .37, size: 80, w: 900, st: .06 },
+  { in: 105.4, out: 999, text: '评论区说说', y: .465, size: 42, w: 500, sub: 1 }
+];
+
+/* ───────── 本集画面 ───────── */
+const walkPh = (t, k) => t * Math.PI * 2 * (k || .9);
+const upHill = x => H * .9 - x * .48;
+function puffs(x, y, t, a, fast) {
+  if (a <= 0) return; g.save(); g.fillStyle = '#fff'; g.strokeStyle = '#c8d7e5'; g.lineWidth = 2;
+  for (let i = 0; i < 5; i++) { const ph = (t * (fast ? 1.8 : .8) + i / 5) % 1; g.globalAlpha = a * (1 - ph) * .9; g.beginPath(); g.arc(x + 30 + ph * 70, y - 10 - ph * 40 + Math.sin(ph * 6 + i) * 8, 9 + ph * 14, 0, Math.PI * 2); g.fill(); g.stroke(); }
+  g.restore();
+}
+function heartMeter(x, y, v, a) {
+  g.save(); g.globalAlpha = a; card(x, y, 300, 130, 30);
+  const beat = 1 + .12 * Math.max(0, Math.sin(Date.now ? 0 : 0));
+  g.fillStyle = v > .7 ? RED : v > .45 ? AMB : GREEN; g.save(); g.translate(x + 62, y + 66); g.scale(beat, beat); g.beginPath(); g.moveTo(0, 24); g.bezierCurveTo(-46, -6, -24, -40, 0, -18); g.bezierCurveTo(24, -40, 46, -6, 0, 24); g.fill(); g.restore();
+  g.fillStyle = '#e9eff4'; rrect(x + 110, y + 50, 160, 32, 16); g.fill(); g.fillStyle = v > .7 ? RED : v > .45 ? AMB : GREEN; rrect(x + 110, y + 50, Math.max(32, 160 * v), 32, 16); g.fill();
+  g.restore();
+}
+// 台阶（侧面）
+function stairs(x0, y0, n, sw, sh) { g.fillStyle = '#d9c6a5'; g.beginPath(); g.moveTo(x0, y0); for (let i = 0; i < n; i++) { g.lineTo(x0 + i * sw, y0 - i * sh); g.lineTo(x0 + i * sw, y0 - (i + 1) * sh); } g.lineTo(x0 + n * sw, y0 - n * sh); g.lineTo(x0 + n * sw, y0 + 40); g.lineTo(x0, y0 + 40); g.closePath(); g.fill(); g.strokeStyle = '#b89a6c'; g.lineWidth = 4; g.stroke(); }
+
+/* ───────── 场景 ───────── */
+const S = [];
+// A 钩子
+S.push(lt => {
+  if (lt < 3.8) {
+    const R = bgWalk(lt, { cam: 330, hy: upHill, cad: 1.8, hiker: { ph: walkPh(lt, 1.9), lean: .15 }, sun: [W * .2, H * .3] });
+    speedLines([W * .3, H * .6], -26, lt, .7, .6);
+    heartMeter(W * .62, H * .23, .3 + .2 * lt / 3.8, 1);
+  } else {
+    const l2 = lt - 3.8;
+    const R = bgWalk(lt, { cam: 0, hy: upHill, hiker: { walk: 0, tired: 1, lean: .55 + Math.sin(lt * 9) * .04 }, sun: [W * .2, H * .3], hx: W * .42 });
+    puffs(R.J.head[0], R.J.head[1], lt, 1, true);
+    heartMeter(W * .62, H * .23, .95, 1);
+    bubble('呼……呼……', R.J.head[0] + 70, R.J.head[1] - 110, 44, RED, l2 - .6);
+  }
+});
+// B
+S.push(lt => titleScene(lt, '07'));
+// C 小步
+S.push(lt => {
+  if (lt < 6.2) {
+    bgPlain(lt + 20);
+    [[W * .28, 2, '大步：一下抬很高', RED], [W * .72, 1, '小步：一点点抬', GREEN]].forEach(([cx, per, nm, c], i) => {
+      const a = eout((lt - .3 - i * .5) / .4); if (a <= 0) return;
+      g.save(); g.globalAlpha = a; card(cx - W * .21, H * .22, W * .42, H * .46, 36);
+      g.save(); rrect(cx - W * .21, H * .22, W * .42, H * .46, 36); g.clip();
+      const x0 = cx - 200, y0 = H * .62, sw = 64, sh = 40; stairs(x0, y0, 7, sw, sh);
+      const k = ((lt - .8) * (per === 2 ? .55 : 1.1)) % 6, st = Math.max(0, Math.floor(k)) * (per === 2 ? 2 : 1);
+      const idx = Math.min(6, st % 7), fx = x0 + idx * sw + sw * .5, fy = y0 - (idx + 1) * sh;
+      drawHiker(fx, fy + 12, { s: .85, walk: .6, ph: lt * 6, t: lt, tired: per === 2 ? .8 : 0, slope: 0 });
+      // 抬高示意
+      g.strokeStyle = c; g.lineWidth = 8; g.lineCap = 'round'; const hh = sh * per; g.beginPath(); g.moveTo(cx + 150, H * .58); g.lineTo(cx + 150, H * .58 - hh * 2); g.stroke();
+      g.restore();
+      label(nm, cx, H * .655, 32, c, 900); pill(per === 2 ? '费劲' : '省力', cx, H * .26, 34, c, '#fff');
+      g.restore();
+    });
+  } else {
+    const l2 = lt - 6.2;
+    const R = bgWalk(lt, { cam: 90, hy: upHill, hiker: { ph: walkPh(lt, .7) }, sun: [W * .2, H * .3] });
+    subPanel(win(l2, .8, 6, .3, .01));
+    const fx = R.J.hip[0] + 30, fy = R.J.hip[1] + 120;
+    ring(fx, fy, 90, GREEN, sm((l2 - .6) / .4), true);
+    if (l2 > .9) { g.save(); g.globalAlpha = sm((l2 - .9) / .3); label('脚掌踩稳', fx + 110, fy + 40, 40, GREEN, 900, 'left'); g.restore(); }
+  }
+});
+// D 匀速 + 说话测试
+S.push(lt => {
+  bgPlain(lt + 40);
+  if (lt < 6.2) {
+    card(W * .06, H * .22, W * .88, H * .46, 40);
+    const x0 = W * .12, x1 = W * .88, k = clamp((lt - .5) / 4.5, 0, 1);
+    const jag = u => .5 + .35 * Math.sign(Math.sin(u * 22)) * (Math.sin(u * 22) > -.3 ? 1 : -1), flat = u => .55;
+    [[H * .3, jag, RED, '冲 → 停 → 冲'], [H * .48, flat, GREEN, '一直匀速']].forEach(([y, f, c, nm]) => {
+      g.strokeStyle = 'rgba(27,40,56,.12)'; g.lineWidth = 3; g.beginPath(); g.moveTo(x0, y + 120); g.lineTo(x1, y + 120); g.stroke();
+      g.strokeStyle = c; g.lineWidth = 8; g.lineJoin = 'round'; g.beginPath();
+      for (let i = 0; i <= 120 * k; i++) { const u = i / 120, xx = lerp(x0, x1, u), yy = y + 120 - f(u) * 110; i ? g.lineTo(xx, yy) : g.moveTo(xx, yy); } g.stroke();
+      label(nm, x0, y - 6, 36, c, 900, 'left');
+    });
+    label('速度', x1, H * .27, 28, COL.sub, 700, 'right');
+  } else {
+    const l2 = lt - 6.2; card(W * .06, H * .22, W * .88, H * .46, 40);
+    g.save(); rrect(W * .06, H * .22, W * .88, H * .46, 40); g.clip();
+    g.fillStyle = '#c7e8c1'; g.fillRect(W * .06, H * .6, W * .88, H * .1);
+    drawHiker(W * .3, H * .6 + 12, { s: 1.15, ph: walkPh(lt, .8), t: lt });
+    drawHiker(W * .72, H * .6 + 12, { s: 1.15, ph: walkPh(lt, 1.6), t: lt, tired: 1, jacket: BLUE });
+    g.restore();
+    bubble('今天风景真不错呀～', W * .3, H * .36, 32, GREEN, l2 - .6);
+    bubble('我…不…行…', W * .72, H * .36, 34, RED, l2 - 1.6);
+    if (l2 > 2.6) { markV(W * .3, H * .29, 28, sm((l2 - 2.6) / .3)); markX(W * .72, H * .29, 28, sm((l2 - 2.6) / .3)); }
+  }
+});
+// E 呼吸
+S.push(lt => {
+  if (lt < 6.2) {
+    bgPlain(lt + 60); card(W * .06, H * .22, W * .88, H * .46, 40);
+    const beat = .55, i = Math.floor(Math.max(0, lt - .6) / beat), phase = Math.floor(i / 2) % 2, k = ((lt - .6) / beat) % 1;
+    const r = 120 + (phase === 0 ? (i % 2 + k) / 2 : 1 - (i % 2 + k) / 2) * 80;
+    g.fillStyle = phase === 0 ? 'rgba(110,195,244,.35)' : 'rgba(18,166,121,.3)'; g.beginPath(); g.arc(CX, H * .42, r, 0, Math.PI * 2); g.fill();
+    label(lt < .6 ? '' : phase === 0 ? '吸' : '呼', CX, H * .42, 96, phase === 0 ? BLUE : GREEN, 900);
+    for (let j = 0; j < 4; j++) { const on = lt > .6 && (i % 4) === j; footprint2(W * (.24 + j * .17), H * .62, on, j); }
+  } else {
+    const l2 = lt - 6.2;
+    const R = bgWalk(lt, { cam: 90, hy: upHill, hiker: { ph: walkPh(lt, .7) }, sun: [W * .2, H * .3] });
+    puffs(R.J.head[0], R.J.head[1], lt, 1, false);
+    subPanel(win(l2, .8, 6, .3, .01));
+  }
+});
+function footprint2(x, y, on, j) { g.save(); g.fillStyle = on ? AMB : '#d3dee8'; g.beginPath(); g.ellipse(x, y, 22, 36, 0, 0, Math.PI * 2); g.fill(); g.beginPath(); g.ellipse(x, y - 50, 16, 14, 0, 0, Math.PI * 2); g.fill(); g.restore(); label('第 ' + (j + 1) + ' 步', x, y + 66, 26, COL.sub, 700); }
+// F 姿势 + 杖
+S.push(lt => {
+  if (lt < 6.2) {
+    bgPlain(lt + 80); card(W * .04, H * .22, W * .92, H * .46, 40);
+    g.save(); rrect(W * .04, H * .22, W * .92, H * .46, 40); g.clip();
+    [[W * .2, -.35, '往后仰', RED], [CX, .75, '弯腰驼背', RED], [W * .8, .22, '微微前倾', GREEN]].forEach(([x, ln, nm, c], i) => {
+      const a = eout((lt - .4 - i * .6) / .4); if (a <= 0) return; g.save(); g.globalAlpha = a;
+      g.fillStyle = '#c7e8c1'; g.beginPath(); g.moveTo(x - 150, H * .64 + 60); g.lineTo(x + 150, H * .64 - 60); g.lineTo(x + 150, H); g.lineTo(x - 150, H); g.closePath(); g.fill();
+      drawHiker(x, H * .64 + 12, { s: 1.4, walk: .4, ph: 1, t: lt, slope: 22, lean: ln - .22 });
+      label(nm, x, H * .28, 34, c, 900); if (i < 2) markX(x, H * .33, 22, 1); else markV(x, H * .33, 22, 1);
+      g.restore();
+    });
+    g.restore();
+  } else {
+    const l2 = lt - 6.2;
+    const R = bgWalk(lt, { cam: 90, hy: upHill, hiker: { ph: walkPh(lt, .7), pole: true }, sun: [W * .2, H * .3] });
+    subPanel(win(l2, .8, 6, .3, .01));
+    arrow(R.J.hip[0] + 80, R.J.hip[1] + 40, R.J.hip[0] + 80, R.J.hip[1] - 60, GREEN, 8, 26);
+  }
+});
+function footprint(x, y, s, a, c) { g.save(); g.globalAlpha = a; g.translate(x, y); g.scale(s, s); g.fillStyle = c || TP.boot; g.beginPath(); g.ellipse(0, 0, 20, 34, 0, 0, Math.PI * 2); g.fill(); g.beginPath(); g.ellipse(0, -48, 15, 14, 0, 0, Math.PI * 2); g.fill(); g.restore(); }
+// G 之字 + 休息步
+S.push(lt => {
+  if (lt < 6.2) {
+    bgPlain(lt + 100); card(W * .06, H * .22, W * .88, H * .46, 40);
+    const cx = CX, cy = H * .45;
+    g.save(); rrect(W * .06, H * .22, W * .88, H * .46, 40); g.clip();
+    g.fillStyle = '#e4f3e1'; g.fillRect(W * .06, H * .22, W * .88, H * .46);
+    for (let r = 1; r <= 6; r++) { g.strokeStyle = 'rgba(80,150,90,.3)'; g.lineWidth = 3; g.beginPath(); g.ellipse(cx, cy - 40, r * 70, r * 52, 0, 0, Math.PI * 2); g.stroke(); }
+    g.restore();
+    const top = [cx, cy - 40], bot = [cx, cy + 300];
+    const k = clamp((lt - .6) / 3.6, 0, 1);
+    g.save(); g.strokeStyle = RED; g.lineWidth = 8; g.setLineDash([14, 10]); g.beginPath(); g.moveTo(bot[0] - 200, bot[1]); g.lineTo(top[0], top[1]); g.stroke(); g.restore();
+    markX((bot[0] - 200 + top[0]) / 2 - 40, (bot[1] + top[1]) / 2, 28, sm((lt - .4) / .3));
+    const zz = u => { const n = 5, p = u * n, i = Math.floor(p), f = p - i; const xa = i % 2 ? 220 : -60, xb = i % 2 ? -60 : 220; return [cx + lerp(xa, xb, f) * .9, lerp(bot[1], top[1], u)]; };
+    g.save(); g.strokeStyle = GREEN; g.lineWidth = 9; g.lineJoin = 'round'; g.beginPath(); for (let i = 0; i <= 200 * k; i++) { const p = zz(i / 200); i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]); } g.stroke(); g.restore();
+    if (k > .1) { const p = zz(k); g.fillStyle = TP.jacket; g.strokeStyle = '#fff'; g.lineWidth = 5; g.beginPath(); g.arc(p[0], p[1], 18, 0, Math.PI * 2); g.fill(); g.stroke(); }
+    flagPole(top[0], top[1], .8, lt, RED);
+    label('坡缓，省力', W * .78, H * .62, 32, GREEN, 900);
+  } else {
+    const l2 = lt - 6.2, cyc = (l2 % 1.2) / 1.2, pause = cyc > .55;
+    const cam = (Math.floor(l2 / 1.2) + sm(Math.min(cyc / .55, 1))) * 60;
+    hikeSky(0); hikeSun(W * .2, H * .3, 52, lt, 0); hikeClouds(lt, 1, .14); const hy2 = x => upHill(x + 600);
+    hikeRidges(cam, 0, H * .54); hikeGround(hy2, cam, lt, { treeGap: 260 });
+    const J = hikerOn(hy2, W * .4 + cam, cam, { ph: pause ? Math.PI / 2 : Math.PI / 2 + sm(cyc / .55) * Math.PI, walk: .9, s: 1.4, t: lt, pole: true });
+    subPanel(win(l2, .8, 6, .3, .01));
+    if (pause) bubble('停半秒', J.head[0] + 120, J.head[1] - 70, 38, GREEN, 0.3);
+  }
+});
+// H 身体信号
+S.push(lt => {
+  const R = bgWalk(lt, { cam: 0, hiker: { walk: 0, tired: .4, lean: .05 }, hx: W * .5, sun: [W * .8, H * .3] });
+  g.fillStyle = '#9aa7b4'; g.beginPath(); g.ellipse(W * .72, H * .66, 90, 40, 0, Math.PI, 0); g.fill();
+  subPanel(win(lt, .8, 8, .3, .01));
+  ICO.bottle(W * .28, H * .44, 1.3, .7);
+  listCards([], lt);
+  const a = sm((lt - .8) / .4); g.save(); g.globalAlpha = a; card(W * .54, H * .23, W * .4, 200, 36);
+  label('胸闷', W * .62, H * .23 + 60, 38, RED, 900, 'left'); label('头晕', W * .62, H * .23 + 140, 38, RED, 900, 'left'); markX(W * .86, H * .23 + 60, 22, 1); markX(W * .86, H * .23 + 140, 22, 1);
+  g.restore();
+});
+// I 三个错误
+S.push(lt => {
+  const seg = lt < 6 ? 0 : lt < 12 ? 1 : 2, l2 = lt - seg * 6;
+  if (seg === 0) {
+    bgWalk(lt, { cam: 320, hy: upHill, cad: 1.9, hiker: { ph: walkPh(lt, 1.9), lean: .15 }, sun: [W * .2, H * .3] });
+    subPanel(win(l2, .8, 6, .3, .01));
+    clockIcon(W * .78, H * .29, 60, 10 + l2 * .02, 1); label('刚出发', W * .78, H * .36, 34, RED, 900);
+  } else if (seg === 1) {
+    bgPlain(lt + 140); card(W * .1, H * .22, W * .8, H * .46, 40);
+    g.save(); rrect(W * .1, H * .22, W * .8, H * .46, 40); g.clip();
+    const x0 = W * .2, y0 = H * .62, sw = 90, sh = 56; stairs(x0, y0, 6, sw, sh);
+    const st = Math.min(5, Math.floor(Math.max(0, l2 - .4) / .9) * 2), fx = x0 + st * sw + sw * .5, fy = y0 - (st + 1) * sh;
+    drawHiker(fx, fy + 12, { s: 1.1, walk: 1, ph: 1.2, t: lt, tired: sm(l2 / 3) });
+    g.restore();
+    label('一步两级', W * .74, H * .3, 40, RED, 900);
+  } else {
+    const k = sm((l2 - .4) / 3);
+    const R = bgWalk(lt, { cam: 0, hiker: { walk: 0, tired: .2 }, hx: W * .4, sun: [W * .8, H * .3] });
+    clockIcon(W * .74, H * .3, 70, 2 + k * 6, 1); label(k > .6 ? '30 分钟……' : '歇一会儿', W * .74, H * .39, 36, k > .6 ? RED : COL.sub, 900);
+    g.fillStyle = `rgba(110,170,230,${k * .2})`; g.fillRect(0, 0, W, H);
+    subPanel(win(l2, .8, 6, .3, .01));
+  }
+  errorMark(l2);
+});
+// J
+S.push(lt => mottoCard(lt, [['步子', '小步，整个脚掌踩稳'], ['速度', '匀速，还能说完整的话'], ['呼吸', '跟着步子走，别憋气']], '慢一点，反而走得更远。'));
+// K
+S.push(lt => endScene(lt));
+
+/* ───────── 封面 ───────── */
+function coverArt(key, w, h) {
+  hikeCover(key, w, h, {
+    ep: '07', l1: '上坡怎么走', l2: [['才', COL.ink], ['不喘', GREEN], ['？', COL.ink]], chips: [['小步', GREEN], ['匀速', AMB], ['呼吸', BLUE]],
+    art: (k, ww, hh) => coverHill(k, ww, hh, {}, (x, y) => {
+      const vert = k === '9x16' || k === '3x4', cx = vert ? ww * .72 : ww * .85, cy = vert ? hh * .58 : hh * .43, r = vert ? 160 : 140;
+      g.fillStyle = 'rgba(110,195,244,.35)'; g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fill(); g.strokeStyle = BLUE; g.lineWidth = 8; g.stroke();
+      label('吸', cx - r * .32, cy, r * .5, BLUE, 900); label('呼', cx + r * .32, cy, r * .5, GREEN, 900);
+    })
+  });
+}
+
+/* ───────── 声音 ───────── */
+function sound(K, c, DUR) {
+  const breath = (t0, dur, v) => K.noise(t0, dur, v, 'bandpass', 900);
+  hikeSound(K, c, DUR, {
+    start: 7.6, sec: t => t < 23.2 ? 'verse' : t < 35.2 ? 'chorus' : t < 47.2 ? 'verse' : t < 59.2 ? 'chorus' : t < 71.2 ? 'verse' : t < 79.2 ? 'tense' : t < 97.2 ? 'tense' : 'outro',
+    chirps: [8.4, 10.2, 18, 60, 98, 105, 107.5],
+    steps: [[.2, 3.8, .27], [17.6, 23.2, .7], [53.6, 59.2, .7], [79.4, 85.2, .27]],
+    heart: [3.8, 7.6],
+    dings: [11.2 + 1.2, 23.2 + 6.2 + 2.6, 47.2 + 1.6, 59.2 + 4.2],
+    ticks: Array.from({ length: 10 }, (_, i) => 35.2 + .6 + i * .55),
+    wrongs: [11.2 + .9, 23.2 + 6.2 + 1.6, 47.2 + .5, 47.2 + 1.1, 71.2 + .8, 79.2 + .3, 85.2 + .3, 91.2 + .3],
+    riser: 79.2, outro: 97.2,
+    extra: K => { for (let t = 3.9; t < 7.4; t += .55) breath(t, .35, .18); for (let t = 35.8; t < 41.2; t += 1.1) breath(t, .8, .08); }
+  });
+}
+
+kitRun({ T, S, TX, seed: 907, allText: SRC.replace(/[\x00-\x7f]/g, '') + '0123456789:+=≈÷→～…', audio: sound, cover: coverArt });
+})();
+</script>
+</body>
+</html>

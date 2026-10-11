@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>徒步不难 EP.10</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#000;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;aspect-ratio:9/16;max-width:100vw;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;aspect-ratio:auto;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="trailkit.js"></script>
+<script>
+/*
+ * 徒步不难 EP.10《路标和轨迹怎么看？走岔了怎么办》（约 1 分 51 秒）
+ * 认路标 → 离线轨迹、告诉家人 → 路上对照轨迹 → 走岔的迹象 → 原路退回、别抄近道 → 真迷路了 → 三个错误
+ */
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+const T = [0, 7.6, 11.2, 23.2, 35.2, 47.2, 59.2, 71.2, 79.2, 97.2, 104.2, 110.7];
+const YH = .135, YB = .745;
+const { blue: BLUE, green: GREEN, amber: AMB, red: RED } = HB;
+
+const TX = [
+  { in: .15, out: 3.6, text: '岔路口，\n{r}凭感觉{/}选了一条，', y: YH, size: 84, w: 900, st: .06 },
+  { in: 3.8, out: 7.4, text: '越走越窄，\n{r}没路了{/}。', y: YH, size: 88, w: 900 },
+  { in: 7.85, out: 10.95, text: '路标和轨迹\n怎么看？', y: .3, size: 100, w: 900, st: .05 },
+  { in: 8.6, out: 10.95, text: '跟对路，走岔了怎么办', y: .415, size: 42, w: 600, sub: 1 },
+  // C 路标
+  { in: 11.4, out: 17.2, text: '先认识{g}路标{/}。', y: YH, size: 88, w: 900 },
+  { in: 12.2, out: 17.2, text: '指示牌、树上的布条、石头上的油漆记号、\n路边垒起的小石堆。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 17.6, out: 23.0, text: '每到一个岔路口，\n{g}先找路标{/}。', y: YH, size: 84, w: 900 },
+  { in: 18.4, out: 23.0, text: '很久没看到路标了，就要留个心。', y: YB, size: 42, w: 500, sub: 1 },
+  // D 出发前
+  { in: 23.4, out: 29.2, text: '出发前，\n下载{g}离线轨迹{/}。', y: YH, size: 88, w: 900 },
+  { in: 24.2, out: 29.2, text: '山里常常没信号，在线地图可能加载不出来。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 29.6, out: 35.0, text: '{g}告诉家人{/}：\n走哪条路、几点回。', y: YH, size: 84, w: 900 },
+  { in: 30.4, out: 35.0, text: '万一出事，有人知道去哪里找你。', y: YB, size: 42, w: 500, sub: 1 },
+  // E 对照
+  { in: 35.4, out: 41.2, text: '路上{g}时不时看一眼{/}：\n你的点在不在线上。', y: YH, size: 80, w: 900 },
+  { in: 36.2, out: 41.2, text: '到岔路口、走了一阵没见路标时，都看看。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 41.6, out: 47.0, text: '偏离了，\n{r}马上停下{/}。', y: YH, size: 88, w: 900 },
+  { in: 42.4, out: 47.0, text: '离轨迹越远，越难回去。', y: YB, size: 42, w: 500, sub: 1 },
+  // F 走岔的迹象
+  { in: 47.4, out: 59.0, text: '这些信号，说明\n你可能{r}走岔了{/}：', y: YH, size: 80, w: 900 },
+  { in: 48.2, out: 59.0, text: '感觉不对，就别硬着头皮往前走。', y: YB, size: 42, w: 500, sub: 1 },
+  // G 退回
+  { in: 59.4, out: 65.2, text: '发现走岔了：\n{g}原路退回{/}。', y: YH, size: 88, w: 900 },
+  { in: 60.2, out: 65.2, text: '退到最后一个确定没走错的地方，再找对的路。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 65.6, out: 71.0, text: '{r}别抄近道{/}，\n别想着“翻过去就到了”。', y: YH, size: 80, w: 900 },
+  { in: 66.4, out: 71.0, text: '看着近的地方，往往是陡坡、悬崖、密林。', y: YB, size: 42, w: 500, sub: 1 },
+  // H 真迷路
+  { in: 71.4, out: 79.0, text: '真的迷路了：\n{g}停下，别乱走{/}。', y: YH, size: 88, w: 900 },
+  { in: 72.2, out: 79.0, text: '待在开阔、显眼的地方，省着手机电，\n拨打 110 求助。', y: YB, size: 42, w: 500, sub: 1 },
+  // I 三个错误
+  { in: 79.4, out: 85.0, text: '常见错误一：\n跟着{r}“像是路”{/}的走', y: YH, size: 80, w: 900 },
+  { in: 80.2, out: 85.0, text: '动物踩出来的、雨水冲出来的，看着也像路。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 85.4, out: 91.0, text: '常见错误二：\n{r}抄近道{/}', y: YH, size: 88, w: 900 },
+  { in: 86.2, out: 91.0, text: '近道往往最难走，也最危险。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 91.4, out: 97.0, text: '常见错误三：\n手机{r}没电了{/}', y: YH, size: 88, w: 900 },
+  { in: 92.2, out: 97.0, text: '轨迹、电话、照明，一下子全没了。', y: YB, size: 42, w: 500, sub: 1 },
+  // K
+  { in: 104.4, out: 999, text: '你徒步的时候，\n走错过路吗？', y: .37, size: 84, w: 900, st: .06 },
+  { in: 105.4, out: 999, text: '评论区说说', y: .465, size: 42, w: 500, sub: 1 }
+];
+
+/* ───────── 本集画面 ───────── */
+const walkPh = (t, k) => t * Math.PI * 2 * (k || .9);
+// 俯视树林地图
+function forestBG(x, y, w, h, seed, t) {
+  g.save(); rrect(x, y, w, h, 40); g.clip();
+  g.fillStyle = '#cfe8c8'; g.fillRect(x, y, w, h);
+  for (let i = 0; i < 46; i++) { const tx = x + hash(i + seed) * w, ty = y + hash(i + seed + 50) * h, r = 30 + hash(i + seed + 9) * 26; g.fillStyle = ['#7cc576', '#5db36b', '#4a9e5c'][i % 3]; g.beginPath(); g.arc(tx, ty, r, 0, Math.PI * 2); g.fill(); g.fillStyle = 'rgba(255,255,255,.15)'; g.beginPath(); g.arc(tx - r * .3, ty - r * .3, r * .4, 0, Math.PI * 2); g.fill(); }
+  g.restore();
+}
+function pathStroke(pts, w, col, k) {
+  g.save(); g.strokeStyle = col; g.lineWidth = w; g.lineCap = 'round'; g.lineJoin = 'round'; g.beginPath();
+  const N = Math.max(1, Math.floor((pts.length - 1) * (k == null ? 1 : k)));
+  pts.slice(0, N + 1).forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.stroke(); g.restore();
+}
+const bez = (a, b, c, d, n) => Array.from({ length: n + 1 }, (_, i) => { const u = i / n, v = 1 - u; return [v * v * v * a[0] + 3 * v * v * u * b[0] + 3 * v * u * u * c[0] + u * u * u * d[0], v * v * v * a[1] + 3 * v * v * u * b[1] + 3 * v * u * u * c[1] + u * u * u * d[1]]; });
+function dot(p, c, r) { g.fillStyle = c; g.strokeStyle = '#fff'; g.lineWidth = 5; g.beginPath(); g.arc(p[0], p[1], r || 18, 0, Math.PI * 2); g.fill(); g.stroke(); }
+function ribbon(x, y, s, t) { g.save(); g.translate(x, y); g.scale(s, s); g.fillStyle = '#8b5e3c'; g.fillRect(-10, -20, 20, 140); g.fillStyle = '#4a9e5c'; g.beginPath(); g.arc(0, -40, 60, 0, Math.PI * 2); g.fill(); g.fillStyle = RED; g.fillRect(-12, 30, 24, 16); g.beginPath(); g.moveTo(10, 32); g.quadraticCurveTo(40, 40 + Math.sin(t * 5) * 8, 54, 70 + Math.sin(t * 5) * 6); g.lineTo(46, 74); g.quadraticCurveTo(32, 50, 10, 44); g.fill(); g.restore(); }
+function paintRock(x, y, s) { g.save(); g.translate(x, y); g.scale(s, s); g.fillStyle = '#9aa7b4'; g.beginPath(); g.ellipse(0, 0, 70, 46, 0, 0, Math.PI * 2); g.fill(); g.fillStyle = '#fff'; g.fillRect(-26, -16, 52, 12); g.fillStyle = RED; g.fillRect(-26, -4, 52, 12); g.fillStyle = '#fff'; g.fillRect(-26, 8, 52, 12); g.restore(); }
+function cairn(x, y, s) { g.save(); g.translate(x, y); g.scale(s, s); g.fillStyle = '#8a97a5'; [[0, 30, 46, 20], [4, 4, 36, 16], [-2, -18, 26, 13], [2, -36, 16, 10]].forEach(([a, b, rx, ry]) => { g.beginPath(); g.ellipse(a, b, rx, ry, 0, 0, Math.PI * 2); g.fill(); }); g.restore(); }
+function phoneFrame(cx, cy, w, h) { g.fillStyle = '#1b2838'; rrect(cx - w / 2 - 16, cy - h / 2 - 16, w + 32, h + 32, 40); g.fill(); g.fillStyle = '#e4f3e1'; rrect(cx - w / 2, cy - h / 2, w, h, 26); g.fill(); }
+
+/* ───────── 场景 ───────── */
+const S = [];
+// A 钩子：岔路口选错
+const FORK = [CX, H * .5];
+S.push(lt => {
+  hikeSky(0); forestBG(0, 0, W, H, 3, lt); g.save(); g.fillStyle = 'rgba(255,255,255,.12)'; g.fillRect(0, 0, W, H); g.restore();
+  const main = bez([CX, H * 1.02], [CX + 40, H * .8], [CX - 30, H * .62], FORK, 30);
+  const good = bez(FORK, [CX - 120, H * .42], [CX - 280, H * .34], [W * .12, H * .2], 30);
+  const bad = bez(FORK, [CX + 120, H * .42], [CX + 230, H * .36], [W * .86, H * .26], 30);
+  [main, good].forEach(p => pathStroke(p, 60, TP.soil)); pathStroke(bad, 60 * (1 - .5 * sm((lt - 3.6) / 2)), TP.soil);
+  // 杂草盖住岔路
+  if (lt > 3.8) for (let i = 0; i < 14; i++) { const p = bad[10 + i % 20]; const a = sm((lt - 3.8 - i * .1) / .4); g.save(); g.globalAlpha = a; g.fillStyle = '#5db36b'; g.beginPath(); g.arc(p[0] + (hash(i) - .5) * 60, p[1] + (hash(i + 3) - .5) * 40, 26, 0, Math.PI * 2); g.fill(); g.restore(); }
+  const k = clamp(lt / 3.6, 0, 1), k2 = clamp((lt - 3.6) / 2.6, 0, 1);
+  let p = k < .5 ? main[Math.floor(k * 2 * 30)] : bad[Math.floor((k - .5) * 2 * 14 + k2 * 6)];
+  dot(p, TP.jacket, 26);
+  if (lt > 5.8) bubble('咦，路呢？', p[0] - 40, p[1] - 90, 44, RED, lt - 5.8);
+  if (lt < 3.6 && lt > 1) bubble('走这边吧～', FORK[0] + 140, FORK[1] + 60, 38, COL.ink, lt - 1);
+});
+// B
+S.push(lt => titleScene(lt, '10'));
+// C 路标
+S.push(lt => {
+  if (lt < 6.2) {
+    bgPlain(lt + 20); card(W * .05, H * .22, W * .9, H * .46, 40);
+    const items = [[(x, y) => signpost(x, y + 120, ['后山', ''], .6), '指示牌'], [(x, y) => ribbon(x, y, .9, lt), '树上的布条'], [(x, y) => paintRock(x, y, 1), '油漆记号'], [(x, y) => cairn(x, y + 10, 1.2), '小石堆']];
+    items.forEach(([f, nm], i) => { const a = pop(lt - .5 - i * .6); if (a <= 0) return; const x = W * (.29 + (i % 2) * .42), y = H * (.32 + Math.floor(i / 2) * .19); g.save(); g.translate(x, y); g.scale(a * 1.35, a * 1.35); g.translate(-x, -y); f(x, y); g.restore(); g.save(); g.globalAlpha = clamp(a, 0, 1); label(nm, x, y + 140, 36, COL.ink, 900); g.restore(); });
+  } else {
+    const l2 = lt - 6.2; hikeSky(0); forestBG(W * .06, H * .22, W * .88, H * .46, 7, lt);
+    g.save(); rrect(W * .06, H * .22, W * .88, H * .46, 40); g.clip();
+    const f = [CX, H * .48], main = bez([CX, H * .7], [CX, H * .6], [CX, H * .55], f, 20), A = bez(f, [CX - 100, H * .4], [CX - 200, H * .33], [W * .18, H * .24], 20), B = bez(f, [CX + 100, H * .42], [CX + 200, H * .36], [W * .84, H * .28], 20);
+    [main, A, B].forEach(p => pathStroke(p, 50, TP.soil));
+    const hl = sm((l2 - 1.4) / .5); g.save(); g.globalAlpha = hl; pathStroke(A, 14, GREEN); g.restore();
+    ribbon(CX - 150, H * .34, .55, lt); ring(CX - 150, H * .36, 70, GREEN, sm((l2 - .6) / .3), true);
+    g.restore();
+    dot([CX, H * .58], TP.jacket, 22);
+    if (l2 > 1.6) markV(W * .2, H * .3, 30, sm((l2 - 1.6) / .3));
+  }
+});
+// D 离线轨迹 + 告诉家人
+S.push(lt => {
+  bgPlain(lt + 40);
+  if (lt < 6.2) {
+    phoneFrame(CX, H * .45, W * .44, H * .42);
+    const k = sm((lt - .6) / 2.4);
+    g.save(); g.beginPath(); g.rect(CX - W * .22, H * .24, W * .44, H * .42); g.clip();
+    const tr = bez([CX - 140, H * .6], [CX - 160, H * .4], [CX + 200, H * .5], [CX + 120, H * .3], 40);
+    pathStroke(tr, 8, RED, k); g.restore();
+    g.fillStyle = '#e9eff4'; rrect(CX - 160, H * .63, 320, 24, 12); g.fill(); g.fillStyle = GREEN; rrect(CX - 160, H * .63, Math.max(24, 320 * k), 24, 12); g.fill();
+    label(k < 1 ? '下载中…' : '已下载，没信号也能看', CX, H * .61, 28, k < 1 ? COL.sub : GREEN, 900);
+    // 信号
+    const sx = W * .2, sy = H * .32; g.fillStyle = '#c9d6e2'; for (let i = 0; i < 4; i++) { rrect(sx - 40 + i * 20, sy + 30 - (14 + i * 12), 14, 14 + i * 12, 4); g.fill(); } markX(sx + 40, sy - 20, 22, sm((lt - 1.4) / .3)); label('山里没信号', sx, sy + 70, 30, COL.sub, 900);
+  } else {
+    const l2 = lt - 6.2; card(W * .1, H * .22, W * .8, H * .46, 40);
+    const msgs = [['今天去后山环线', 'me'], ['下午 5 点前回来', 'me'], ['好，到了说一声', 'fam']];
+    msgs.forEach(([t, who], i) => { const a = pop(l2 - .5 - i * .9); if (a <= 0) return; const me = who === 'me', y = H * (.32 + i * .1); g.save(); g.translate(me ? W * .62 : W * .38, y); g.scale(a, a); g.font = '900 38px ' + SANS; const w = g.measureText(t).width + 60; g.fillStyle = me ? '#95ec69' : '#f2f5f8'; rrect(-w / 2, -36, w, 72, 24); g.fill(); label(t, 0, 2, 38, COL.ink, 900); g.restore(); });
+    label('家人', W * .2, H * .52, 30, COL.sub, 900);
+  }
+});
+// E 对照轨迹
+S.push(lt => {
+  bgPlain(lt + 60);
+  phoneFrame(CX, H * .45, W * .62, H * .42);
+  g.save(); g.beginPath(); rrect(CX - W * .31, H * .24, W * .62, H * .42, 26); g.clip();
+  const tr = bez([CX - 200, H * .64], [CX - 220, H * .4], [CX + 260, H * .5], [CX + 140, H * .26], 60);
+  pathStroke(tr, 12, 'rgba(240,71,60,.75)');
+  const wrong = bez(tr[26], [tr[26][0] + 80, tr[26][1] + 40], [CX + 160, H * .58], [CX + 230, H * .6], 30);
+  let p, off = 0;
+  if (lt < 6.2) { const k = clamp(lt / 5.6, 0, 1); p = tr[Math.floor(k * 26)]; }
+  else { const k = clamp((lt - 6.2) / 3, 0, 1); p = wrong[Math.floor(k * 30)]; off = k; g.save(); g.setLineDash([10, 10]); g.strokeStyle = 'rgba(47,128,237,.6)'; g.lineWidth = 6; g.beginPath(); g.moveTo(tr[26][0], tr[26][1]); for (let i = 0; i <= Math.floor(k * 30); i++) g.lineTo(wrong[i][0], wrong[i][1]); g.stroke(); g.restore(); }
+  glow(p[0], p[1], 50, '47,128,237', .5); dot(p, BLUE, 18);
+  g.restore();
+  if (off > .3) { const a = sm((off - .3) / .2); g.save(); g.globalAlpha = a; g.fillStyle = RED; rrect(CX - 200, H * .25, 400, 70, 35); g.fill(); label(`已偏离轨迹 ${Math.round(off * 180)} 米`, CX, H * .25 + 36, 34, '#fff', 900); g.restore(); }
+});
+// F 走岔的迹象
+S.push(lt => {
+  bgPlain(lt + 80);
+  listCards([
+    [(x, y) => { g.fillStyle = TP.soil; g.beginPath(); g.moveTo(x - 50, y + 40); g.lineTo(x + 50, y + 40); g.lineTo(x + 6, y - 40); g.lineTo(x - 6, y - 40); g.closePath(); g.fill(); tuft(x - 30, y + 10, 1); tuft(x + 26, y - 6, 1); }, '路越来越窄', '杂草越来越多，不像常有人走', 'x', RED],
+    [(x, y) => { ribbon(x, y - 8, .45, lt); markX(x + 30, y - 30, 14, 1); }, '很久没见路标', '布条、记号都不见了', 'x', RED],
+    [(x, y) => { arrow(x - 40, y + 30, x + 30, y - 30, RED, 8, 24); g.save(); g.setLineDash([8, 6]); g.strokeStyle = GREEN; g.lineWidth = 6; g.beginPath(); g.moveTo(x - 40, y + 30); g.lineTo(x - 40, y - 40); g.stroke(); g.restore(); }, '方向和轨迹不一样', '手机上的点，离红线越来越远', 'x', RED],
+    [(x, y) => { g.fillStyle = '#8a97a5'; g.beginPath(); g.moveTo(x - 50, y + 40); g.lineTo(x - 20, y - 40); g.lineTo(x + 50, y - 30); g.lineTo(x + 50, y + 40); g.closePath(); g.fill(); }, '要手脚并用才过得去', '正规步道很少这样', 'x', RED]
+  ], lt, { y0: H * .225, gap: H * .114, ch: H * .1, t0: .6, dt: 1.4, big: 44 });
+});
+// G 退回 + 别抄近道
+S.push(lt => {
+  hikeSky(0); forestBG(W * .06, H * .22, W * .88, H * .46, 11, lt);
+  g.save(); rrect(W * .06, H * .22, W * .88, H * .46, 40); g.clip();
+  const f = [W * .45, H * .5], main = bez([W * .45, H * .7], [W * .45, H * .62], [W * .45, H * .56], f, 20), A = bez(f, [W * .38, H * .4], [W * .3, H * .32], [W * .2, H * .24], 20), B = bez(f, [W * .56, H * .44], [W * .68, H * .4], [W * .8, H * .36], 20);
+  [main, A].forEach(p => pathStroke(p, 50, TP.soil)); pathStroke(B, 30, '#c9a877');
+  if (lt < 6.2) {
+    const k = sm((lt - .6) / 2.4); const p = B[Math.floor((1 - k) * 20)];
+    g.save(); g.setLineDash([12, 10]); g.strokeStyle = GREEN; g.lineWidth = 8; g.beginPath(); for (let i = 20; i >= Math.floor((1 - k) * 20); i--) { const q = B[i]; i === 20 ? g.moveTo(q[0], q[1]) : g.lineTo(q[0], q[1]); } g.stroke(); g.restore();
+    dot(p, TP.jacket, 22);
+    flagPole(f[0] - 30, f[1] + 20, .8, lt, GREEN);
+    if (k > .95) { const a = sm((lt - 3.2) / .4); g.save(); g.globalAlpha = a; pathStroke(A, 14, GREEN); g.restore(); }
+  } else {
+    const l2 = lt - 6.2;
+    g.fillStyle = 'rgba(80,90,100,.55)'; g.beginPath(); g.moveTo(W * .5, H * .22); g.lineTo(W * .94, H * .22); g.lineTo(W * .94, H * .34); g.quadraticCurveTo(W * .7, H * .3, W * .5, H * .22); g.fill();
+    for (let i = 0; i < 6; i++) { g.strokeStyle = 'rgba(40,40,40,.4)'; g.lineWidth = 3; g.beginPath(); g.moveTo(W * (.55 + i * .06), H * .23); g.lineTo(W * (.57 + i * .06), H * .3); g.stroke(); }
+    const p = B[20]; dot(p, TP.jacket, 22);
+    g.save(); g.setLineDash([12, 10]); g.strokeStyle = RED; g.lineWidth = 8; g.beginPath(); g.moveTo(p[0], p[1]); g.lineTo(W * .7, H * .26); g.stroke(); g.restore();
+    markX(W * .72, H * .3, 30, sm((l2 - .6) / .3)); label('悬崖', W * .82, H * .25, 34, '#fff', 900);
+  }
+  g.restore();
+});
+// H 真迷路
+S.push(lt => {
+  const R = bgWalk(lt, { cam: 0, hiker: { walk: 0, pole: false }, hx: W * .4, sun: [W * .82, H * .3] });
+  subPanel(win(lt, .8, 8, .3, .01));
+  ICO.phone(R.J.head[0] + 50, R.J.head[1] + 30, .6);
+  for (let i = 0; i < 3; i++) { const ph = (lt * .8 + i / 3) % 1; g.save(); g.globalAlpha = 1 - ph; g.strokeStyle = GREEN; g.lineWidth = 6; g.beginPath(); g.arc(R.J.head[0] + 50, R.J.head[1] + 10, 40 + ph * 140, -1.2, -.2); g.stroke(); g.restore(); }
+  const a = sm((lt - 1.2) / .4); g.save(); g.globalAlpha = a; card(W * .56, H * .23, W * .38, 220, 36);
+  label('110', W * .75, H * .23 + 80, 72, RED, 900); label('报警求助', W * .75, H * .23 + 160, 34, COL.ink, 900); g.restore();
+  ICO.whistle(W * .2, H * .36, 1.1); label('哨子', W * .2, H * .42, 30, COL.sub, 900);
+});
+// I 三个错误
+S.push(lt => {
+  const seg = lt < 6 ? 0 : lt < 12 ? 1 : 2, l2 = lt - seg * 6;
+  if (seg === 0) {
+    hikeSky(0); forestBG(W * .06, H * .22, W * .88, H * .46, 21, lt);
+    g.save(); rrect(W * .06, H * .22, W * .88, H * .46, 40); g.clip();
+    const tr = bez([CX, H * .7], [CX + 60, H * .5], [CX + 200, H * .36], [W * .9, H * .24], 30); pathStroke(tr, 24, '#c9a877');
+    const k = clamp(l2 / 4.4, 0, 1); dot(tr[Math.floor(k * 30)], TP.jacket, 22);
+    // 小动物脚印
+    for (let i = 0; i < 6; i++) { const q = tr[4 + i * 4]; g.fillStyle = '#6b4a32'; g.beginPath(); g.arc(q[0] + 16, q[1] - 10, 6, 0, Math.PI * 2); g.arc(q[0] + 26, q[1] - 2, 6, 0, Math.PI * 2); g.fill(); }
+    g.restore(); label('兽径', W * .78, H * .64, 38, RED, 900);
+  } else if (seg === 1) {
+    hikeSky(0); forestBG(W * .06, H * .22, W * .88, H * .46, 23, lt);
+    g.save(); rrect(W * .06, H * .22, W * .88, H * .46, 40); g.clip();
+    const zz = bez([W * .2, H * .66], [W * .8, H * .6], [W * .2, H * .36], [W * .8, H * .26], 40); pathStroke(zz, 40, TP.soil);
+    const k = clamp(l2 / 3, 0, 1); const p = [lerp(W * .2, W * .45, k), lerp(H * .66, H * .44, k)];
+    g.save(); g.setLineDash([12, 10]); g.strokeStyle = RED; g.lineWidth = 8; g.beginPath(); g.moveTo(W * .2, H * .66); g.lineTo(p[0], p[1]); g.stroke(); g.restore(); dot(p, TP.jacket, 22);
+    if (l2 > 3) { burst(p[0], p[1], (l2 - 3) % 1.6, 16, .4); }
+    g.restore();
+  } else {
+    bgPlain(lt + 140); card(W * .1, H * .22, W * .8, H * .46, 40);
+    const k = sm((l2 - .4) / 2); phoneFrame(CX, H * .44, W * .3, H * .3);
+    g.fillStyle = `rgba(27,40,56,${k})`; rrect(CX - W * .15, H * .29, W * .3, H * .3, 26); g.fill();
+    g.fillStyle = k > .9 ? RED : GREEN; rrect(CX - 50, H * .44 - 20, 100 * (1 - k) + 6, 40, 10); g.fill(); g.strokeStyle = '#fff'; g.lineWidth = 4; rrect(CX - 50, H * .44 - 20, 100, 40, 10); g.stroke();
+    label(`${Math.round((1 - k) * 15)}%`, CX, H * .53, 40, k > .9 ? RED : '#fff', 900);
+  }
+  errorMark(l2);
+});
+// J
+S.push(lt => mottoCard(lt, [['出发前', '下载离线轨迹，告诉家人'], ['路上', '常找路标，常对轨迹'], ['走岔了', '停下，原路退回', RED]], '跟着路走，平平安安回家。'));
+// K
+S.push(lt => endScene(lt));
+
+/* ───────── 封面 ───────── */
+function coverArt(key, w, h) {
+  hikeCover(key, w, h, {
+    ep: '10', l1: '路标和轨迹', l2: [['走岔了', RED], ['怎么办？', COL.ink]], chips: [['认路标', GREEN], ['离线轨迹', BLUE], ['原路退回', AMB]],
+    art: (k, ww, hh) => coverHill(k, ww, hh, {}, () => {
+      const vert = k === '9x16' || k === '3x4', cx = vert ? ww * .7 : ww * .84, cy = vert ? hh * .56 : hh * .42, s = vert ? 1 : .85;
+      g.save(); g.translate(cx, cy); g.scale(s, s); signpost(0, 160, ['这边', '1.2 公里'], .9); ribbon(150, 20, .6, 0); g.restore();
+    })
+  });
+}
+
+/* ───────── 声音 ───────── */
+function sound(K, c, DUR) {
+  hikeSound(K, c, DUR, {
+    start: 7.6, sec: t => t < 23.2 ? 'verse' : t < 35.2 ? 'chorus' : t < 47.2 ? 'verse' : t < 59.2 ? 'tense' : t < 71.2 ? 'verse' : t < 79.2 ? 'chorus' : t < 97.2 ? 'tense' : 'outro',
+    chirps: [.4, 2, 8.4, 10.2, 14, 19, 98, 105, 107.5],
+    steps: [[.2, 6, .6]],
+    dings: [11.2 + .6, 11.2 + 1.2, 11.2 + 1.8, 11.2 + 2.4, 11.2 + 6.2 + 1.6, 23.2 + 3, 23.2 + 6.2 + .5, 23.2 + 6.2 + 1.4, 23.2 + 6.2 + 2.3, 59.2 + 3.2, 71.2 + 1.2],
+    wrongs: [5.8, 23.2 + 1.4, 35.2 + 6.2 + 1, 47.2 + 1.1, 47.2 + 2.5, 47.2 + 3.9, 47.2 + 5.3, 59.2 + 6.2 + .6, 79.2 + .3, 85.2 + .3, 91.2 + .3],
+    riser: 79.2, outro: 97.2,
+    extra: K => { for (let t = 41.6; t < 44; t += .5) K.tone(988, t, .12, .06, 'square'); }
+  });
+}
+
+kitRun({ T, S, TX, seed: 1210, allText: SRC.replace(/[\x00-\x7f]/g, '') + '0123456789:+=≈÷→～…%', audio: sound, cover: coverArt });
+})();
+</script>
+</body>
+</html>

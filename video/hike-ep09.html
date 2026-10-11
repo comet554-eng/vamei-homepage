@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>徒步不难 EP.09</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#000;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;aspect-ratio:9/16;max-width:100vw;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;aspect-ratio:auto;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="trailkit.js"></script>
+<script>
+/*
+ * 徒步不难 EP.09《路上怎么歇、怎么吃喝？》（约 1 分 51 秒）
+ * 少量多次地歇 → 歇时加衣、找安全地方 → 喝水：别等渴、小口多次 → 吃：一路少量 → 补盐、看尿色 → 午饭别撑 → 三个错误
+ */
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+const T = [0, 7.6, 11.2, 23.2, 35.2, 47.2, 59.2, 71.2, 79.2, 97.2, 104.2, 110.7];
+const YH = .135, YB = .745;
+const { blue: BLUE, green: GREEN, amber: AMB, red: RED } = HB;
+
+const TX = [
+  { in: .15, out: 3.6, text: '一口气\n走了 {r}3 小时{/}，', y: YH, size: 88, w: 900, st: .06 },
+  { in: 3.8, out: 7.4, text: '突然{r}腿软、发晕{/}，\n一步都不想走。', y: YH, size: 84, w: 900 },
+  { in: 7.85, out: 10.95, text: '路上怎么歇、\n怎么吃喝？', y: .3, size: 100, w: 900, st: .05 },
+  { in: 8.6, out: 10.95, text: '一个原则：少量多次', y: .415, size: 42, w: 600, sub: 1 },
+  // C 歇
+  { in: 11.4, out: 17.2, text: '歇：{g}少量多次{/}。', y: YH, size: 88, w: 900 },
+  { in: 12.2, out: 17.2, text: '比如每走 45～60 分钟，歇 5～10 分钟。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 17.6, out: 23.0, text: '陡坡上喘了，\n就{g}站着歇一两分钟{/}。', y: YH, size: 84, w: 900 },
+  { in: 18.4, out: 23.0, text: '喘匀了接着走，不用每次都坐下。', y: YB, size: 42, w: 500, sub: 1 },
+  // D 歇的时候
+  { in: 23.4, out: 29.2, text: '停下来，\n{b}先加件衣服{/}。', y: YH, size: 88, w: 900 },
+  { in: 24.2, out: 29.2, text: '一停下，汗被风一吹就凉（第 3 集讲过）。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 29.6, out: 35.0, text: '找个{g}安全的地方{/}歇。', y: YH, size: 88, w: 900 },
+  { in: 30.4, out: 35.0, text: '别堵在路中间，别停在落石坡下、悬崖边上。', y: YB, size: 42, w: 500, sub: 1 },
+  // E 喝
+  { in: 35.4, out: 41.2, text: '喝水：\n{b}别等渴了再喝{/}。', y: YH, size: 88, w: 900 },
+  { in: 36.2, out: 41.2, text: '觉得渴的时候，身体其实已经缺水了。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 41.6, out: 47.0, text: '{b}小口、多次{/}，\n每 15～20 分钟喝几口。', y: YH, size: 84, w: 900 },
+  { in: 42.4, out: 47.0, text: '一口气灌一大瓶，肚子胀，水也很快就没了。', y: YB, size: 42, w: 500, sub: 1 },
+  // F 吃
+  { in: 47.6, out: 53.2, text: '吃：\n{a}一路少量吃{/}。', y: YH, size: 88, w: 900 },
+  { in: 48.4, out: 53.2, text: '每走一小时左右，吃一点小零食。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 53.6, out: 59.0, text: '别等{r}饿了、没劲了{/}\n才想起来吃。', y: YH, size: 84, w: 900 },
+  { in: 54.4, out: 59.0, text: '体力掉下去再补，要好一阵才缓得过来。', y: YB, size: 42, w: 500, sub: 1 },
+  // G 盐 + 尿色
+  { in: 59.4, out: 65.2, text: '天热出汗多，\n还要补{a}盐{/}。', y: YH, size: 88, w: 900 },
+  { in: 60.2, out: 65.2, text: '电解质饮料、盐丸，或者咸一点的零食都行。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 65.6, out: 71.0, text: '看{g}尿的颜色{/}：\n颜色很深，就是喝少了。', y: YH, size: 80, w: 900 },
+  { in: 66.4, out: 71.0, text: '淡黄色正好。', y: YB, size: 42, w: 500, sub: 1 },
+  // H 午饭
+  { in: 71.4, out: 79.0, text: '午饭{g}别吃太撑{/}。', y: YH, size: 88, w: 900 },
+  { in: 72.2, out: 79.0, text: '吃得太饱再爬坡，胃里难受；分几次吃更舒服。', y: YB, size: 42, w: 500, sub: 1 },
+  // I 三个错误
+  { in: 79.4, out: 85.0, text: '常见错误一：\n{r}渴了才喝{/}，一口气灌', y: YH, size: 80, w: 900 },
+  { in: 80.2, out: 85.0, text: '又胀又不解渴，水还很快喝完。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 85.4, out: 91.0, text: '常见错误二：\n一歇就{r}半小时{/}', y: YH, size: 84, w: 900 },
+  { in: 86.2, out: 91.0, text: '身体凉了、腿也僵了，再起步更难。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 91.4, out: 97.0, text: '常见错误三：\n饿着走，{r}中午一顿吃撑{/}', y: YH, size: 80, w: 900 },
+  { in: 92.2, out: 97.0, text: '上午没劲，下午更没劲。', y: YB, size: 42, w: 500, sub: 1 },
+  // K
+  { in: 104.4, out: 999, text: '你徒步最爱带\n什么零食？', y: .37, size: 84, w: 900, st: .06 },
+  { in: 105.4, out: 999, text: '评论区说说', y: .465, size: 42, w: 500, sub: 1 }
+];
+
+/* ───────── 本集画面 ───────── */
+const walkPh = (t, k) => t * Math.PI * 2 * (k || .9);
+function meter(x, y, w, v, c, lbl) {
+  label(lbl, x - 20, y, 32, COL.sub, 900, 'right');
+  g.fillStyle = '#e9eff4'; rrect(x, y - 20, w, 40, 20); g.fill();
+  g.fillStyle = c || (v > .6 ? GREEN : v > .3 ? AMB : RED); rrect(x, y - 20, Math.max(40, w * clamp(v, 0, 1)), 40, 20); g.fill();
+}
+// 一条曲线：values(u) → 0~1
+function curve(x, y, w, h, f, c, k, lw) {
+  g.save(); g.strokeStyle = c; g.lineWidth = lw || 8; g.lineJoin = 'round'; g.lineCap = 'round'; g.beginPath();
+  const N = 160; for (let i = 0; i <= N * k; i++) { const u = i / N; const px = x + u * w, py = y + h - f(u) * h; i ? g.lineTo(px, py) : g.moveTo(px, py); } g.stroke(); g.restore();
+}
+const pretzel = (x, y, s) => { g.save(); g.translate(x, y); g.scale(s, s); g.strokeStyle = '#b8792f'; g.lineWidth = 12; g.lineCap = 'round'; g.beginPath(); g.arc(-14, -4, 20, 0, Math.PI * 2); g.arc(14, -4, 20, Math.PI, Math.PI * 3); g.stroke(); g.fillStyle = '#fff'; [[-20, -14], [8, -18], [20, 4], [-8, 8]].forEach(([a, b]) => { g.fillRect(a, b, 4, 4); }); g.restore(); };
+const bowl = (x, y, s) => { g.save(); g.translate(x, y); g.scale(s, s); g.fillStyle = '#fff3d6'; g.beginPath(); g.arc(0, -10, 70, Math.PI, 0); g.fill(); g.fillStyle = '#e0a458'; for (let i = 0; i < 9; i++) { g.beginPath(); g.arc(-50 + i * 12, -14 - Math.sin(i) * 20 - 20, 16, 0, Math.PI * 2); g.fill(); } g.fillStyle = '#5b8fd8'; g.beginPath(); g.moveTo(-80, -10); g.lineTo(80, -10); g.quadraticCurveTo(70, 60, 0, 64); g.quadraticCurveTo(-70, 60, -80, -10); g.fill(); g.restore(); };
+
+/* ───────── 场景 ───────── */
+const S = [];
+// A 钩子
+S.push(lt => {
+  if (lt < 3.8) {
+    const R = bgWalk(lt, { cam: 200, hiker: { ph: walkPh(lt, 1), tired: sm(lt / 3.4) * .8 }, sun: [W * .8, lerp(H * .32, H * .2, lt / 3.8)] });
+    card(W * .55, H * .22, W * .4, 210, 36);
+    clockIcon(W * .63, H * .22 + 70, 44, 9 + lt / 3.8 * 3, 1);
+    label(`${(lt / 3.8 * 3).toFixed(1)} 小时`, W * .7, H * .22 + 72, 40, COL.ink, 900, 'left');
+    meter(W * .7, H * .22 + 160, W * .2, 1 - lt / 3.8 * .75, null, '体力');
+  } else {
+    const l2 = lt - 3.8;
+    const R = bgWalk(lt, { cam: 0, hiker: { walk: 0, tired: 1, lean: .6 + Math.sin(lt * 3) * .05 }, sun: [W * .8, H * .2] });
+    card(W * .55, H * .22, W * .4, 210, 36); clockIcon(W * .63, H * .22 + 70, 44, 12, 1); label('3.0 小时', W * .7, H * .22 + 72, 40, COL.ink, 900, 'left');
+    meter(W * .7, H * .22 + 160, W * .2, .05, RED, '体力');
+    for (let i = 0; i < 3; i++) { const a = R.J.head; const ang = lt * 3 + i * 2.1; g.fillStyle = AMB; g.globalAlpha = .9; g.font = '900 40px ' + SANS; g.fillText('✦', a[0] + Math.cos(ang) * 50, a[1] - 40 + Math.sin(ang) * 16); g.globalAlpha = 1; }
+  }
+});
+// B
+S.push(lt => titleScene(lt, '09'));
+// C 歇
+S.push(lt => {
+  if (lt < 6.2) {
+    bgPlain(lt + 20); card(W * .06, H * .22, W * .88, H * .46, 40);
+    const x0 = W * .12, x1 = W * .88, hx = m => lerp(x0, x1, m / 240), k = clamp((lt - .5) / 4, 0, 1);
+    const row = (y, segs, nm, c) => { label(nm, x0, y - 54, 36, c, 900, 'left'); g.fillStyle = '#e9eff4'; rrect(x0, y - 22, x1 - x0, 44, 22); g.fill(); segs.forEach(([a, b, col]) => { const e = Math.min(b, a + (240 * k - a)); if (e <= a) return; g.fillStyle = col; rrect(hx(a), y - 22, hx(e) - hx(a), 44, 12); g.fill(); }); };
+    row(H * .36, [[0, 50, GREEN], [50, 58, AMB], [58, 108, GREEN], [108, 116, AMB], [116, 166, GREEN], [166, 174, AMB], [174, 224, GREEN]], '每 50 分钟歇 8 分钟', GREEN);
+    row(H * .54, [[0, 180, RED], [180, 225, AMB]], '一口气走完，再歇很久', RED);
+    [0, 60, 120, 180, 240].forEach(m => label(m / 60 + 'h', hx(m), H * .62, 26, COL.sub, 700));
+    if (k > .3) { g.save(); g.globalAlpha = sm((k - .3) / .1); pill('歇', hx(54), H * .3, 26, AMB, '#fff'); g.restore(); }
+  } else {
+    const l2 = lt - 6.2, hy = x => H * .74 - x * .42;
+    const R = bgWalk(lt, { cam: 0, hy, hiker: { walk: 0, tired: .7 * (1 - sm((l2 - 2.6) / 1.6)), lean: .35, pole: true }, sun: [W * .2, H * .3], hx: W * .46 });
+    subPanel(win(l2, .8, 6, .3, .01));
+    card(W * .62, H * .23, W * .3, 140, 30); clockIcon(W * .68, H * .23 + 70, 40, 12 + l2 / 4 * 0, 1); label(`0:${String(Math.min(59, Math.floor(l2 * 14))).padStart(2, '0')}`, W * .74, H * .23 + 72, 48, COL.ink, 900, 'left');
+  }
+});
+// D 歇的时候
+S.push(lt => {
+  if (lt < 6.2) {
+    const on = sm((lt - 1.4) / .8);
+    const R = bgWalk(lt, { cam: 0, hiker: { walk: 0, jacket: on > .5 ? '#2f80ed' : TP.jacket, bulk: on * 10 }, sun: [W * .8, H * .3], hx: W * .45 });
+    windLines(lt, 1 - on * .6, H * .3, H * .6, 8);
+    if (on < .5) { g.save(); g.globalAlpha = 1 - on * 2; g.translate(W * .7, lerp(H * .34, H * .48, on * 2)); ICO.jacket(0, 0, 1.2, '#2f80ed'); g.restore(); }
+    subPanel(win(lt, .8, 6.2, .3, .01));
+  } else {
+    const l2 = lt - 6.2; bgPlain(lt + 40);
+    listCards([[(x, y) => { g.fillStyle = '#c7e8c1'; rrect(x - 50, y - 30, 100, 60, 14); g.fill(); g.fillStyle = TP.soil; g.fillRect(x - 50, y - 8, 30, 16); }, '路边的空地', '不挡别人，视野好', 'v', GREEN],
+      [(x, y) => { g.fillStyle = TP.soil; rrect(x - 50, y - 16, 100, 32, 10); g.fill(); g.fillStyle = TP.jacket; g.beginPath(); g.arc(x, y, 14, 0, Math.PI * 2); g.fill(); }, '路中间', '后面的人过不去', 'x', RED],
+      [(x, y) => { g.fillStyle = '#8a97a5'; g.beginPath(); g.moveTo(x - 50, y + 36); g.lineTo(x - 10, y - 40); g.lineTo(x + 50, y + 36); g.closePath(); g.fill(); g.fillStyle = '#b0a493'; [[-4, -10], [10, 6], [-16, 14]].forEach(([a, b]) => { g.beginPath(); g.arc(x + a, y + b, 8, 0, Math.PI * 2); g.fill(); }); }, '落石坡下、悬崖边', '上面可能掉石头，边上可能踩空', 'x', RED]],
+      l2, { y0: H * .23, gap: H * .15, ch: H * .13, t0: .3, dt: 1.2 });
+  }
+});
+// E 喝
+S.push(lt => {
+  bgPlain(lt + 60); card(W * .06, H * .22, W * .88, H * .46, 40);
+  if (lt < 6.2) {
+    const x = W * .14, w = W * .72, y = H * .3, h = H * .26, k = clamp((lt - .5) / 4, 0, 1);
+    const late = u => { const p = (u * 3) % 1; return .9 - p * .55 + (p > .9 ? (p - .9) * 5.5 : 0); }, early = u => .86 - .08 * ((u * 12) % 1);
+    g.strokeStyle = 'rgba(240,71,60,.3)'; g.lineWidth = 3; g.setLineDash([10, 8]); g.beginPath(); g.moveTo(x, y + h - .45 * h); g.lineTo(x + w, y + h - .45 * h); g.stroke(); g.setLineDash([]);
+    label('觉得渴', x + w, y + h - .45 * h + 30, 28, RED, 900, 'right');
+    curve(x, y, w, h, late, RED, k); curve(x, y, w, h, early, BLUE, k);
+    label('身体里的水（示意）', x, y - 30, 30, COL.sub, 700, 'left');
+    if (k > .5) { pill('小口多次', x + w * .25, H * .6, 32, BLUE, '#fff'); pill('渴了才喝', x + w * .72, H * .6, 32, RED, '#fff'); }
+  } else {
+    const l2 = lt - 6.2; clockIcon(CX, H * .42, 170, 0, 1);
+    for (let i = 0; i < 4; i++) { const a = pop(l2 - .5 - i * .5); if (a <= 0) continue; const ang = -Math.PI / 2 + i * Math.PI / 2 + .3, r = 230; g.save(); g.translate(CX + Math.cos(ang) * r, H * .42 + Math.sin(ang) * r); g.scale(a, a); ICO.bottle(0, 0, .8, .8 - i * .15); g.restore(); }
+    label('每 15～20 分钟 · 几口', CX, H * .64, 38, BLUE, 900);
+  }
+});
+// F 吃
+S.push(lt => {
+  bgPlain(lt + 80); card(W * .06, H * .22, W * .88, H * .46, 40);
+  const x = W * .14, w = W * .72, y = H * .3, h = H * .24, k = clamp((lt - .5) / 4, 0, 1);
+  const often = u => .8 - .12 * ((u * 5) % 1), once = u => u < .5 ? .85 - u * 1.4 : u < .52 ? lerp(.15, .9, (u - .5) / .02) : .9 - (u - .52) * 1.5;
+  curve(x, y, w, h, often, GREEN, k); curve(x, y, w, h, once, RED, k);
+  label('体力（示意）', x, y - 30, 30, COL.sub, 700, 'left');
+  for (let i = 1; i < 5; i++) { if (i / 5 > k) break; const px = x + w * i / 5, py = y + h - .8 * h - 40; ICO.food(px, py, .5); }
+  if (k > .5) { bowl(x + w * .51, y + h + 60, .5); label('中午一顿', x + w * .51, y + h + 120, 28, RED, 900); }
+  if (k > .9) { pill('每小时吃一点', x + w * .2, H * .66, 30, GREEN, '#fff'); }
+});
+// G 盐 + 尿色
+S.push(lt => {
+  bgPlain(lt + 100); card(W * .06, H * .22, W * .88, H * .46, 40);
+  if (lt < 6.2) {
+    hikeSun(W * .2, H * .3, 50, lt, 0);
+    itemRow([[(x0, y0) => ICO.bottle(x0, y0, 1.2, .7), '电解质饮料'], [(x0, y0) => { g.fillStyle = '#fff'; g.strokeStyle = '#c9d6e2'; g.lineWidth = 4; [[-20, 0], [10, -10], [24, 14]].forEach(([a, b]) => { g.beginPath(); g.ellipse(x0 + a, y0 + b, 18, 10, .4, 0, Math.PI * 2); g.fill(); g.stroke(); }); }, '盐丸'], [(x0, y0) => pretzel(x0, y0, 1.3), '咸零食']], lt, H * .46);
+  } else {
+    const l2 = lt - 6.2;
+    [['#fbf3c4', '淡黄', 'v'], ['#f2d36b', '黄', null], ['#d9a53a', '深黄', 'x']].forEach(([c, t, m], i) => {
+      const a = pop(l2 - .4 - i * .4); if (a <= 0) return; const x = W * (.25 + i * .25);
+      g.save(); g.translate(x, H * .44); g.scale(a, a); g.fillStyle = c; g.strokeStyle = '#c9d6e2'; g.lineWidth = 5; rrect(-70, -110, 140, 220, 30); g.fill(); g.stroke(); g.restore();
+      g.save(); g.globalAlpha = clamp(a, 0, 1); label(t, x, H * .6, 38, COL.ink, 900); if (m === 'v') markV(x, H * .32, 26, 1); if (m === 'x') markX(x, H * .32, 26, 1); g.restore();
+    });
+    label('（示意）', W * .88, H * .66, 26, COL.faint, 700, 'right');
+  }
+});
+function itemRow(items, lt, y) {
+  items.forEach(([f, nm], i) => { const a = pop(lt - .6 - i * .5); if (a <= 0) return; const x = W * (.25 + i * .25); g.save(); g.translate(x, y); g.scale(a, a); g.fillStyle = '#f7fafc'; g.beginPath(); g.arc(0, 0, 100, 0, Math.PI * 2); g.fill(); f(0, 0); g.restore(); g.save(); g.globalAlpha = clamp(a, 0, 1); label(nm, x, y + 140, 34, COL.ink, 900); g.restore(); });
+}
+// H 午饭
+S.push(lt => {
+  bgPlain(lt + 120); card(W * .06, H * .22, W * .88, H * .46, 40);
+  const a1 = pop(lt - .4), a2 = pop(lt - 1.4);
+  if (a1 > 0) { g.save(); g.translate(W * .3, H * .44); g.scale(a1 * 1.6, a1 * 1.6); bowl(0, 0, 1); g.restore(); label('一顿吃撑', W * .3, H * .6, 38, RED, 900); markX(W * .3, H * .3, 28, sm((lt - 1) / .3)); }
+  if (a2 > 0) { g.save(); g.translate(W * .72, H * .44); g.scale(a2, a2); ICO.food(-50, -50, .9); bread2(50, -40); ICO.food(-40, 50, .9); g.restore(); label('分几次吃', W * .72, H * .6, 38, GREEN, 900); markV(W * .72, H * .3, 28, sm((lt - 2) / .3)); }
+});
+function bread2(x, y) { g.fillStyle = '#e0a458'; g.beginPath(); g.ellipse(x, y, 44, 26, 0, 0, Math.PI * 2); g.fill(); g.fillStyle = '#f2c27d'; g.beginPath(); g.ellipse(x, y - 4, 40, 20, 0, Math.PI, 0); g.fill(); }
+// I 三个错误
+S.push(lt => {
+  const seg = lt < 6 ? 0 : lt < 12 ? 1 : 2, l2 = lt - seg * 6;
+  if (seg === 0) {
+    const R = bgWalk(lt, { cam: 0, hiker: { walk: 0, lean: -.3 }, sun: [W * .8, H * .3], hx: W * .4 });
+    const k = sm((l2 - .6) / 2); g.save(); g.translate(R.J.head[0] + 50, R.J.head[1] + 10); g.rotate(-2.2); ICO.bottle(0, -40, 1.1, 1 - k); g.restore();
+    subPanel(win(l2, .8, 6, .3, .01)); bubble('咕咚咕咚', W * .66, H * .38, 40, BLUE, l2 - .8);
+    if (l2 > 3) bubble('好撑……', W * .66, H * .3, 40, RED, l2 - 3);
+  } else if (seg === 1) {
+    const k = sm((l2 - .4) / 3);
+    const R = bgWalk(lt, { cam: 0, hiker: { walk: 0 }, hx: W * .4, sun: [W * .8, H * .3] });
+    g.fillStyle = `rgba(110,170,230,${k * .22})`; g.fillRect(0, 0, W, H);
+    card(W * .58, H * .23, W * .36, 160, 32); clockIcon(W * .65, H * .23 + 80, 50, 2 + k * 6, 1); label(`${Math.round(k * 30)} 分钟`, W * .72, H * .23 + 82, 48, k > .6 ? RED : COL.ink, 900, 'left');
+    subPanel(win(l2, .8, 6, .3, .01));
+  } else {
+    bgPlain(lt + 140); card(W * .06, H * .22, W * .88, H * .46, 40);
+    const x = W * .14, w = W * .72, y = H * .3, h = H * .26, k = clamp((l2 - .4) / 3.6, 0, 1);
+    const once = u => u < .5 ? .85 - u * 1.4 : u < .52 ? lerp(.15, .7, (u - .5) / .02) : .7 - (u - .52) * 1.2;
+    curve(x, y, w, h, once, RED, k); label('体力（示意）', x, y - 30, 30, COL.sub, 700, 'left');
+    if (k > .5) { bowl(x + w * .51, y + h + 60, .5); }
+  }
+  errorMark(l2);
+});
+// J
+S.push(lt => mottoCard(lt, [['歇', '少量多次，短歇为主', GREEN], ['喝', '小口多次，别等渴', BLUE], ['吃', '每小时一点零食', AMB]], '一路补给，力气才一直都在。'));
+// K
+S.push(lt => endScene(lt));
+
+/* ───────── 封面 ───────── */
+function coverArt(key, w, h) {
+  hikeCover(key, w, h, {
+    ep: '09', l1: '路上怎么歇', l2: [['怎么', COL.ink], ['吃喝', AMB], ['？', COL.ink]], chips: [['少量多次', GREEN], ['小口喝', BLUE], ['常吃点', AMB]],
+    art: (k, ww, hh) => coverHill(k, ww, hh, {}, () => {
+      const vert = k === '9x16' || k === '3x4', cx = vert ? ww * .7 : ww * .84, cy = vert ? hh * .58 : hh * .43, r = vert ? 165 : 145;
+      g.fillStyle = '#fff'; g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fill(); g.strokeStyle = AMB; g.lineWidth = 10; g.stroke();
+      const s = r / 165; ICO.bottle(cx - 55 * s, cy, 1.3 * s, .7); ICO.food(cx + 55 * s, cy - 40 * s, .9 * s); pretzel(cx + 55 * s, cy + 50 * s, 1 * s);
+    })
+  });
+}
+
+/* ───────── 声音 ───────── */
+function sound(K, c, DUR) {
+  const gulp = t0 => { const o = c.createOscillator(), gg = c.createGain(); o.frequency.setValueAtTime(260, t0); o.frequency.exponentialRampToValueAtTime(120, t0 + .12); gg.gain.setValueAtTime(.18, t0); gg.gain.exponentialRampToValueAtTime(.001, t0 + .16); o.connect(gg); gg.connect(K.out); o.start(t0); o.stop(t0 + .2); };
+  hikeSound(K, c, DUR, {
+    start: 7.6, sec: t => t < 23.2 ? 'verse' : t < 35.2 ? 'chorus' : t < 47.2 ? 'verse' : t < 59.2 ? 'chorus' : t < 71.2 ? 'verse' : t < 79.2 ? 'chorus' : t < 97.2 ? 'tense' : 'outro',
+    chirps: [8.4, 10.2, 18.4, 30, 98, 105, 107.5],
+    steps: [[.2, 3.8, .55]],
+    heart: [3.8, 7.4],
+    dings: [11.2 + 4.5, 23.2 + 1.8, 23.2 + 6.2 + .8, 35.2 + 6.2 + .5, 35.2 + 6.2 + 1, 35.2 + 6.2 + 1.5, 35.2 + 6.2 + 2, 47.2 + 4.5, 59.2 + .6, 59.2 + 1.1, 59.2 + 1.6, 59.2 + 6.2 + .4, 71.2 + 2],
+    wrongs: [23.2 + 6.2 + 1.6, 23.2 + 6.2 + 2.8, 71.2 + 1, 79.2 + .3, 85.2 + .3, 91.2 + .3],
+    riser: 79.2, outro: 97.2,
+    extra: K => { for (let t = 80.2; t < 82.4; t += .35) gulp(t); K.wind(DUR, t => (t > 23.2 && t < 29.2) ? .5 : 0); }
+  });
+}
+
+kitRun({ T, S, TX, seed: 1109, allText: SRC.replace(/[\x00-\x7f]/g, '') + '0123456789:+=≈÷→～…✦', audio: sound, cover: coverArt });
+})();
+</script>
+</body>
+</html>
