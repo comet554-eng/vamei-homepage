@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>滑雪不难 EP.17 单板</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#000;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;aspect-ratio:9/16;max-width:100vw;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;aspect-ratio:auto;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="sbrig.js"></script>
+<script>
+/*
+ * 滑雪不难 EP.17 单板《平花入门：压板头、压板尾》（约 2 分 05 秒）
+ */
+(() => {
+'use strict';
+const T = [0, 8.0, 11.6, 27.6, 45.6, 59.6, 77.6, 93.6, 111.6, 118.6, 125.1];
+const YH = .135, YB = .745;
+
+const TX = [
+  { in: .15, out: 3.8, text: '看别人用{a}板头、板尾{/}\n"立着"在雪上滑？', y: YH, size: 84, w: 900, st: .06 },
+  { in: 4.0, out: 7.8, text: '那叫{g}压板{/}，\n平花里的基本功。', y: YH, size: 84, w: 900 },
+  { in: 8.25, out: 11.35, text: '平花入门：\n压板头、压板尾', y: .3, size: 96, w: 900, st: .05 },
+  { in: 9.0, out: 11.35, text: '英文叫 press，很多平花动作的基础', y: .415, size: 42, w: 600, sub: 1 },
+  { in: 11.8, out: 19.4, text: '重心移到哪头，\n哪头就{g}压住{/}雪。', y: YH, size: 84, w: 900 },
+  { in: 12.6, out: 19.4, text: '另一头自然翘起来，\n只用一头着地往前滑。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 19.8, out: 27.4, text: '板会{a}弯{/}，\n弹性帮你{g}撑住{/}。', y: YH, size: 88, w: 900 },
+  { in: 20.6, out: 27.4, text: '被压的那一头弯一点，\n板往回顶，帮你稳住。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 27.8, out: 33.4, text: '压板尾：\n重心{a}移到后脚{/}', y: YH, size: 84, w: 900 },
+  { in: 28.6, out: 33.4, text: '后腿弯，前腿伸直一点，\n板头就抬起来了。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 33.8, out: 39.4, text: '眼睛看{g}前方{/}，\n手臂帮忙平衡。', y: YH, size: 84, w: 900 },
+  { in: 34.6, out: 39.4, text: '别低头盯着板头，\n看你要去的方向。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 39.8, out: 45.4, text: '{g}先练{/}压板尾', y: YH, size: 88, w: 900 },
+  { in: 40.6, out: 45.4, text: '往后压更容易稳住，\n比压板头简单。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 45.8, out: 52.4, text: '压板头：\n重心{a}移到前脚{/}', y: YH, size: 84, w: 900 },
+  { in: 46.6, out: 52.4, text: '前腿弯，后腿伸直一点，\n板尾翘起来。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 52.8, out: 59.4, text: '压板头{r}更难{/}', y: YH, size: 88, w: 900 },
+  { in: 53.6, out: 59.4, text: '要把身体往前探，一怕就往后缩。\n慢慢来，别硬压。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 59.8, out: 65.4, text: '板要{g}放平{/}，\n别立刃。', y: YH, size: 84, w: 900 },
+  { in: 60.6, out: 65.4, text: '立着刃去压，刃一卡就摔。\n第 14 集落地也讲过：板要平。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 65.8, out: 71.4, text: '速度{g}要慢{/}', y: YH, size: 88, w: 900 },
+  { in: 66.6, out: 71.4, text: '找很平缓、人少的地方，\n慢慢滑着练。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 71.8, out: 77.4, text: '{g}整个人{/}移过去，\n别只弯腰。', y: YH, size: 84, w: 900 },
+  { in: 72.6, out: 77.4, text: '髋带着上身一起挪，\n上身保持稳。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 77.8, out: 79.8, text: '怎么练？\n三步。', y: YH, size: 80, w: 900 },
+  { in: 80.2, out: 84.6, text: '① 原地压板尾', y: YH, size: 84, w: 900 },
+  { in: 80.9, out: 84.6, text: '不滑，站着把板头压起来，\n压一下就放下。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 85.0, out: 89.0, text: '② 慢速滑行压板尾', y: YH, size: 80, w: 900 },
+  { in: 85.7, out: 89.0, text: '先压一两秒，再慢慢延长。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 89.4, out: 93.4, text: '③ 再练压板头', y: YH, size: 84, w: 900 },
+  { in: 90.1, out: 93.4, text: '一样：先原地，再慢速滑行。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 93.8, out: 99.4, text: '常见错误一：\n{r}立着刃{/}去压', y: YH, size: 80, w: 900 },
+  { in: 94.6, out: 99.4, text: '刃卡进雪里，人就被甩出去。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 99.8, out: 105.4, text: '常见错误二：\n只弯腰，{r}不移重心{/}', y: YH, size: 76, w: 900 },
+  { in: 100.6, out: 105.4, text: '髋还在中间，板翘不起来。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 105.8, out: 111.4, text: '常见错误三：\n{r}又快又陡{/}就开练', y: YH, size: 76, w: 900 },
+  { in: 106.6, out: 111.4, text: '先在平缓的地方慢速练熟，\n再一点点加。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 118.8, out: 999, text: '你最想学\n哪个平花动作？', y: .37, size: 84, w: 900, st: .06 },
+  { in: 119.8, out: 999, text: '评论区说说', y: .465, size: 42, w: 500, sub: 1 }
+];
+const STEPS = ['① 原地压板尾', '② 滑行压板尾', '③ 压板头'];
+
+/* ───────── 压板：pr ∈ [-1, 1] ─────────
+ * pr > 0 压板尾（板尾着地、板头翘起）；pr < 0 压板头（板头着地、板尾翘起）。
+ * 姿势按"板坐标"写，comp() 按板的倾角补偿，让身体在画面里保持竖直（同 EP.14）。 */
+const PIT = 12;
+const N0 = SP.neutral;
+const TAILP = { hipS: -.74, hipH: 1.38, lean: 2, armF: 128, armB: -132, look: .9 };
+const NOSEP = { hipS: .78, hipH: 1.36, lean: 14, armF: 104, armB: -102, look: 1 };
+const TENSE = { hipS: -.3, hipH: 1.42, lean: -8, armF: 140, armB: -140, look: .2 };
+const BENT = { hipS: -.08, hipH: 1.4, lean: 42, armF: 70, armB: -62, look: 1 };
+const comp = (p, pit) => withP(p, { hipS: p.hipS + p.hipH * Math.tan(pit * D2R), lean: p.lean + pit, armF: p.armF + pit, armB: p.armB + pit });
+const poseAt = pr => pr >= 0 ? lerpPose(N0, TAILP, pr) : lerpPose(N0, NOSEP, -pr);
+// G：板中心下方的雪面点；th0：雪面角度
+function placePress(G, th0, pr, u, pose) {
+  const pit = PIT * pr, f0 = frameOf(th0), th = th0 - pit, fr = frameOf(th), sg = pr >= 0 ? -1 : 1, L = 1.62 * u;
+  const C = [G[0] + f0.d[0] * L * sg, G[1] + f0.d[1] * L * sg];
+  const F = [C[0] - fr.d[0] * L * sg, C[1] - fr.d[1] * L * sg];
+  return { F, th, C, pose: comp(pose || poseAt(pr), pit) };
+}
+function drawPress(G, th0, pr, u, o = {}) {
+  const pl = placePress(G, th0, pr, u, o.pose), J = sbRider(pl.F, pl.th, pl.pose, u, o);
+  return Object.assign(J, { pl, pr, G, th0 });
+}
+// 平滑分段插值：keys = [[时间, 值], ...]，可按 period 循环
+function keyv(l, keys, period) {
+  if (period) l = ((l % period) + period) % period;
+  if (l <= keys[0][0]) return keys[0][1];
+  for (let i = 1; i < keys.length; i++) if (l < keys[i][0]) { const [t0, v0] = keys[i - 1], [t1, v1] = keys[i]; return lerp(v0, v1, sm((l - t0) / (t1 - t0))); }
+  return keys[keys.length - 1][1];
+}
+function ground(G, th0, sc) { drawSlope(G, th0, sc || 0, { noProps: true }); }
+
+/* ───────── 示意小部件 ───────── */
+// 板弯：沿被压那一段的板底画一条弧
+function pressFlex(J, pr, a = 1) {
+  const k = Math.abs(pr); if (k < .03) return; const P = J.P, sg = pr >= 0 ? -1 : 1;
+  const p0 = P(1.6 * sg, -.04), p1 = P(-.6 * sg, -.04), c = P(.5 * sg, -.04 - .3 * k);
+  g.save(); g.globalAlpha = a * Math.min(1, k * 1.5); g.lineCap = 'round';
+  g.strokeStyle = 'rgba(255,159,28,.35)'; g.lineWidth = 26; g.beginPath(); g.moveTo(...p0); g.quadraticCurveTo(c[0], c[1], p1[0], p1[1]); g.stroke();
+  g.strokeStyle = COL.amber; g.lineWidth = 8; g.beginPath(); g.moveTo(...p0); g.quadraticCurveTo(c[0], c[1], p1[0], p1[1]); g.stroke(); g.restore();
+}
+// 重心：圆点 + 铅垂线，落到板上
+function comMark(J, a = 1, c = COL.amber) {
+  const { com, P, fr, u } = J, F = P(0, 0), s = (com[0] - F[0]) / (fr.d[0] * u), land = P(s, .14);
+  g.save(); g.globalAlpha = a;
+  g.setLineDash([12, 10]); g.strokeStyle = c; g.lineWidth = 5; g.beginPath(); g.moveTo(com[0], com[1]); g.lineTo(com[0], land[1]); g.stroke(); g.setLineDash([]);
+  g.fillStyle = '#fff'; g.strokeStyle = c; g.lineWidth = 5; g.beginPath(); g.arc(com[0], com[1], 18, 0, Math.PI * 2); g.fill(); g.stroke();
+  g.fillStyle = c; g.beginPath(); g.moveTo(com[0], com[1]); g.arc(com[0], com[1], 18, -Math.PI / 2, 0); g.lineTo(com[0], com[1]); g.arc(com[0], com[1], 18, Math.PI / 2, Math.PI); g.closePath(); g.fill();
+  g.beginPath(); g.arc(com[0], land[1], 11, 0, Math.PI * 2); g.fill();
+  g.restore();
+  return [com[0], land[1]];
+}
+// 着地那头压住、另一头翘起
+function pressMarks(J, a = 1, o = {}) {
+  const pr = J.pr; if (Math.abs(pr) < .3) return; const tail = pr > 0, P = J.P, G = J.G, C = J.pl.C, E = P(tail ? 1.86 : -1.86, .26);
+  g.save(); g.globalAlpha = a * sm((Math.abs(pr) - .3) / .4);
+  g.fillStyle = 'rgba(255,159,28,.28)'; g.beginPath(); g.ellipse(C[0] + (tail ? 40 : -40), G[1] + 4, 90, 16, 0, 0, Math.PI * 2); g.fill();
+  if (!o.noPress) label(tail ? '板尾压住' : '板头压住', C[0] + (tail ? 20 : -20), G[1] + 90, 38, COL.amber, 900);
+  if (!o.noLift) {
+    const x = E[0] + (tail ? 34 : -34); arrow(x, G[1] - 14, x, E[1] - 64, COL.green, 7, 24);
+    label(tail ? '板头翘起' : '板尾翘起', clamp(E[0], 120, W - 120), G[1] + 90, 38, COL.green, 900);
+  }
+  g.restore();
+}
+// 竖着的弹簧：底在 yb，长度 len（同 EP.14）
+function spring(x, yb, len, a, c) {
+  c = c || COL.green; const y0 = yb - len, y1 = yb; g.save(); g.globalAlpha = a; g.strokeStyle = c; g.lineWidth = 6; g.lineJoin = 'round'; g.beginPath(); const n = 7;
+  for (let i = 0; i <= n * 2; i++) { const yy = lerp(y0 + 6, y1 - 6, i / (n * 2)), xx = x + (i === 0 || i === n * 2 ? 0 : (i % 2 ? 26 : -26)); i ? g.lineTo(xx, yy) : g.moveTo(xx, yy); }
+  g.stroke(); g.fillStyle = c; rrect(x - 34, y0 - 4, 68, 10, 4); g.fill(); rrect(x - 34, y1 - 6, 68, 10, 4); g.fill(); g.restore();
+}
+// 雪块只在雪面附近显示，不落进字幕区
+function burstC(x, y, lt, n, spd) { g.save(); g.beginPath(); g.rect(0, 0, W, H * .69); g.clip(); burst(x, y, lt, n, spd); g.restore(); }
+function snowFloor(gy) { g.fillStyle = '#fff'; g.fillRect(0, gy, W, H - gy); g.strokeStyle = '#c3d4e4'; g.lineWidth = 4; g.beginPath(); g.moveTo(0, gy); g.lineTo(W, gy); g.stroke(); }
+
+/* 顺着板看（横截面）：板平 / 立着刃 */
+const FLAT = { shin: 14, thigh: -30, torso: 16, head: 10, uarm: 150, farm: 105 };
+const EDGEP = { shin: 34, thigh: -34, torso: 20, head: 12, uarm: 150, farm: 100 };
+function crossEdge(x, gy, l, u, edge, o = {}) {
+  // edge = 0：板平，稳稳地站着；edge > 0：立着刃，到 o.catchT 时卡刃，人往前甩
+  if (!edge) return rider([x, gy], 0, lerpPose(FLAT, EDGEP, .15 + .15 * Math.sin(l * 3)), u, { alpha: o.alpha });
+  const ct = o.catchT == null ? 1.2 : o.catchT;
+  const rot = l < ct ? edge + Math.sin(l * 9) * 2 : edge + (o.fall || 50) * ein(clamp((l - ct) / .45, 0, 1));
+  return rider([x, gy], 0, EDGEP, u, { rot, pivot: 'toe', alpha: o.alpha });
+}
+
+/* ───────── 场景 ───────── */
+const S = [];
+const SPX = 200;
+// A 钩子：滑着走，板尾着地 → 板头着地
+const HOOK = [[0, 0], [.5, 0], [1.2, 1], [2.5, 1], [3.0, 0], [3.4, 0], [4.1, -1], [5.4, -1], [5.9, 0], [6.3, 0], [7.0, 1], [8.2, 1]];
+S.push(lt => {
+  const G = [CX, H * .6], u = 150, pr = keyv(lt, HOOK); drawSky(lt * 10); drawSnowfall(lt, .35); ground(G, 0, lt * SPX); speedLines(G, 0, lt, .22);
+  const J = drawPress(G, 0, pr, u); pressFlex(J, pr, .8); pressMarks(J, 1, { noLift: true });
+});
+// B 标题
+S.push(lt => {
+  drawSky(0); g.fillStyle = 'rgba(247,250,252,.5)'; g.fillRect(0, 0, W, H);
+  pill('滑雪不难 · EP.17 · 单板', CX, H * .19, 40, COL.amber, '#fff', eout(lt / .3));
+  const G = [CX, H * .69], u = 105, pr = keyv(lt, [[0, 0], [.4, 0], [1.1, 1], [3.6, 1]]); ground(G, 0, lt * 150);
+  const J = drawPress(G, 0, pr, u); pressFlex(J, pr, .8);
+});
+// C 原理：重心在哪头，哪头压住；板弯、靠弹性撑住
+const PRIN = [[0, 0], [1.0, 0], [2.2, 1], [3.6, 1], [4.2, 0], [4.6, 0], [5.6, -1], [7.2, -1], [7.8, 0], [8.4, 0], [9.6, 1], [16, 1]];
+S.push(lt => {
+  const G = [CX, H * .6], u = 150, pr = keyv(lt, PRIN); drawSky(0); ground(G, 0, lt * 110);
+  const J = drawPress(G, 0, pr, u);
+  if (lt < 8.2) {
+    const a = sm((lt - .5) / .4) * (1 - sm((lt - 7.9) / .3)), c = comMark(J, a);
+    g.save(); g.globalAlpha = a; label('重心', J.com[0] - 105, J.com[1], 40, COL.amber, 900); g.restore();
+    pressMarks(J, 1);
+  } else {
+    const k = sm((lt - 9.6) / .6), a = sm((lt - 9.8) / .5);
+    pressFlex(J, pr * k);
+    g.save(); g.globalAlpha = a; const lp = J.P(-.55, -.95); label('板弯了', lp[0], lp[1], 40, COL.amber, 900);
+    // 板往回顶：沿弯的那段画几个向上的小箭头
+    const bob = Math.sin(lt * 4) * 6;
+    [-1.3, -.85, -.4].forEach(s => { const b = J.P(s, -.3); arrow(b[0], b[1] + 30 + bob, b[0], b[1] - 18 + bob, COL.green, 6, 20); });
+    g.restore();
+    const sl = lerp(210, 120, k) + Math.sin(lt * 4) * 6 * k;
+    spring(W * .1, G[1], sl, a, COL.amber);
+    g.save(); g.globalAlpha = a; label('弹性', W * .1, G[1] - sl - 44, 40, COL.amber, 900); g.restore();
+    const b = sm((lt - 11) / .5); g.save(); g.globalAlpha = b; label('往回顶', J.P(-.4, -.95)[0] + 210, J.P(-.4, -.95)[1], 40, COL.green, 900); g.restore();
+  }
+});
+// D 压板尾：要领 / 视线和手臂 / 先练板尾
+S.push(lt => {
+  const seg = Math.min(2, Math.floor(lt / 6)), l2 = lt - seg * 6;
+  drawSky(0);
+  if (seg < 2) {
+    const G = [CX + 30, H * .6], u = 155, pr = keyv(l2, seg === 0 ? [[0, 0], [.5, 0], [1.6, 1]] : [[0, 1]]);
+    ground(G, 0, seg === 1 ? l2 * 120 : 0);
+    const J = drawPress(G, 0, pr, u); pressFlex(J, pr, .8);
+    const a = sm((l2 - 1.8) / .4);
+    if (seg === 0) {
+      g.save(); g.globalAlpha = a;
+      comMark(J, 1);
+      ring(J.Kb[0], J.Kb[1], 40, COL.amber, 1); label('后腿弯', J.Kb[0] - 150, J.Kb[1] + 10, 38, COL.amber, 900);
+      const fm = mid(J.Kf, J.Hf); label('前腿直一点', Math.min(fm[0] + 200, W - 110), fm[1] - 20, 38, COL.blue, 900);
+      g.restore();
+      pressMarks(J, a, { noPress: true });
+    } else {
+      const a2 = sm((l2 - .8) / .4);
+      g.save(); g.globalAlpha = a2; g.strokeStyle = COL.green; g.lineWidth = 6; g.setLineDash([6, 14]); g.lineCap = 'round';
+      const e0 = [J.Hd[0] + 60, J.Hd[1]], e1 = [W - 70, J.Hd[1] - 30]; g.beginPath(); g.moveTo(...e0); g.lineTo(...e1); g.stroke(); g.setLineDash([]);
+      arrow(e1[0] - 60, e1[1] + 4, e1[0], e1[1], COL.green, 6, 24);
+      label('看前方', W - 150, J.Hd[1] - 90, 40, COL.green, 900);
+      g.restore();
+      const a3 = sm((l2 - 2.2) / .4); g.save(); g.globalAlpha = a3;
+      [J.Hnf, J.Hnb].forEach(q => ring(q[0], q[1], 34, COL.blue, 1));
+      label('手臂打开', J.Hnb[0] - 40, J.Hnb[1] + 80, 38, COL.blue, 900);
+      g.restore();
+    }
+  } else {
+    const gy = H * .58, u = 92, l3 = l2;
+    ground([CX, gy], 0, 0);
+    const pt = keyv(l3, [[0, 0], [.4, 0], [1.2, 1]]), pn = keyv(l3, [[0, 0], [1.4, 0], [2.4, -1]]);
+    const J1 = drawPress([W * .27, gy], 0, pt, u), J2 = drawPress([W * .73, gy], 0, pn, u, { alpha: .9 });
+    pressFlex(J1, pt, .8); pressFlex(J2, pn, .8);
+    const a1 = sm((l3 - 1.2) / .4), a2 = sm((l3 - 2.4) / .4);
+    g.save(); g.globalAlpha = a1; label('压板尾', W * .27, gy + 90, 40, COL.green, 900); pill('① 先练', W * .27, H * .27, 38, COL.green, '#fff'); label('更容易稳', W * .27, gy + 150, 34, COL.sub, 700); g.restore();
+    g.save(); g.globalAlpha = a2; label('压板头', W * .73, gy + 90, 40, COL.amber, 900); pill('② 再练', W * .73, H * .27, 38, COL.amber, '#fff'); label('要往前探', W * .73, gy + 150, 34, COL.sub, 700); g.restore();
+  }
+});
+// E 压板头：要领 / 更难，一怕就往后缩
+S.push(lt => {
+  const seg = lt < 7 ? 0 : 1, l2 = lt - seg * 7, G = [CX - 30, H * .6], u = 155;
+  drawSky(0);
+  if (seg === 0) {
+    ground(G, 0, 0);
+    const pr = keyv(l2, [[0, 0], [.5, 0], [1.7, -1]]), J = drawPress(G, 0, pr, u); pressFlex(J, pr, .8);
+    const a = sm((l2 - 1.9) / .4);
+    g.save(); g.globalAlpha = a;
+    comMark(J, 1);
+    ring(J.Kf[0], J.Kf[1], 40, COL.amber, 1); label('前腿弯', Math.min(J.Kf[0] + 150, W - 90), J.Kf[1] + 10, 38, COL.amber, 900);
+    const bm = mid(J.Kb, J.Hb); label('后腿直一点', Math.max(bm[0] - 210, 110), bm[1] - 20, 38, COL.blue, 900);
+    g.restore();
+    pressMarks(J, a, { noPress: true });
+  } else {
+    ground(G, 0, l2 * 100);
+    const pr = keyv(l2, [[0, 0], [.5, 0], [1.4, -.5], [1.8, -.5], [2.3, 0], [3.4, 0], [4.5, -1], [7, -1]]);
+    const fear = keyv(l2, [[0, 0], [1.6, 0], [2.1, 1], [3.0, 1], [3.5, 0]]);
+    const base = poseAt(pr), pose = fear > 0 ? lerpPose(base, TENSE, fear) : base;
+    const shake = l2 > 1.2 && l2 < 2.4 ? Math.sin(l2 * 60) * 5 : 0;
+    const J = drawPress([G[0] + shake, G[1]], 0, pr, u, { pose }); pressFlex(J, pr, .8);
+    const af = win(l2, 2.0, 3.4, .25, .3);
+    if (af > 0) { g.save(); g.globalAlpha = af; arrow(J.Hd[0] - 30, J.Hd[1] - 120, J.Hd[0] - 170, J.Hd[1] - 120, COL.red, 7, 24); label('一怕就往后缩', CX, H * .26, 44, COL.red, 900); g.restore(); }
+    const ag = sm((l2 - 4.7) / .4);
+    if (ag > 0) { g.save(); g.globalAlpha = ag; arrow(J.Hd[0] + 40, J.Hd[1] - 120, J.Hd[0] + 180, J.Hd[1] - 120, COL.green, 7, 24); label('重心跟上去，慢慢来', CX, H * .26, 44, COL.green, 900); comMark(J, 1, COL.green); g.restore(); }
+  }
+});
+// F 关键：板放平 / 速度慢 / 整个人移过去
+S.push(lt => {
+  const seg = Math.min(2, Math.floor(lt / 6)), l2 = lt - seg * 6;
+  drawSky(0);
+  if (seg === 0) {
+    const gy = H * .62; snowFloor(gy);
+    const l3 = (l2 - .3) % 2.9, u = 92, a = sm((l2 - .5) / .3);
+    const xl = W * .27, xr = W * .63;
+    crossEdge(xl, gy, l2, u, 0);
+    if (l2 < .3) crossEdge(xr, gy, 0, u, 20, { catchT: 99 }); else crossEdge(xr, gy, l3, u, 20, { catchT: 1.2, fall: 44 });
+    if (l2 >= .3 && l3 > 1.2) { burstC(xr + 40, gy, l3 - 1.2, 18, .45); const b = sm((l3 - 1.2) / .2); g.save(); g.globalAlpha = b; ring(xr + .34 * u, gy - 4, 40, COL.red, 1, true); g.restore(); }
+    markV(xl, H * .27, 34, a); markX(xr, H * .27, 34, a);
+    g.save(); g.globalAlpha = a; label('板平：稳', xl, gy + 90, 38, COL.green, 900); label('立着刃：卡刃', xr, gy + 90, 38, COL.red, 900); g.restore();
+  } else if (seg === 1) {
+    const G = [CX, H * .6], u = 150, th0 = 3, pr = keyv(l2, [[0, 0], [.4, 0], [1.4, 1], [3.8, 1], [4.4, 0], [6, 0]]);
+    ground(G, th0, l2 * 90);
+    const J = drawPress(G, th0, pr, u); pressFlex(J, pr, .8);
+    pill('平缓 · 人少 · 慢速', CX, H * .27, 38, COL.green, '#fff', sm((l2 - .4) / .4));
+    // 小速度表：指针停在"慢"
+    const a = sm((l2 - .9) / .4), gx = W * .83, gyy = H * .38, R = 70;
+    g.save(); g.globalAlpha = a; g.lineCap = 'round';
+    g.strokeStyle = '#d3dee8'; g.lineWidth = 16; g.beginPath(); g.arc(gx, gyy, R, Math.PI, Math.PI * 2); g.stroke();
+    g.strokeStyle = COL.green; g.beginPath(); g.arc(gx, gyy, R, Math.PI, Math.PI * 1.35); g.stroke();
+    const na = Math.PI * (1.12 + .06 * Math.sin(l2 * 3)); g.strokeStyle = COL.ink; g.lineWidth = 7; g.beginPath(); g.moveTo(gx, gyy); g.lineTo(gx + Math.cos(na) * (R - 10), gyy + Math.sin(na) * (R - 10)); g.stroke();
+    g.fillStyle = COL.ink; g.beginPath(); g.arc(gx, gyy, 10, 0, Math.PI * 2); g.fill();
+    label('慢', gx, gyy + 44, 36, COL.green, 900);
+    g.restore();
+  } else {
+    const G = [CX + 30, H * .6], u = 155, pr = keyv(l2, [[0, 0], [.6, 0], [1.8, 1], [6, 1]]);
+    ground(G, 0, 0);
+    const J = drawPress(G, 0, pr, u); pressFlex(J, pr, .8);
+    const a = sm((l2 - 1.9) / .4);
+    g.save(); g.globalAlpha = a;
+    // 上身：沿躯干的绿色虚线，基本竖直
+    const dx = J.Hd[0] - J.Hc[0], dy = J.Hd[1] - J.Hc[1], L = Math.hypot(dx, dy), ux = dx / L, uy = dy / L;
+    g.strokeStyle = COL.green; g.lineWidth = 6; g.setLineDash([10, 10]); g.beginPath(); g.moveTo(J.Hc[0] - ux * 40, J.Hc[1] - uy * 40); g.lineTo(J.Hd[0] + ux * 90, J.Hd[1] + uy * 90); g.stroke(); g.setLineDash([]);
+    label('上身稳', J.Hd[0] + 190, J.Hd[1] - 30, 40, COL.green, 900);
+    // 髋往后挪：雪面上的箭头
+    const y = G[1] + 46; arrow(G[0] + 30, y, J.Ab[0] - 10, y, COL.amber, 7, 24);
+    label('髋带着上身一起往后挪', CX, G[1] + 112, 38, COL.amber, 900);
+    g.restore();
+  }
+});
+// G 练习三步
+S.push(lt => {
+  const cur = lt < 2.4 ? -1 : lt < 7.2 ? 0 : lt < 11.6 ? 1 : 2;
+  drawSky(0);
+  const G = [CX, H * .62], u = 150;
+  if (cur <= 0) {
+    ground(G, 0, 0);
+    const pr = cur < 0 ? 0 : keyv(lt - 2.4, [[0, 0], [.4, 0], [1.0, 1], [2.0, 1], [2.5, 0], [3.0, 0], [3.6, 1], [4.4, 1], [4.8, 0]]);
+    const J = drawPress(G, 0, pr, u); pressFlex(J, pr, .8);
+    if (cur === 0) pill('原地 · 不滑', CX, H * .3, 36, COL.green, '#fff', sm((lt - 2.8) / .4));
+  } else if (cur === 1) {
+    const l3 = lt - 7.2, pr = keyv(l3, [[0, 0], [.3, 0], [.8, 1], [1.4, 1], [1.8, 0], [2.0, 0], [2.5, 1], [3.9, 1], [4.4, 0]]);
+    ground(G, 2, l3 * 110);
+    const J = drawPress(G, 2, pr, u); pressFlex(J, pr, .8);
+    pill('慢速 · 一点点延长', CX, H * .3, 36, COL.green, '#fff', sm((l3 - .3) / .4));
+    // 压住的时长条
+    const bw = W * .5, bx = CX - bw / 2, by = G[1] + 110, hold = l3 < 1.9 ? clamp((l3 - .8) / .6, 0, 1) * .3 : clamp((l3 - 2.5) / 1.4, 0, 1);
+    g.save(); g.globalAlpha = sm((l3 - .5) / .3); g.fillStyle = '#e3ebf2'; rrect(bx, by - 12, bw, 24, 12); g.fill();
+    g.fillStyle = COL.amber; rrect(bx, by - 12, Math.max(24, bw * hold), 24, 12); g.fill();
+    label(l3 < 2.2 ? '压一下' : '再久一点', bx + bw + 20, by, 32, COL.amber, 900, 'left'); g.restore();
+  } else {
+    const l3 = lt - 11.6, pr = keyv(l3, [[0, 0], [.4, 0], [1.4, -1], [3.4, -1], [3.9, 0]]);
+    ground(G, 2, l3 * 90);
+    const J = drawPress(G, 2, pr, u); pressFlex(J, pr, .8);
+    pill('先原地，再慢速滑行', CX, H * .3, 36, COL.amber, '#fff', sm((l3 - .3) / .4));
+  }
+  stepChips(STEPS, H * .235, cur, eout((lt - .3) / .4), 34);
+});
+// H 三个错误
+S.push(lt => {
+  const seg = Math.min(2, Math.floor(lt / 6)), l2 = lt - seg * 6;
+  drawSky(0);
+  if (seg === 0) {
+    const gy = H * .62, u = 120, x = CX - 60; snowFloor(gy);
+    crossEdge(x, gy, l2 - .4, u, 22, { catchT: 1.6, fall: 52 });
+    const lc = l2 - .4 - 1.6;
+    if (lc > 0) burstC(x + .34 * u + 10, gy, lc * 1.1, 26, .6);
+    if (lc > .05) { const a = sm((lc - .05) / .2); g.save(); g.globalAlpha = a; ring(x + .34 * u, gy - 4, 46, COL.red, 1, true); label('刃卡进雪里', x + 40, gy + 110, 40, COL.red, 900); g.restore(); }
+    const ae = win(l2, .8, 2.0, .3, .3); g.save(); g.globalAlpha = ae; label('板立着刃', x + 260, H * .4, 40, COL.amber, 900); g.restore();
+  } else if (seg === 1) {
+    const G = [CX - 20, H * .6], u = 155; ground(G, 0, 0);
+    const c = (l2 % 3) / 3, k = c < .35 ? sm(c / .35) : 1 - sm((c - .7) / .25);
+    const J = drawPress(G, 0, 0, u, { pose: lerpPose(N0, BENT, k) });
+    const a = sm((l2 - 1.0) / .4);
+    g.save(); g.globalAlpha = a; comMark(J, 1, COL.red);
+    label('只弯了腰', W * .72, H * .28, 40, COL.red, 900);
+    const tp = J.P(-1.55, .1); ring(tp[0], tp[1], 50, COL.red, 1, true);
+    label('板翘不起来', tp[0] + 30, G[1] + 90, 40, COL.red, 900);
+    label('重心还在中间', G[0] + 170, G[1] + 90, 36, COL.red, 900);
+    g.restore();
+  } else {
+    const th0 = 17, G = [CX, H * .54], u = 135, tf = 3.2;
+    const v = 900, sc = l2 < tf ? v * l2 : v * tf + v * (1 - Math.exp(-(l2 - tf) * 3)) / 3;
+    ground(G, th0, sc); speedLines(G, th0, lt, l2 < tf ? .85 : .85 * Math.exp(-(l2 - tf) * 2));
+    const pr = l2 < tf ? keyv(l2, [[0, 0], [.6, 0], [1.6, .8]]) : 0, shake = l2 > 1.4 && l2 < tf ? Math.sin(l2 * 55) * 8 : 0;
+    const fall = sm((l2 - tf) / .35);
+    const pose = fall > 0 ? lerpPose(poseAt(.8), SP.fallen, fall) : null;
+    const J = drawPress([G[0] + shake, G[1]], th0, pr, u, pose ? { pose } : {});
+    if (l2 < tf) pressFlex(J, pr, .8);
+    if (l2 > tf) burstC(G[0] - 60, G[1] - 20, (l2 - tf) * 1.1, 30, .7);
+    const a = sm((l2 - .8) / .4); g.save(); g.globalAlpha = a;
+    label('太陡', W * .2, H * .6, 44, COL.red, 900); label('太快', W * .8, H * .3, 44, COL.red, 900);
+    g.restore();
+  }
+  markX(W * .14, H * .3, 40, win(l2, .3, 6, .2, .3));
+});
+// I 口诀卡
+S.push(lt => {
+  drawSky(0); drawSnowfall(lt + 112, .5);
+  const a = eout(lt / .4), x = W * .08, y = H * .24, w = W * .84, h = H * .42;
+  g.save(); g.globalAlpha = a; g.translate(0, (1 - a) * 50);
+  g.fillStyle = '#fff'; g.shadowColor = 'rgba(27,40,56,.14)'; g.shadowBlur = 50; rrect(x, y, w, h, 44); g.fill(); g.shadowBlur = 0;
+  label('记住这几句', CX, y + 100, 50, COL.amber, 900);
+  [['重心', '移到哪头，哪头压住', COL.amber], ['板', '放平，别立刃', COL.green], ['先练', '板尾，再练板头', COL.blue]].forEach(([t1, t2, c], i) => {
+    const ra = eout((lt - .8 - i * 1.2) / .35); if (ra <= 0) return; const ry = y + 250 + i * 225;
+    g.save(); g.globalAlpha = a * ra; g.translate((1 - ra) * 40, 0); pill(t1, x + 70 + (t1.length * 38 + 52) / 2, ry - 44, 38, c, '#fff'); label(t2, x + 70, ry + 42, 54, COL.ink, 900, 'left'); g.restore();
+  });
+  g.restore();
+  label('先压稳，再谈花样。', CX, H * .75, 46, COL.sub, 700);
+});
+// J 结尾
+S.push(lt => {
+  drawSky(0); const G = [CX, H * .85], u = 100; ground(G, 0, lt * 150);
+  const pr = keyv(lt, [[0, 0], [.5, 0], [1.2, 1], [2.4, 1], [2.9, 0], [3.3, 0], [4.0, -1], [5.2, -1], [5.7, 0]]);
+  const J = drawPress(G, 0, pr, u); pressFlex(J, pr, .8);
+  pill('想看什么？评论区点题', CX, H * .55, 38, COL.amber, '#fff', eout((lt - 1.8) / .4));
+});
+
+/* ───────── 封面 ───────── */
+function coverArt(key, w, h) {
+  drawSky(0);
+  const art = (cx, base, u) => {
+    snowFloor(base);
+    const G = [cx, base], J = drawPress(G, 0, 1, u); pressFlex(J, 1, .9);
+    const c = comMark(J, 1), E = J.P(1.86, .26), ax = E[0] + 40;
+    arrow(ax, base - 14, ax, E[1] - 70, COL.green, 8, 28);
+    return J;
+  };
+  const title = (cx, y1, y2, size, subY, subSize, pillY, pillSize) => {
+    pill('滑雪不难 · EP.17 · 单板', cx, pillY, pillSize, COL.amber, '#fff');
+    label('平花入门', cx, y1, size, COL.ink, 900);
+    g.font = `900 ${size * .62}px ${SANS}`; const parts = [['压', COL.ink], ['板头', COL.amber], ['、压', COL.ink], ['板尾', COL.green]], ws = parts.map(q => g.measureText(q[0]).width);
+    let x = cx - ws.reduce((s, v) => s + v, 0) / 2; parts.forEach((q, i) => { label(q[0], x + ws[i] / 2, y2, size * .62, q[1], 900); x += ws[i]; });
+    label('重心移到哪头，哪头压住', cx, subY, subSize, COL.sub, 700);
+  };
+  if (key === '9x16') { title(CX, h * .24, h * .315, 124, h * .37, 40, h * .15, 42); art(w * .5, h * .86, 185); }
+  else if (key === '3x4') { title(CX, h * .17, h * .265, 112, h * .325, 38, h * .07, 40); art(w * .5, h * .9, 125); }
+  else {
+    art(key === '16x9' ? w * .72 : w * .7, h * .86, key === '16x9' ? 150 : 118);
+    const fade = g.createLinearGradient(0, 0, w * .62, 0); fade.addColorStop(0, 'rgba(240,246,251,.96)'); fade.addColorStop(1, 'rgba(240,246,251,0)'); g.fillStyle = fade; g.fillRect(0, 0, w * .56, h);
+    const size = key === '16x9' ? 116 : 92;
+    title(w * .28, h * .43, h * .58, size, h * .7, key === '16x9' ? 36 : 30, h * .26, key === '16x9' ? 38 : 34);
+  }
+}
+
+/* ───────── 声音 ───────── */
+function sound(K, c, DUR) {
+  K.bed(8.0, DUR, t => t < 27.6 ? 'verse' : t < 59.6 ? 'chorus' : t < 77.6 ? 'verse' : t < 93.6 ? 'chorus' : t < 111.6 ? 'tense' : 'outro');
+  K.wind(DUR, t => t < 8 ? .16 : 0);
+  // 压板时轻轻一声"吱"（雪被压住）
+  const press = t => { K.noise(t, .28, .12, 'bandpass', 900, null, 1.2); K.tone(240, t, .14, .05, 'triangle'); };
+  [.6, 3.5].forEach(press);
+  [11.6 + 1.2, 11.6 + 4.7].forEach(press);
+  K.ding(11.6 + 2.2); K.ding(11.6 + 5.6); K.ding(19.6 + 2.2);
+  [27.6 + 1.8, 33.6 + 1.2, 39.6 + 1.2, 39.6 + 2.4, 45.6 + 1.9].forEach(K.ding);
+  K.wrong(52.6 + 2.0); K.ding(52.6 + 4.7);
+  // 板平 / 立着刃：卡刃
+  for (let t = 59.6 + .3 + 1.2; t < 65.6; t += 2.9) { K.thud(t, .35); K.wrong(t + .2); }
+  K.ding(65.6 + 1.4); K.ding(71.6 + 1.9);
+  [80.0, 84.8, 89.2].forEach(K.ding);
+  K.riser(92.2, 93.6, .12);
+  [93.6 + .3, 99.6 + .3, 105.6 + .3].forEach(K.wrong);
+  K.thud(93.6 + .4 + 1.6, .9);
+  K.thud(105.6 + 3.2, .9);
+  for (let i = 0; i < 3; i++) K.tone(880 + i * 110, 111.6 + .8 + i * 1.2, .25, .07, 'triangle');
+}
+
+kitRun({
+  T, S, TX, seed: 281,
+  allText: STEPS.join('') + '板尾压住板头翘起重心弯了往回顶弹性后腿前直一点看前方手臂打开先练更容易稳要往前探再一怕就缩跟上去，慢来平：立着刃卡缓人少速度表髋带身起挪原地不滑一点点延长下久行滑记住这几句移到哪别谈花样想看什么？评论区点题入门、太陡快进雪里只中间没还雪不难·EP.17单',
+  audio: sound, cover: coverArt
+});
+})();
+</script>
+</body>
+</html>
