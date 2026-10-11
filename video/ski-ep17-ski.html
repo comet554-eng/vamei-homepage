@@ -75,7 +75,7 @@ const CONE_G = 'rgba(18,166,121,.2)', CONE_R = 'rgba(240,71,60,.2)';
 /* ───────── 俯视：板和上身分开转 ─────────
  * 局部坐标里人往 +y 走（画面下方 = 下坡）。skiAng 转板，bodyAng 转上身（0 = 朝山下）。
  * o.plant = { side: ±1, a: 0~1 }：那一侧的杖点到身前偏下坡的雪上；o.cone：上身朝向的扇形。*/
-const PLANT_AT = s => [55 * s, 180 * s];
+const PLANT_AT = s => [22 * s, 180 * s];
 function topSR(x, y, skiAng, bodyAng, s, o = {}) {
   const L = 230 * s, w = 46 * s;
   g.save(); g.translate(x, y); g.lineCap = 'round';
@@ -192,7 +192,7 @@ S.push(lt => {
   topBg(lt * 40);
   const half = 210;
   corridor(CX, half, H * .22, H * .7, 1);
-  label('窄道', CX + half + 70, H * .235, 34, COL.blue, 900);
+  label('窄道', CX + half + 70, H * .69, 34, COL.blue, 900);
   if (lt < 4) {
     const k = clamp((lt - .2) / 3.6, 0, 1), p = fA1(k), ang = headAng(fA1, k);
     track(fA1, k, 'rgba(255,159,28,.55)');
@@ -201,7 +201,7 @@ S.push(lt => {
   } else {
     const k = clamp((lt - 4.2) / 3.6, 0, 1);
     track(fA2, k); rideSR(fA2, 6, k, .75, { plants: true });
-    if (lt > 4.6) { g.save(); g.globalAlpha = sm((lt - 4.6) / .4); label('小回转', CX - half - 90, H * .235, 34, COL.green, 900); g.restore(); }
+    if (lt > 4.6) { g.save(); g.globalAlpha = sm((lt - 4.6) / .4); label('小回转', CX - half - 90, H * .69, 34, COL.green, 900); g.restore(); }
   }
 });
 // B 标题
@@ -229,7 +229,7 @@ S.push(lt => {
   track(fC, k); rideSR(fC, 6, k, .75, { plants: true });
 });
 // D 核心一：上身朝山下，腿在转
-const fD = sPath(CX, H * .25, H * .64, 120, 6);
+const fD = sPath(CX, H * .25, H * .6, 120, 6);
 S.push(lt => {
   topBg(lt < 7.6 ? 0 : lt * 30);
   if (lt < 7.6) {
@@ -248,7 +248,7 @@ S.push(lt => {
   }
 });
 // E 核心二：点杖定节奏
-const fE = sPath(CX, H * .25, H * .62, 130, 5);
+const fE = sPath(CX, H * .25, H * .6, 130, 5);
 const E_OM = 2.0;
 S.push(lt => {
   topBg(lt < 6.8 ? lt * 30 : 0);
@@ -260,7 +260,7 @@ S.push(lt => {
   } else {
     const l2 = lt - 6.8, x = CX, y = H * .37, s = 1.5, ph = Math.max(0, l2 - .3) * E_OM, sn = Math.sin(ph);
     const yaw = 1.0 * sn, side = sn >= 0 ? 1 : -1, pa = l2 > .3 ? Math.pow(Math.abs(sn), 8) : 0, q = PLANT_AT(s), a = sm((l2 - .4) / .4);
-    g.save(); g.globalAlpha = a; g.fillStyle = 'rgba(18,166,121,.12)'; g.beginPath(); g.ellipse(x, y + q[1], 150, 62, 0, 0, Math.PI * 2); g.fill(); g.strokeStyle = COL.green; g.lineWidth = 4; g.setLineDash([10, 8]); g.stroke(); g.setLineDash([]); g.restore();
+    g.save(); g.globalAlpha = a; g.fillStyle = 'rgba(18,166,121,.12)'; g.beginPath(); g.ellipse(x, y + q[1], 115, 58, 0, 0, Math.PI * 2); g.fill(); g.strokeStyle = COL.green; g.lineWidth = 4; g.setLineDash([10, 8]); g.stroke(); g.setLineDash([]); g.restore();
     [-1, 1].forEach(sd => { g.save(); g.globalAlpha = .35 * a; g.fillStyle = COL.amber; g.beginPath(); g.arc(x + sd * q[0], y + q[1], 13, 0, Math.PI * 2); g.fill(); g.restore(); });
     if (pa > .5) { const d = [x + side * q[0], y + q[1]]; g.save(); g.globalAlpha = (pa - .5) / .5; g.fillStyle = COL.amber; g.beginPath(); g.arc(d[0], d[1], 16, 0, Math.PI * 2); g.fill(); g.restore(); ring(d[0], d[1], 34, COL.amber, (pa - .5) / .5); }
     topSR(x, y, yaw, 0, s, { plant: { side, a: pa } });
@@ -277,7 +277,7 @@ S.push(lt => {
   rhythmGraph(W * .14, H * .655, W * .72, 70, lt, sm((lt - 6.2) / .4));
 });
 // G 控速：弯要走完一点
-const fG = sPath(W * .38, H * .27, H * .64, 120, 5, .95);
+const fG = sPath(W * .38, H * .29, H * .6, 120, 5, .95);
 S.push(lt => {
   topBg(lt * 30);
   const cx = W * .38, k = clamp((lt - .3) / 7.2, 0, 1);
@@ -285,16 +285,16 @@ S.push(lt => {
   track(fG, k); const r = rideSR(fG, 5, k, .75, { plants: true });
   const across = k > 0 && k < 1 && Math.abs(Math.abs(r.ang) - Math.PI / 2) < .45;
   pill('横过来一点', cx, H * .69, 32, across ? COL.green : 'rgba(255,255,255,.9)', across ? '#fff' : COL.sub);
-  const vG = Math.round(15 + Math.sin(lt * 2.3) * .8); label(`${vG} km/h`, cx, H * .228, 44, COL.green, 900);
+  const vG = Math.round(15 + Math.sin(lt * 2.3) * .8); label(`${vG} km/h`, cx, H * .215, 44, COL.green, 900);
   // 对比：直线冲
-  const xr = W * .82, kr = ein(clamp((lt - .3) / 6.6, 0, 1)), yr = lerp(H * .27, H * .63, kr);
-  g.save(); g.strokeStyle = 'rgba(240,71,60,.55)'; g.lineWidth = 7; g.lineCap = 'round'; g.beginPath(); g.moveTo(xr, H * .27); g.lineTo(xr, yr); g.stroke(); g.restore();
+  const xr = W * .82, kr = ein(clamp((lt - .3) / 6.6, 0, 1)), yr = lerp(H * .29, H * .63, kr);
+  g.save(); g.strokeStyle = 'rgba(240,71,60,.55)'; g.lineWidth = 7; g.lineCap = 'round'; g.beginPath(); g.moveTo(xr, H * .26); g.lineTo(xr, yr); g.stroke(); g.restore();
   topSR(xr, yr, 0, 0, .75);
-  const vR = Math.round(lerp(15, 42, kr)); label(`${vR} km/h`, xr, H * .228, 44, vR > 25 ? COL.red : COL.ink, 900);
+  const vR = Math.round(lerp(15, 42, kr)); label(`${vR} km/h`, xr, H * .215, 44, vR > 25 ? COL.red : COL.ink, 900);
   label('直线冲', xr, H * .69, 34, COL.red, 900); markX(xr + 100, H * .69, 24, sm((lt - 3) / .3));
 });
 // H 练习三步
-const fH1 = sPath(CX, H * .3, H * .65, 220, 4, .9), fH2 = sPath(CX, H * .3, H * .63, 170, 5), fH3 = sPath(CX, H * .3, H * .65, 105, 7);
+const fH1 = sPath(CX, H * .3, H * .65, 220, 4, .9), fH2 = sPath(CX, H * .3, H * .6, 170, 5), fH3 = sPath(CX, H * .3, H * .65, 105, 7);
 S.push(lt => {
   const cur = lt < 2.4 ? -1 : lt < 9 ? 0 : lt < 15 ? 1 : lt < 19.8 ? 2 : 3;
   topBg(lt * 30);
@@ -319,7 +319,7 @@ S.push(lt => {
 const AMPS = [120, 40, 210, 70, 180, 30];
 const fI2 = k => { const n = 6, ph = k * n * Math.PI, m = clamp(Math.floor(ph / Math.PI), 0, n - 1), yy = ph - .85 * Math.sin(2 * ph) / 2; return [CX + AMPS[m] * Math.sin(ph), lerp(H * .27, H * .64, yy / (n * Math.PI))]; };
 const I2_PL = [[1, true], [2, false], [3, true], [4, true], [5, false]];
-const fI3 = k => { const n = 5, ph = k * n * Math.PI; return [CX + lerp(190, 35, k) * Math.sin(ph), lerp(H * .27, H * .66, k * k * .55 + k * .45)]; };
+const fI3 = k => [CX + lerp(95, 25, k) * Math.sin(k * 3 * Math.PI), lerp(H * .26, H * .66, k)];
 S.push(lt => {
   const seg = lt < 6 ? 0 : lt < 12 ? 1 : 2, l2 = lt - seg * 6;
   topBg(lt * 30);
@@ -338,11 +338,11 @@ S.push(lt => {
     if (k > .38) { g.save(); g.globalAlpha = sm((k - .38) / .05); label('忽大忽小', CX + 360, H * .43, 38, COL.red, 900); g.restore(); }
     I2_PL.forEach(([m, ok], i) => { const kp = (m - PLANT) / 6; if (k < kp) return; const x = CX + (i - 2) * 130; pill(ok ? '点' : '？', x, H * .69, 38, ok ? COL.amber : COL.red, '#fff', sm((k - kp) * 20)); });
   } else {
-    const k = clamp((l2 - .2) / 5.4, 0, 1);
-    corridor(CX, 200, H * .25, H * .67, 1);
+    const u = clamp((l2 - .2) / 5.4, 0, 1), k = u * .35 + u * u * .65;
+    corridor(CX, 200, H * .24, H * .67, 1);
     track(fI3, k, 'rgba(240,71,60,.45)');
     const p = fI3(k), ang = headAng(fI3, k); topSR(p[0], p[1], ang, ang * .08, .75);
-    const v = Math.round(lerp(15, 40, ein(k))); label(`${v} km/h`, W * .84, H * .27, 50, v > 28 ? COL.red : COL.ink, 900);
+    const v = Math.round(lerp(15, 40, k)); label(`${v} km/h`, W * .84, H * .27, 50, v > 28 ? COL.red : COL.ink, 900);
     if (k > .3) { g.save(); g.globalAlpha = sm((k - .3) / .1); label('板没横过来', W * .84, H * .32, 34, COL.red, 900); g.restore(); }
   }
   markX(W * .14, H * .3, 40, win(l2, .3, 6, .2, .3));
@@ -374,7 +374,7 @@ S.push(lt => {
 function coverArt(key, w, h) {
   topBg(0); g.fillStyle = 'rgba(247,250,252,.35)'; g.fillRect(0, 0, w, h);
   const art = (cx, y0, y1, A, s, n) => {
-    const f = sPath(cx, y0 + 30 * s, y1 - 30 * s, A, n), kk = (n - 1.5) / n;
+    const f = sPath(cx, y0 + 30 * s, y1 - 30 * s, A, n), kk = (n - 2.3) / n;
     corridor(cx, A + 110 * s, y0, y1, 1);
     track(f, 1, GREEN_T, 7 * s);
     plantKs(n).forEach(kp => { if (kp > kk) return; const d = plantDot(f, kp, s); g.fillStyle = COL.amber; g.beginPath(); g.arc(d[0], d[1], 12 * s, 0, Math.PI * 2); g.fill(); });
@@ -387,8 +387,8 @@ function coverArt(key, w, h) {
     let x = cx - ws.reduce((s, v) => s + v, 0) / 2; parts.forEach((q, i) => { label(q[0], x + ws[i] / 2, y2, size * .5, q[1], 900); x += ws[i]; });
     label('上身 · 点杖 · 起伏 · 控速 · 三个错误', cx, subY, subSize, COL.sub, 700);
   };
-  if (key === '9x16') { title(CX, h * .25, h * .335, 180, h * .395, 40, h * .15, 42); art(CX, h * .45, h * .93, 140, 1.0, 5); }
-  else if (key === '3x4') { title(CX, h * .19, h * .29, 160, h * .355, 38, h * .075, 40); art(CX, h * .41, h * .96, 130, .9, 5); }
+  if (key === '9x16') { title(CX, h * .25, h * .335, 180, h * .395, 40, h * .15, 42); art(CX, h * .45, h * .94, 150, 1.2, 5); }
+  else if (key === '3x4') { title(CX, h * .19, h * .29, 160, h * .355, 38, h * .075, 40); art(CX, h * .41, h * .96, 140, 1.05, 5); }
   else {
     const s = key === '16x9' ? .85 : .8; art(w * .75, h * .04, h * .96, 120 * s, s, 5);
     const fade = g.createLinearGradient(0, 0, w * .62, 0); fade.addColorStop(0, 'rgba(247,250,252,.96)'); fade.addColorStop(1, 'rgba(247,250,252,0)'); g.fillStyle = fade; g.fillRect(0, 0, w * .56, h);
