@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>徒步不难 EP.01</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#000;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;aspect-ratio:9/16;max-width:100vw;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;aspect-ratio:auto;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="trailkit.js"></script>
+<script>
+/*
+ * 徒步不难 EP.01《第一次徒步：选什么路线？》（约 2 分 06 秒）
+ * 看懂三个数：距离、累计爬升、预计耗时。估时用的是常见的粗略算法（平路 4 公里 1 小时，每爬 300 米加 1 小时）。
+ */
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+const T = [0, 8.0, 11.6, 17.6, 30.6, 50.6, 68.6, 78.6, 94.6, 112.6, 119.6, 126.1];
+const YH = .135, YB = .745;
+
+const TX = [
+  { in: .15, out: 3.8, text: '看到一条路线：\n“才 {g}10 公里{/}嘛！”', y: YH, size: 84, w: 900, st: .06 },
+  { in: 4.0, out: 7.8, text: '结果爬了一整天，\n{r}天黑了还没下山{/}。', y: YH, size: 80, w: 900 },
+  { in: 8.25, out: 11.35, text: '第一次徒步：\n选什么路线？', y: .3, size: 96, w: 900, st: .05 },
+  { in: 9.0, out: 11.35, text: '看懂三个数：距离、爬升、耗时', y: .415, size: 42, w: 600, sub: 1 },
+  // C 三个数
+  { in: 11.8, out: 17.4, text: '路线介绍里，\n先找这{a}三个数{/}。', y: YH, size: 80, w: 900 },
+  { in: 12.6, out: 17.4, text: '徒步 App、攻略帖、景区指示牌上，一般都有。', y: YB, size: 42, w: 500, sub: 1 },
+  // D 距离
+  { in: 17.8, out: 23.6, text: '{g}距离{/}：一共要走多远。', y: YH, size: 80, w: 900 },
+  { in: 18.6, out: 23.6, text: '平路上，普通人一小时\n大约走 {g}4 公里{/}。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 24.0, out: 30.4, text: '第一次，\n{g}5～10 公里{/}就够了。', y: YH, size: 84, w: 900 },
+  { in: 24.8, out: 30.4, text: '注意是不是原路返回：\n“单程 5 公里”，来回就是 10 公里。', y: YB, size: 42, w: 500, sub: 1 },
+  // E 爬升
+  { in: 30.8, out: 36.6, text: '{a}爬升{/}：一共要往上爬多高。', y: YH, size: 76, w: 900 },
+  { in: 31.6, out: 36.6, text: '累不累，主要看它。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 37.0, out: 43.6, text: '同样 10 公里，\n爬 {g}100 米{/}和爬 {r}800 米{/}', y: YH, size: 80, w: 900 },
+  { in: 37.8, out: 43.6, text: '800 米，差不多是一口气\n爬 {r}260 多层楼{/}。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 44.0, out: 50.4, text: '新手先选\n{g}累计爬升 300 米以内{/}。', y: YH, size: 80, w: 900 },
+  { in: 44.8, out: 50.4, text: '“累计”是把每一段上坡都加起来，\n常常比“山顶减山脚”还多。', y: YB, size: 42, w: 500, sub: 1 },
+  // F 耗时
+  { in: 50.8, out: 57.6, text: '{a}耗时{/}：自己估一估。', y: YH, size: 80, w: 900 },
+  { in: 51.6, out: 57.6, text: '平路 {g}4 公里{/}算 1 小时，\n每往上爬 {a}300 米{/}，再加 1 小时。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 58.0, out: 63.6, text: '再多留出\n{a}一半{/}的时间。', y: YH, size: 84, w: 900 },
+  { in: 58.8, out: 63.6, text: '休息、拍照、吃东西都要时间；\n新手下坡也快不起来。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 64.0, out: 68.4, text: '最要紧：\n{g}天黑前一小时{/}回到山下。', y: YH, size: 80, w: 900 },
+  { in: 64.8, out: 68.4, text: '出发前查一下当天几点日落。', y: YB, size: 42, w: 500, sub: 1 },
+  // G 再看三件事
+  { in: 68.8, out: 78.4, text: '数字之外，\n再看{g}三件事{/}。', y: YH, size: 80, w: 900 },
+  { in: 69.6, out: 78.4, text: '新手别走没人走的野路，也别一个人去。', y: YB, size: 42, w: 500, sub: 1 },
+  // H 实际挑一条
+  { in: 78.8, out: 84.6, text: '来，两条路线，\n第一次{a}挑哪条{/}？', y: YH, size: 80, w: 900 },
+  { in: 85.0, out: 89.4, text: '套公式算一下：', y: YH, size: 80, w: 900 },
+  { in: 85.6, out: 89.4, text: 'A：2 + 0.8 ≈ 3 小时\nB：3 + 3 = 6 小时，还没算休息', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 89.8, out: 94.4, text: '第一次，{g}选 A{/}。\nB 留到下次。', y: YH, size: 84, w: 900 },
+  { in: 90.6, out: 94.4, text: '走得轻松，下次才还想来。', y: YB, size: 42, w: 500, sub: 1 },
+  // I 三个错误
+  { in: 94.8, out: 100.4, text: '常见错误一：\n{r}只看距离{/}', y: YH, size: 80, w: 900 },
+  { in: 95.6, out: 100.4, text: '5 公里的陡坡，\n可能比 10 公里的平路还累。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 100.8, out: 106.4, text: '常见错误二：\n{r}中午才出发{/}', y: YH, size: 80, w: 900 },
+  { in: 101.6, out: 106.4, text: '走到一半，太阳就下山了。\n山里比城里黑得早。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 106.8, out: 112.4, text: '常见错误三：\n{r}照搬别人的用时{/}', y: YH, size: 80, w: 900 },
+  { in: 107.6, out: 112.4, text: '攻略里的“3 小时”，往往是常走的人的速度。\n新手按多一半来算。', y: YB, size: 42, w: 500, sub: 1 },
+  // K 结尾
+  { in: 119.8, out: 999, text: '你第一次徒步，\n走了多远？', y: .37, size: 84, w: 900, st: .06 },
+  { in: 120.8, out: 999, text: '评论区说说', y: .465, size: 42, w: 500, sub: 1 }
+];
+const BLUE = COL.blue, GREEN = COL.green, AMB = COL.amber, RED = COL.red;
+const CAD = 1.7; // 步伐：每秒相位（弧度/秒）的倍数
+const walkPh = (t, k) => t * Math.PI * 2 * (k || .85);
+
+/* ───────── A 钩子：山脚的牌子 → 大山与天黑 ───────── */
+const GY = H * .66;
+const bigMtn = x => GY - 980 * Math.exp(-Math.pow((x - W * 1.3) / (W * .42), 2)) - 120 * Math.exp(-Math.pow((x - W * .95) / (W * .14), 2));
+function mtnTrail(hy, x0, x1, a) {
+  g.save(); g.globalAlpha = a; g.strokeStyle = '#a77a4c'; g.lineWidth = 7; g.setLineDash([16, 12]); g.lineCap = 'round';
+  g.beginPath(); for (let x = x0; x <= x1; x += 10) { const y = hy(x) + 16 + 10 * Math.sin(x * .03); x > x0 ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke(); g.restore();
+}
+function flag(x, y, s, t, c) {
+  g.save(); g.translate(x, y); g.scale(s, s); g.strokeStyle = '#5b4636'; g.lineWidth = 5; g.beginPath(); g.moveTo(0, 0); g.lineTo(0, -90); g.stroke();
+  g.fillStyle = c || RED; g.beginPath(); g.moveTo(0, -90); for (let i = 1; i <= 10; i++) g.lineTo(i * 5.5, -90 + Math.sin(t * 6 + i * .7) * 4 * (i / 10)); for (let i = 10; i >= 0; i--) g.lineTo(i * 5.5, -58 + Math.sin(t * 6 + i * .7) * 4 * (i / 10)); g.closePath(); g.fill(); g.restore();
+}
+const S = [];
+S.push(lt => {
+  const dusk = sm((lt - 4.4) / 3.2), z = lerp(1, .5, sm((lt - 3.6) / 1.6)), px = W * .3, py = GY;
+  hikeSky(dusk);
+  const sun = [lerp(W * .78, W * .9, dusk), lerp(H * .3, H * .5, dusk)];
+  hikeSun(sun[0], sun[1], 62, lt, dusk);
+  hikeClouds(lt, 1 - dusk * .4, .2);
+  hikeRidges(0, dusk, H * .56);
+  g.save(); g.translate(px, py); g.scale(z, z); g.translate(-px, -py);
+  hikeGround(bigMtn, 0, lt, { dusk, treeGap: 230, x0: -W * 1.2, x1: W * 2.2, yb: H * 2.2 });
+  mtnTrail(bigMtn, W * .58, W * 1.3, sm((lt - 4) / .6));
+  flag(W * 1.3, bigMtn(W * 1.3) + 6, 1.4, lt, RED);
+  if (lt < 4.6) {
+    signpost(W * .62, GY + 10, ['环线', '10 公里'], 1);
+    drawHiker(W * .3, GY + 12, { s: 1.5, walk: 0, t: lt, ph: 0 });
+    if (lt > 1.4) { const b = pop(lt - 1.4); g.save(); g.translate(W * .3 + 120, GY - 300); g.scale(b, b); g.fillStyle = '#fff'; rrect(-80, -50, 200, 90, 40); g.fill(); label('轻松～', 20, -5, 44, GREEN, 900); g.restore(); }
+  } else {
+    const xw = W * .66 + (lt - 4.6) * 40;
+    hikerOn(bigMtn, xw, 0, { s: 1.5, ph: walkPh(lt, .55), walk: .8, tired: 1, t: lt, pole: true, lamp: sm((lt - 6.4) / .6) });
+  }
+  g.restore();
+  if (dusk > 0) { g.fillStyle = `rgba(40,30,90,${dusk * .25})`; g.fillRect(0, 0, W, H); }
+  if (lt > 5.8) { const a = sm((lt - 5.8) / .4); clockIcon(W * .16, H * .3, 56, 18.5 + (lt - 5.8) * .3, a); g.save(); g.globalAlpha = a; label('18:30', W * .16, H * .3 + 96, 42, '#fff', 900); g.restore(); }
+});
+// B 标题
+S.push(lt => {
+  hikeSky(0); hikeSun(W * .82, H * .5, 56, lt, 0); hikeClouds(lt + 8, 1, .14); birds(lt + 3, 1, 4, H * .44);
+  hikeRidges(lt * 120, 0, H * .66);
+  const hy = x => H * .8 + 22 * Math.sin(x * .004);
+  hikeGround(hy, lt * 120, lt, {});
+  hikerOn(hy, CX + lt * 120, lt * 120, { s: 1.3, ph: walkPh(lt), t: lt, pole: true });
+  pill('徒步不难 · EP.01', CX, H * .19, 40, AMB, '#fff', eout(lt / .3));
+});
+
+/* ───────── C 路线卡片：三个数 ───────── */
+const ROUTE = k => .5 + .4 * Math.sin(k * 7) * Math.sin(k * 2.2 + .4);
+function routeCard(x, y, w, h, lt, hi, nums) {
+  card(x, y, w, h, 40);
+  const mh = h * .56;
+  g.save(); rrect(x, y, w, h, 40); g.clip();
+  g.fillStyle = '#e4f3e1'; g.fillRect(x, y, w, mh);
+  // 等高线
+  g.strokeStyle = 'rgba(80,150,90,.25)'; g.lineWidth = 3;
+  for (let r = 1; r <= 5; r++) { g.beginPath(); g.ellipse(x + w * .62, y + mh * .45, r * 60, r * 38, -.3, 0, Math.PI * 2); g.stroke(); }
+  g.fillStyle = 'rgba(110,195,244,.6)'; g.beginPath(); g.moveTo(x, y + mh * .8); g.bezierCurveTo(x + w * .3, y + mh * .7, x + w * .5, y + mh, x + w * .9, y + mh); g.lineTo(x, y + mh); g.closePath(); g.fill();
+  // 轨迹
+  const pt = k => [x + w * (.14 + .72 * k), y + mh * (.78 - .52 * Math.sin(k * Math.PI) + .08 * Math.sin(k * 14))];
+  const pr = clamp(lt / 2.4, 0, 1);
+  g.strokeStyle = RED; g.lineWidth = 9; g.lineCap = 'round'; g.lineJoin = 'round'; g.beginPath();
+  for (let i = 0; i <= 80; i++) { const p = pt(i / 80 * pr); i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]); } g.stroke();
+  const s0 = pt(0); g.fillStyle = GREEN; g.beginPath(); g.arc(s0[0], s0[1], 16, 0, Math.PI * 2); g.fill(); label('起', s0[0], s0[1] - 40, 30, GREEN, 900);
+  if (pr >= 1) { const e = pt(1); g.fillStyle = RED; g.beginPath(); g.arc(e[0], e[1], 16, 0, Math.PI * 2); g.fill(); }
+  const pk = pt(.5); g.fillStyle = '#5b6b7c'; g.beginPath(); g.moveTo(pk[0], pk[1] - 50); g.lineTo(pk[0] - 26, pk[1] - 12); g.lineTo(pk[0] + 26, pk[1] - 12); g.closePath(); g.fill();
+  g.restore();
+  label('后山环线（示意）', x + 40, y + mh + 58, 40, COL.ink, 900, 'left');
+  const items = [['距离', nums[0], '公里', GREEN], ['累计爬升', nums[1], '米', AMB], ['预计耗时', nums[2], '小时', BLUE]];
+  const bw = (w - 80 - 40) / 3;
+  items.forEach(([nm, v, u, c], i) => {
+    const bx = x + 40 + i * (bw + 20), by = y + mh + 110, bh = h - mh - 140, on = hi === i || hi === 3;
+    g.save(); g.fillStyle = on ? c : '#f2f6f9'; rrect(bx, by, bw, bh, 24); g.fill(); g.restore();
+    label(v, bx + bw / 2, by + bh * .4, 64, on ? '#fff' : COL.ink, 900);
+    label(u, bx + bw / 2, by + bh * .4 + 54, 30, on ? 'rgba(255,255,255,.9)' : COL.sub, 700);
+    label(nm, bx + bw / 2, by + bh - 34, 30, on ? '#fff' : COL.sub, 700);
+  });
+}
+S.push(lt => {
+  hikeSky(0); hikeClouds(lt + 20, .9, .3);
+  g.fillStyle = 'rgba(255,255,255,.35)'; g.fillRect(0, 0, W, H);
+  const a = eout(lt / .5);
+  g.save(); g.globalAlpha = a; g.translate(0, (1 - a) * 80);
+  const hi = lt < 2.6 ? -1 : lt < 3.4 ? 0 : lt < 4.2 ? 1 : lt < 5 ? 2 : 3;
+  routeCard(W * .09, H * .22, W * .82, H * .47, lt, hi, ['10.2', '820', '6']);
+  g.restore();
+});
+
+/* ───────── D 距离 ───────── */
+S.push(lt => {
+  if (lt < 6.2) {
+    const cam = lt * 230, hy = x => H * .62 + 14 * Math.sin(x * .005);
+    hikeSky(0); hikeSun(W * .85, H * .28, 50, lt, 0); hikeClouds(lt + 40, 1, .12); hikeRidges(cam, 0, H * .52);
+    hikeGround(hy, cam, lt, { treeGap: 300 });
+    // 公里牌
+    const k0 = Math.floor(cam / 520);
+    for (let k = k0; k <= k0 + 3; k++) {
+      const xw = k * 520 + 300, xs = xw - cam; if (k < 1 || xs < -100 || xs > W + 100) continue;
+      g.fillStyle = '#fff'; rrect(xs - 52, hy(xw) - 120, 104, 70, 14); g.fill(); g.strokeStyle = GREEN; g.lineWidth = 5; g.stroke();
+      g.fillStyle = '#8b5e3c'; g.fillRect(xs - 5, hy(xw) - 50, 10, 56);
+      label(k + ' km', xs, hy(xw) - 85, 32, GREEN, 900);
+    }
+    hikerOn(hy, W * .34 + cam, cam, { s: 1.45, ph: walkPh(lt, 1.1), t: lt, pole: true });
+    subPanel(win(lt, .6, 6.2, .3, .01));
+    // 仪表
+    const k = clamp((lt - .4) / 5.2, 0, 1);
+    card(W * .1, H * .23, W * .8, 170, 40);
+    clockIcon(W * .22, H * .23 + 85, 50, 8 + k, 1);
+    label(`${Math.floor(k * 60) === 60 ? '1:00' : '0:' + String(Math.floor(k * 60)).padStart(2, '0')}`, W * .3, H * .23 + 85, 58, COL.ink, 900, 'left');
+    label('→', W * .55, H * .23 + 85, 54, COL.sub, 900);
+    label(`${(k * 4).toFixed(1)} 公里`, W * .63, H * .23 + 85, 58, GREEN, 900, 'left');
+  } else {
+    const l2 = lt - 6.2;
+    hikeSky(0); hikeClouds(lt + 40, .9, .1);
+    g.fillStyle = 'rgba(255,255,255,.4)'; g.fillRect(0, 0, W, H);
+    // 尺子：0～15 km
+    const x0 = W * .1, x1 = W * .9, y = H * .3, km = v => lerp(x0, x1, v / 15);
+    card(W * .05, H * .215, W * .9, H * .17, 40);
+    g.fillStyle = '#e9eff4'; rrect(x0, y - 18, x1 - x0, 36, 18); g.fill();
+    const ga = sm((l2 - .3) / .5); g.save(); g.globalAlpha = ga; g.fillStyle = GREEN; rrect(km(5), y - 18, km(10) - km(5), 36, 18); g.fill(); g.restore();
+    for (let v = 0; v <= 15; v += 5) { label(v + '', km(v), y + 58, 34, COL.sub, 700); }
+    label('公里', x1, y - 52, 30, COL.sub, 700, 'right');
+    if (ga > 0) { g.save(); g.globalAlpha = ga; label('新手区', (km(5) + km(10)) / 2, y + 108, 36, GREEN, 900); g.restore(); }
+    drawHiker(km(lerp(0, 8, sm((l2 - .2) / 1.4))), y - 22, { s: .6, ph: walkPh(lt, 1.2), walk: l2 < 1.6 ? 1 : 0, t: lt });
+    // 原路返回：去 + 回
+    const by = H * .62, hx = W * .14, tx = W * .86, hy2 = x => by - 200 * Math.exp(-Math.pow((x - tx) / 200, 2)) - 30 * Math.sin((x - hx) / (tx - hx) * Math.PI);
+    card(W * .05, H * .41, W * .9, H * .27, 40);
+    g.save(); rrect(W * .05, H * .41, W * .9, H * .27, 40); g.clip();
+    g.fillStyle = '#e4f3e1'; g.beginPath(); g.moveTo(W * .05, H); for (let x = W * .05; x <= W * .95; x += 8) g.lineTo(x, hy2(x)); g.lineTo(W * .95, H); g.closePath(); g.fill();
+    g.restore();
+    // 小房子 = 起点，旗子 = 终点
+    g.fillStyle = '#ff9f6b'; g.fillRect(hx - 30, hy2(hx) - 50, 60, 50); g.fillStyle = '#d9602b'; g.beginPath(); g.moveTo(hx - 42, hy2(hx) - 48); g.lineTo(hx, hy2(hx) - 86); g.lineTo(hx + 42, hy2(hx) - 48); g.closePath(); g.fill();
+    flag(tx, hy2(tx), .8, lt, RED);
+    const goA = sm((l2 - 1.6) / 1.4), backA = sm((l2 - 3.4) / 1.4);
+    const arcPath = (kk, off) => { const x = lerp(hx + 50, tx - 30, kk); return [x, hy2(x) - off]; };
+    function trailArrow(k0, k1, off, c, rev) {
+      if (k1 <= k0) return; g.save(); g.strokeStyle = c; g.lineWidth = 8; g.lineCap = 'round'; g.setLineDash([16, 12]); g.beginPath();
+      for (let i = 0; i <= 40; i++) { const kk = lerp(k0, k1, i / 40), p = arcPath(rev ? 1 - kk : kk, off); i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]); } g.stroke(); g.restore();
+    }
+    trailArrow(0, goA, 40, GREEN, false); trailArrow(0, backA, -40, BLUE, true);
+    if (goA > .9) pill('去 5 公里', W * .38, by - 230, 34, GREEN, '#fff', sm((l2 - 2.9) / .3));
+    if (backA > .9) pill('回 5 公里', W * .62, by + 40, 34, BLUE, '#fff', sm((l2 - 4.7) / .3));
+    if (l2 > 5.2) { const b = pop(l2 - 5.2); g.save(); g.translate(CX, H * .45); g.scale(b, b); label('= 10 公里', 0, 0, 56, COL.ink, 900); g.restore(); }
+  }
+});
+
+/* ───────── E 爬升 ───────── */
+const flatP = k => .12 + .08 * Math.sin(k * 9) * .5 + .05 * k;
+const steepP = k => .05 + .9 * Math.pow(Math.sin(k * Math.PI), 1.4) * (1 - .1 * Math.sin(k * 20));
+const wavyP = k => { // 起点 1000 → 1100 → 1050 → 1130 → 1100 → 1200 （0~1 映射 1000~1250）
+  const K = [0, .2, .35, .55, .68, .9, 1], V = [1000, 1100, 1050, 1130, 1100, 1200, 1200];
+  let i = 0; while (i < K.length - 2 && k > K[i + 1]) i++;
+  const f = sm((k - K[i]) / (K[i + 1] - K[i])); return (lerp(V[i], V[i + 1], f) - 980) / 260;
+};
+function building(x, yb, w, floors, shown, a) {
+  g.save(); g.globalAlpha = a; const fh = 2.1, hgt = floors * fh;
+  g.fillStyle = '#dfe7ee'; rrect(x - w / 2, yb - hgt, w, hgt, 8); g.fill();
+  const sh = shown * fh; g.fillStyle = 'rgba(240,71,60,.75)'; g.fillRect(x - w / 2, yb - sh, w, sh);
+  g.fillStyle = 'rgba(255,255,255,.7)'; for (let r = 0; r < hgt; r += 18) for (let c = -1; c <= 1; c++) g.fillRect(x + c * w * .28 - 6, yb - r - 14, 12, 8);
+  g.restore();
+}
+S.push(lt => {
+  if (lt < 6.4) {
+    const cam = lt * 150, hy = x => H * .8 - x * .55;
+    hikeSky(0); hikeSun(W * .15, H * .3, 50, lt, 0); hikeClouds(lt + 60, 1, .14); hikeRidges(cam, 0, H * .5);
+    g.save(); g.translate(0, cam * .55); hikeGround(hy, cam, lt, { treeGap: 240 }); g.restore();
+    const xw = W * .38 + cam; g.save(); g.translate(0, cam * .55); hikerOn(hy, xw, cam, { s: 1.45, ph: walkPh(lt, .8), t: lt, tired: sm((lt - 2) / 3) * .8, pole: true }); g.restore();
+    subPanel(win(lt, .8, 6.4, .3, .01));
+    const m = Math.round(clamp((lt - .3) / 5.8, 0, 1) * 120);
+    card(W * .62, H * .23, W * .32, 190, 36);
+    label('已爬升', W * .78, H * .23 + 52, 32, COL.sub, 700);
+    label(`+${m} 米`, W * .78, H * .23 + 124, 58, AMB, 900);
+    arrow(W * .68, H * .23 + 300, W * .68, H * .23 + 230, AMB, 8, 26);
+  } else if (lt < 13.4) {
+    const l2 = lt - 6.4;
+    hikeSky(0); hikeClouds(lt + 60, .9, .12); g.fillStyle = 'rgba(255,255,255,.45)'; g.fillRect(0, 0, W, H);
+    const x = W * .08, w = W * .58;
+    card(W * .04, H * .215, W * .92, H * .18, 36);
+    label('爬升 100 米', x, H * .245, 38, GREEN, 900, 'left');
+    const pa = profile(flatP, x, H * .27, w, H * .1, { color: GREEN, prog: clamp(l2 / 5.5, 0, 1) });
+    label('像散步', W * .82, H * .3, 46, GREEN, 900);
+    card(W * .04, H * .415, W * .92, H * .275, 36);
+    label('爬升 800 米', x, H * .445, 38, RED, 900, 'left');
+    profile(steepP, x, H * .47, w, H * .19, { color: RED, fill: 'rgba(240,71,60,.3)', prog: clamp(l2 / 5.5, 0, 1) * .62 });
+    label('10 公里', x + w / 2, H * .385, 30, COL.sub, 700); label('10 公里', x + w / 2, H * .675, 30, COL.sub, 700);
+    const fl = Math.round(clamp((l2 - 1.4) / 3.6, 0, 1) * 267);
+    building(W * .82, H * .66, 110, 130, fl / 267 * 130, sm((l2 - 1) / .4));
+    if (l2 > 1) { g.save(); g.globalAlpha = sm((l2 - 1) / .4); label(`≈ ${fl} 层楼`, W * .82, H * .46, 40, RED, 900); g.restore(); }
+  } else {
+    const l2 = lt - 13.4;
+    hikeSky(0); hikeClouds(lt + 60, .9, .12); g.fillStyle = 'rgba(255,255,255,.45)'; g.fillRect(0, 0, W, H);
+    card(W * .04, H * .215, W * .92, H * .47, 36);
+    const x = W * .16, w = W * .74, y = H * .3, h = H * .3;
+    // 纵轴
+    [1000, 1100, 1200].forEach(v => { const yy = y + h - (v - 980) / 260 * h; g.strokeStyle = 'rgba(27,40,56,.1)'; g.lineWidth = 2; g.beginPath(); g.moveTo(x, yy); g.lineTo(x + w, yy); g.stroke(); label(v + '', x - 14, yy, 28, COL.sub, 700, 'right'); });
+    label('海拔（米）', x - 60, y - 40, 28, COL.sub, 700, 'left');
+    const ups = [[0, .2], [.35, .55], [.68, .9]], gains = ['+100', '+80', '+100'];
+    const P = profile(wavyP, x, y, w, h, { color: '#5b8a72', fill: 'rgba(91,138,114,.25)', ups: ups.map((u, i) => [u[0], u[1], clamp((l2 - .6 - i * 1.1) / .8, 0, 1)]) });
+    ups.forEach((u, i) => { const a = sm((l2 - 1.3 - i * 1.1) / .3); if (a <= 0) return; const p = P((u[0] + u[1]) / 2); pill(gains[i], p[0] - 30, p[1] - 50, 30, AMB, '#fff', a); });
+    const tA = sm((l2 - 4.2) / .4);
+    if (tA > 0) {
+      g.save(); g.globalAlpha = tA;
+      pill('累计爬升 280 米', W * .3, H * .655, 34, AMB, '#fff');
+      pill('高度差只有 200 米', W * .7, H * .655, 34, 'rgba(27,40,56,.75)', '#fff');
+      g.restore();
+    }
+    const s0 = P(0), e0 = P(1);
+    label('起点', s0[0] + 10, s0[1] + 40, 28, COL.sub, 700, 'left'); flag(e0[0] - 10, e0[1], .55, lt, RED);
+  }
+});
+
+/* ───────── F 耗时 ───────── */
+function iconWalk(x, y, s) { drawHiker(x, y + 40 * s, { s: s * .55, walk: .8, ph: 1, t: 0 }); }
+function iconMtn(x, y, s) { g.save(); g.translate(x, y); g.scale(s, s); g.fillStyle = '#7cb98f'; g.beginPath(); g.moveTo(-40, 26); g.lineTo(-6, -30); g.lineTo(10, -6); g.lineTo(22, -20); g.lineTo(44, 26); g.closePath(); g.fill(); g.fillStyle = '#fff'; g.beginPath(); g.moveTo(-6, -30); g.lineTo(-15, -16); g.lineTo(3, -16); g.closePath(); g.fill(); g.restore(); }
+S.push(lt => {
+  hikeSky(0); hikeClouds(lt + 80, .9, .1); g.fillStyle = 'rgba(255,255,255,.45)'; g.fillRect(0, 0, W, H);
+  if (lt < 7.2) {
+    card(W * .06, H * .215, W * .88, H * .47, 40);
+    pill('例：8 公里 · 爬升 300 米', CX, H * .26, 36, 'rgba(27,40,56,.8)', '#fff', eout(lt / .4));
+    const row = (i, ic, txt, res, c) => {
+      const a = sm((lt - 1 - i * 1.6) / .4); if (a <= 0) return; const y = H * (.345 + i * .1);
+      g.save(); g.globalAlpha = a; g.translate((1 - a) * 40, 0);
+      ic(W * .17, y, 1.2); label(txt, W * .27, y, 46, COL.ink, 900, 'left');
+      const ra = sm((lt - 1.8 - i * 1.6) / .3); g.globalAlpha = a * ra; label(res, W * .86, y, 52, c, 900, 'right'); g.restore();
+    };
+    row(0, iconWalk, '8 公里 ÷ 4', '2 小时', GREEN);
+    row(1, iconMtn, '300 米 ÷ 300', '1 小时', AMB);
+    const sa = sm((lt - 4.6) / .4);
+    if (sa > 0) {
+      g.save(); g.globalAlpha = sa; g.strokeStyle = 'rgba(27,40,56,.2)'; g.lineWidth = 4; g.beginPath(); g.moveTo(W * .14, H * .53); g.lineTo(W * .86, H * .53); g.stroke(); g.restore();
+      const b = pop(lt - 4.8); g.save(); g.translate(CX, H * .6); g.scale(b, b); label('≈ 3 小时', 0, 0, 84, BLUE, 900); g.restore();
+    }
+  } else if (lt < 13.2) {
+    const l2 = lt - 7.2;
+    card(W * .06, H * .215, W * .88, H * .47, 40);
+    const x0 = W * .12, x1 = W * .88, y = H * .36, hr = (x1 - x0) / 4.5;
+    label('走路 3 小时', x0, y - 70, 38, BLUE, 900, 'left');
+    g.fillStyle = BLUE; rrect(x0, y - 34, hr * 3, 68, 20); g.fill();
+    const ex = sm((l2 - .6) / 1.2);
+    if (ex > 0) { g.fillStyle = AMB; rrect(x0 + hr * 3 + 8, y - 34, (hr * 1.5 - 8) * ex, 68, 20); g.fill(); label('+1.5', x0 + hr * 3 + 8 + (hr * 1.5 - 8) * ex / 2, y + 2, 34, '#fff', 900); }
+    for (let i = 0; i <= 4; i++) label(i + 'h', x0 + i * hr, y + 66, 28, COL.sub, 700);
+    ['休息', '拍照', '吃东西', '下坡慢'].forEach((t, i) => { const a = sm((l2 - 1.4 - i * .5) / .3); if (a > 0) pill(t, W * (.2 + i * .2), H * .5, 34, AMB, '#fff', a); });
+    if (l2 > 3.6) { const b = pop(l2 - 3.6); g.save(); g.translate(CX, H * .6); g.scale(b, b); label('留够 4.5 小时', 0, 0, 72, COL.ink, 900); g.restore(); }
+  } else {
+    const l2 = lt - 13.2;
+    card(W * .04, H * .215, W * .92, H * .47, 40);
+    // 一天的时间轴 6:00～20:00，太阳沿弧线走
+    const x0 = W * .1, x1 = W * .9, ty = H * .58, hx = h => lerp(x0, x1, (h - 6) / 14);
+    const hour = lerp(8, 19, clamp(l2 / 4.4, 0, 1)), ang = Math.PI * (hour - 6) / 12.5;
+    g.strokeStyle = 'rgba(255,183,3,.35)'; g.lineWidth = 4; g.setLineDash([10, 10]); g.beginPath(); g.ellipse(CX, ty - 20, (x1 - x0) / 2 * .98, H * .2, 0, Math.PI, 0); g.stroke(); g.setLineDash([]);
+    const sx = CX - Math.cos(ang) * (x1 - x0) / 2 * .98, sy = ty - 20 - Math.sin(ang) * H * .2;
+    if (hour < 18) sunIcon(sx, Math.min(sy, ty - 40), 30); else moonIcon(hx(19.3), H * .33, 30, sm(hour - 18));
+    g.fillStyle = '#e9eff4'; rrect(x0, ty - 16, x1 - x0, 32, 16); g.fill();
+    g.fillStyle = 'rgba(61,63,126,.35)'; rrect(hx(18), ty - 16, x1 - hx(18), 32, 16); g.fill();
+    g.fillStyle = GREEN; rrect(hx(8), ty - 16, hx(12.5) - hx(8), 32, 16); g.fill();
+    [6, 8, 10, 12, 14, 16, 18, 20].forEach(h => label(h + ':00', hx(h), ty + 52, 26, COL.sub, 700));
+    pill('8:00 出发 → 12:30 下山', hx(10.25), ty - 70, 30, GREEN, '#fff');
+    g.strokeStyle = RED; g.lineWidth = 5; g.beginPath(); g.moveTo(hx(17), ty - 40); g.lineTo(hx(17), ty + 24); g.stroke();
+    label('17:00', hx(17), ty - 64, 30, RED, 900); label('日落 18:00', hx(18), ty + 94, 30, '#3d3f7e', 900);
+  }
+});
+
+/* ───────── G 再看三件事 ───────── */
+function iconSteps(x, y) { g.fillStyle = TP.boot; [[-16, 18, -.3], [14, -14, .3]].forEach(([dx, dy, r]) => { g.save(); g.translate(x + dx, y + dy); g.rotate(r); g.beginPath(); g.ellipse(0, 0, 13, 22, 0, 0, Math.PI * 2); g.fill(); g.beginPath(); g.arc(0, -30, 8, 0, Math.PI * 2); g.fill(); g.restore(); }); }
+function iconFork(x, y) { g.strokeStyle = GREEN; g.lineWidth = 10; g.lineCap = 'round'; g.beginPath(); g.moveTo(x, y + 36); g.lineTo(x, y); g.lineTo(x - 26, y - 30); g.moveTo(x, y); g.lineTo(x + 26, y - 30); g.stroke(); arrow(x + 10, y - 16, x + 30, y - 38, GREEN, 10, 26); }
+function iconSignal(x, y) { g.fillStyle = BLUE; for (let i = 0; i < 4; i++) { const hh = 14 + i * 12; rrect(x - 40 + i * 18, y + 30 - hh, 12, hh, 4); g.fill(); } sunIcon(x + 34, y - 18, 14); }
+S.push(lt => {
+  hikeSky(0); hikeClouds(lt + 90, 1, .12);
+  const hy = x => H * .86 + 16 * Math.sin(x * .004); hikeGround(hy, lt * 60, lt, { treeGap: 200 });
+  const items = [[iconSteps, '成熟路线', '走的人多，路很清楚'], [iconFork, '中途能撤', '走不动了有路下山'], [iconSignal, '信号和天气', '手机有信号，没有雷雨大风']];
+  items.forEach(([ic, t1, t2], i) => {
+    const a = eout((lt - .6 - i * 1.4) / .45); if (a <= 0) return; const y = H * (.24 + i * .14);
+    g.save(); g.globalAlpha = a; g.translate((1 - a) * 80, 0);
+    card(W * .07, y, W * .86, H * .12, 36);
+    g.fillStyle = '#f2f7f4'; g.beginPath(); g.arc(W * .19, y + H * .06, 64, 0, Math.PI * 2); g.fill();
+    ic(W * .19, y + H * .06);
+    label(t1, W * .32, y + H * .04, 48, COL.ink, 900, 'left'); label(t2, W * .32, y + H * .085, 34, COL.sub, 700, 'left');
+    markV(W * .86, y + H * .06, 26, sm((lt - 1.2 - i * 1.4) / .3));
+    g.restore();
+  });
+});
+
+/* ───────── H 两条路线挑一条 ───────── */
+const pA = k => .15 + .3 * Math.sin(k * Math.PI) + .04 * Math.sin(k * 11);
+const pB = k => .05 + .85 * Math.pow(Math.sin(k * Math.PI), 1.2) + .05 * Math.sin(k * 13);
+function routeMini(x, y, w, h, name, fn, km, up, c, lt, res, resA) {
+  card(x, y, w, h, 36);
+  pill(name, x + w / 2, y + 60, 38, c, '#fff');
+  profile(fn, x + 34, y + 120, w - 68, h * .3, { color: c, fill: c === GREEN ? 'rgba(18,166,121,.3)' : 'rgba(255,159,28,.3)', lw: 6 });
+  label(km, x + w / 2, y + 140 + h * .3 + 40, 44, COL.ink, 900);
+  label(up, x + w / 2, y + 140 + h * .3 + 100, 40, COL.sub, 700);
+  if (resA > 0) { g.save(); g.globalAlpha = resA; label(res, x + w / 2, y + h - 70, 54, c === GREEN ? BLUE : RED, 900); g.restore(); }
+}
+S.push(lt => {
+  hikeSky(0); hikeClouds(lt + 100, .9, .12); g.fillStyle = 'rgba(255,255,255,.4)'; g.fillRect(0, 0, W, H);
+  const hyH = x => H * .92 + 14 * Math.sin(x * .005); hikeGround(hyH, lt * 40, lt, { treeGap: 210 });
+  drawHiker(W * .3, hyH(W * .3 + lt * 40) + 12, lt > 11.2 ? { s: 1.2, wave: true, walk: 0, t: lt } : { s: 1.2, walk: 0, t: lt });
+  const a1 = eout((lt - .3) / .4), a2 = eout((lt - .8) / .4), r = sm((lt - 6.6) / .4), r2 = sm((lt - 8) / .4);
+  const cy = H * .225, ch = H * .45;
+  g.save(); g.globalAlpha = a1; g.translate(0, (1 - a1) * 60); routeMini(W * .05, cy, W * .43, ch, '路线 A', pA, '8 公里', '爬升 250 米', GREEN, lt, '≈ 3 小时', r); g.restore();
+  g.save(); g.globalAlpha = a2; g.translate(0, (1 - a2) * 60); routeMini(W * .52, cy, W * .43, ch, '路线 B', pB, '12 公里', '爬升 900 米', AMB, lt, '6 小时+', r2); g.restore();
+  const pickA = sm((lt - 11.2) / .4);
+  if (pickA > 0) {
+    g.save(); g.globalAlpha = pickA; g.strokeStyle = GREEN; g.lineWidth = 10; rrect(W * .05 - 8, cy - 8, W * .43 + 16, ch + 16, 42); g.stroke(); g.restore();
+    markV(W * .05 + W * .43 - 10, cy + 10, 40, 1, pop(lt - 11.2));
+    pill('下次再来', W * .52 + W * .43 / 2, cy + ch * .74, 36, AMB, '#fff', pickA);
+  }
+});
+
+/* ───────── I 三个错误 ───────── */
+function tiredBar(x, y, w, v, c) {
+  label('累', x - 30, y, 34, COL.sub, 900, 'right');
+  g.fillStyle = '#e9eff4'; rrect(x, y - 18, w, 36, 18); g.fill();
+  g.fillStyle = c; rrect(x, y - 18, Math.max(36, w * v), 36, 18); g.fill();
+}
+S.push(lt => {
+  const seg = lt < 6 ? 0 : lt < 12 ? 1 : 2, l2 = lt - seg * 6;
+  if (seg === 0) {
+    hikeSky(0); hikeClouds(lt + 120, .9, .12); g.fillStyle = 'rgba(255,255,255,.4)'; g.fillRect(0, 0, W, H);
+    const k = clamp((l2 - .6) / 4.2, 0, 1);
+    card(W * .05, H * .23, W * .9, H * .2, 36);
+    label('5 公里 · 爬升 600 米', W * .1, H * .26, 36, RED, 900, 'left');
+    profile(k2 => .05 + .9 * Math.sin(k2 * Math.PI * .5), W * .1, H * .28, W * .55, H * .12, { color: RED, fill: 'rgba(240,71,60,.3)', prog: k });
+    tiredBar(W * .76, H * .34, W * .15, .2 + .75 * k, RED);
+    card(W * .05, H * .46, W * .9, H * .2, 36);
+    label('10 公里 · 爬升 100 米', W * .1, H * .49, 36, GREEN, 900, 'left');
+    profile(flatP, W * .1, H * .51, W * .55, H * .12, { color: GREEN, prog: k });
+    tiredBar(W * .76, H * .57, W * .15, .2 + .35 * k, GREEN);
+  } else if (seg === 1) {
+    const dusk = sm((l2 - .4) / 4.4), cam = 0;
+    hikeSky(dusk);
+    hikeSun(W * .75, lerp(H * .32, H * .6, dusk), 56, lt, dusk);
+    hikeRidges(cam, dusk, H * .6);
+    const hy = x => H * .84 - x * .42;
+    hikeGround(hy, cam, lt, { dusk, treeGap: 220 });
+    hikerOn(hy, W * .4 + l2 * 25, cam, { s: 1.4, ph: walkPh(lt, .6), t: lt, tired: .8, pole: true, lamp: sm((l2 - 3.2) / .6) });
+    g.fillStyle = `rgba(30,25,80,${dusk * .35})`; g.fillRect(0, 0, W, H);
+    subPanel(win(l2, .8, 6, .3, .01));
+    const hr = 13 + l2 * .9;
+    card(W * .07, H * .23, W * .4, 150, 36, 1);
+    clockIcon(W * .15, H * .23 + 75, 44, hr % 12, 1);
+    label(`${Math.floor(hr)}:${String(Math.floor((hr % 1) * 60)).padStart(2, '0')}`, W * .22, H * .23 + 78, 52, COL.ink, 900, 'left');
+    pill('12:00 才出发', W * .72, H * .27, 32, RED, '#fff');
+  } else {
+    hikeSky(0); hikeSun(W * .85, H * .3, 50, lt, 0); hikeClouds(lt + 140, 1, .12);
+    const Y1 = H * .42, Y2 = H * .63;
+    hikeRidges(0, 0, H * .4);
+    g.fillStyle = '#9fd39a'; g.fillRect(0, Y1, W, H - Y1);
+    [Y1, Y2].forEach(yy => { g.strokeStyle = TP.soil; g.lineWidth = 18; g.beginPath(); g.moveTo(0, yy + 14); g.lineTo(W, yy + 14); g.stroke(); });
+    subPanel(win(l2, .8, 6, .3, .01));
+    const k = clamp((l2 - .3) / 5, 0, 1);
+    const xa = lerp(W * .1, W * .86, k), xb = lerp(W * .1, W * .86, k / 1.5);
+    drawHiker(xa, Y1 + 12, { s: 1.15, ph: walkPh(lt, 1.4), t: lt, jacket: BLUE, pack: '#12a679', hat: '#ffffff', pole: true });
+    drawHiker(xb, Y2 + 12, { s: 1.15, ph: walkPh(lt, .95), t: lt, tired: .5 });
+    pill('常走的人：3 小时', W * .3, Y1 - 230, 32, BLUE, '#fff');
+    pill('新手：4.5 小时', W * .3, Y2 - 230, 32, AMB, '#fff');
+    flag(W * .9, Y1 + 6, .7, lt, GREEN); flag(W * .9, Y2 + 6, .7, lt, GREEN);
+  }
+  markX(W * .88, H * .2, 40, win(l2, .3, 6, .2, .3));
+});
+
+/* ───────── J 口诀卡 ───────── */
+S.push(lt => {
+  hikeSky(0); hikeClouds(lt + 160, 1, .3); birds(lt, .8, 3, H * .12);
+  const a = eout(lt / .4), x = W * .08, y = H * .24, w = W * .84, h = H * .44;
+  g.save(); g.globalAlpha = a; g.translate(0, (1 - a) * 50);
+  card(x, y, w, h, 44);
+  label('记住这几句', CX, y + 100, 50, AMB, 900);
+  [['距离', '5～10 公里', GREEN], ['累计爬升', '300 米以内', AMB], ['时间', '留一半余量，天黑前下山', BLUE]].forEach(([t1, t2, c], i) => {
+    const ra = eout((lt - .8 - i * 1.2) / .35); if (ra <= 0) return; const ry = y + 250 + i * 230;
+    g.save(); g.globalAlpha = a * ra; g.translate((1 - ra) * 40, 0); g.font = `700 38px ${SANS}`; const pw = g.measureText(t1).width + 53;
+    pill(t1, x + 70 + pw / 2, ry - 44, 38, c, '#fff'); label(t2, x + 70, ry + 42, i === 2 ? 48 : 56, COL.ink, 900, 'left'); g.restore();
+  });
+  g.restore();
+  label('第一次，走得开心最重要。', CX, H * .75, 46, COL.sub, 700);
+});
+// K 结尾：山顶挥手
+const peak = x => H * .92 - 220 * Math.exp(-Math.pow((x - CX) / 300, 2));
+S.push(lt => {
+  hikeSky(.25); hikeSun(W * .2, H * .7, 70, lt, .3); hikeRidges(0, .2, H * .82); birds(lt + 5, .9, 4, H * .58);
+  hikeGround(peak, 0, lt, { treeGap: 180, noFlowers: false });
+  for (let i = 0; i < 3; i++) cloud(((lt * 30 + i * 420) % (W + 400)) - 200, H * (.9 + i * .04), .9, .9);
+  flag(CX + 70, peak(CX + 70) + 6, 1, lt, RED);
+  drawHiker(CX - 30, peak(CX - 30) + 12, { s: 1.3, wave: true, walk: 0, t: lt });
+  pill('想看什么？评论区点题', CX, H * .55, 38, AMB, '#fff', eout((lt - 1.8) / .4));
+});
+
+/* ───────── 封面 ───────── */
+function coverArt(key, w, h) {
+  const scene = (mx, oy, sc) => {
+    hikeSky(0);
+    hikeSun(w * .82, h * .2, 70 * sc, 1, 0);
+    for (let i = 0; i < 3; i++) cloud(w * (.12 + i * .34), h * (.12 + (i % 2) * .08), .8 * sc, .95);
+    g.save(); g.translate(0, oy);
+    hikeRidges(200, 0, h * .62);
+    const mw = Math.min(w, h) * .32, hy = x => h * .9 - h * .22 * Math.exp(-Math.pow((x - w * mx) / mw, 2));
+    hikeGround(hy, 0, 1, { treeGap: 200 });
+    mtnTrail(hy, w * mx - mw * 1.3, w * mx, 1); flag(w * mx, hy(w * mx) + 6, 1.2, 1, RED);
+    hikerOn(hy, w * mx - mw * .75, 0, { s: 1.6 * sc, ph: 1.2, t: 0, pole: true });
+    g.restore();
+  };
+  const title = (cx, y1, y2, size, subY, subSize, pillY, pillSize) => {
+    pill('徒步不难 · EP.01', cx, pillY, pillSize, AMB, '#fff');
+    label('第一次徒步', cx, y1, size, COL.ink, 900);
+    g.font = `900 ${size * .86}px ${SANS}`; const parts = [['选什么', COL.ink], ['路线', GREEN], ['？', COL.ink]], ws = parts.map(q => g.measureText(q[0]).width);
+    let x = cx - ws.reduce((s, v) => s + v, 0) / 2; parts.forEach((q, i) => { label(q[0], x + ws[i] / 2, y2, size * .86, q[1], 900); x += ws[i]; });
+    const chips = [['距离', GREEN], ['爬升', AMB], ['耗时', BLUE]];
+    g.font = `700 ${subSize}px ${SANS}`; const cw = chips.map(c => g.measureText(c[0]).width + subSize * 1.4), gap = subSize * .6;
+    let cxp = cx - (cw.reduce((s, v) => s + v, 0) + gap * 2) / 2; chips.forEach((c, i) => { pill(c[0], cxp + cw[i] / 2, subY, subSize, c[1], '#fff'); cxp += cw[i] + gap; });
+  };
+  const fade = (vert, k) => {
+    const fd = vert ? g.createLinearGradient(0, 0, 0, h * k) : g.createLinearGradient(0, 0, w * k, 0);
+    fd.addColorStop(0, 'rgba(255,250,238,.97)'); fd.addColorStop(.78, 'rgba(255,250,238,.9)'); fd.addColorStop(1, 'rgba(255,250,238,0)');
+    g.fillStyle = fd; vert ? g.fillRect(0, 0, w, h * k) : g.fillRect(0, 0, w * k, h);
+  };
+  if (key === '9x16') { scene(.6, h * .08, 1); fade(true, .46); title(CX, h * .2, h * .28, 124, h * .355, 40, h * .11, 42); }
+  else if (key === '3x4') { scene(.6, h * .06, 1); fade(true, .48); title(CX, h * .16, h * .26, 116, h * .35, 38, h * .06, 40); }
+  else { scene(.74, 0, 1); fade(false, .6); const big = key === '16x9'; title(w * .28, h * .4, h * .55, big ? 108 : 86, h * .69, big ? 38 : 32, h * .24, big ? 38 : 34); }
+}
+
+/* ───────── 声音 ───────── */
+function sound(K, c, DUR) {
+  K.bed(8.0, DUR, t => t < 17.6 ? 'verse' : t < 30.6 ? 'chorus' : t < 50.6 ? 'verse' : t < 68.6 ? 'chorus' : t < 78.6 ? 'verse' : t < 94.6 ? 'chorus' : t < 112.6 ? 'tense' : 'outro');
+  const chirp = t0 => { [0, .09, .2].forEach((d, i) => { const o = c.createOscillator(), gg = c.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(2600 + i * 300 + K.ar() * 400, t0 + d); o.frequency.exponentialRampToValueAtTime(4200 + K.ar() * 600, t0 + d + .06); gg.gain.setValueAtTime(0, t0 + d); gg.gain.linearRampToValueAtTime(.05, t0 + d + .01); gg.gain.exponentialRampToValueAtTime(.0001, t0 + d + .08); o.connect(gg); gg.connect(K.out); o.start(t0 + d); o.stop(t0 + d + .1); }); };
+  [.6, 2.1, 3.3, 8.6, 10.2, 18.4, 24.2, 69.4, 72.8, 113.4, 120.4, 122.6].forEach(chirp);
+  const step = t0 => K.noise(t0, .09, .1, 'lowpass', 420);
+  for (let t = 4.6; t < 7.8; t += .9) step(t);
+  for (let t = 8.2; t < 11.4; t += .59) step(t);
+  for (let t = 17.8; t < 23.6; t += .45) step(t);
+  for (let t = 30.8; t < 36.8; t += .62) step(t);
+  for (let t = 4.8; t < 7.8; t += .72) { K.tone(58, t, .22, .3); K.tone(52, t + .2, .26, .24); } // 喘
+  [11.6 + 2.6, 11.6 + 3.4, 11.6 + 4.2].forEach(K.tick); K.ding(11.6 + 5);
+  K.ding(17.6 + 5.6); K.ding(17.6 + 6.6); K.ding(17.6 + 11.4);
+  K.ding(30.6 + 6.4 + 1); K.wrong(30.6 + 6.4 + 4.6);
+  [0, 1.1, 2.2].forEach(d => K.tick(30.6 + 13.4 + 1.3 + d)); K.ding(30.6 + 13.4 + 4.2);
+  K.tick(50.6 + 2.8); K.tick(50.6 + 4.4); K.ding(50.6 + 4.8); K.ding(50.6 + 7.2 + 3.6); K.whoosh(50.6 + 13.2 + 2);
+  [0, 1.4, 2.8].forEach(d => K.ding(68.6 + 1.2 + d));
+  K.ding(78.6 + 6.6); K.ding(78.6 + 8); K.ding(78.6 + 11.2);
+  K.riser(93.2, 94.6, .12);
+  [94.6 + .3, 100.6 + .3, 106.6 + .3].forEach(K.wrong);
+  for (let i = 0; i < 3; i++) K.tone(880 + i * 110, 112.6 + .8 + i * 1.2, .25, .07, 'triangle');
+}
+
+kitRun({
+  T, S, TX, seed: 311,
+  allText: SRC.replace(/[\x00-\x7f]/g, '') + '0123456789:+=≈÷→～',
+  audio: sound, cover: coverArt
+});
+})();
+</script>
+</body>
+</html>

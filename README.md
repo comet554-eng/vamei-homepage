@@ -55,3 +55,8 @@
 - EP.17 单板《平花入门：压板头、压板尾》：`video/ski-ep17-sb.html`（侧面压板 `placePress()`、板弯弧线）。
 - EP.16 双板《双板最常伤哪里：膝盖》：`video/ski-ep16-ski.html`（杠杆特写、固定器脱离示意）。
 - EP.17 双板《小回转：节奏快一点的连续转弯》：`video/ski-ep17-ski.html`（俯视上身朝下、板左右转，走廊路线）。
+
+## 徒步不难（教学系列）
+
+- 画面沿用 `video/snowkit.js` 的字幕、转场、配乐与导出框架，徒步专用画面在 `video/trailkit.js`：天空与日落 `hikeSky()`、太阳、云、飞鸟、远山、草地小路与花树 `hikeGround()`、背包小人 `drawHiker()`（步伐、坡度、累、挥手、头灯）、海拔剖面 `profile()`、路牌、时钟。
+- EP.01《第一次徒步：选什么路线？》：`video/hike-ep01.html`，约 2 分 06 秒（距离、累计爬升、估时与日落时间轴、两条路线对比）。
