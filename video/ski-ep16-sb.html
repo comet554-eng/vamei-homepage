@@ -372,7 +372,7 @@ S.push(lt => {
     const a1 = win(l2, 1.5, 6, .3, .3), a2 = win(l2, 2.0, 6, .3, .3), a3 = win(l2, 2.4, 6, .3, .3);
     soft(b, a1, 80); callout(b, W * .2, H * .5, '① 屁股先着地', COL.green, a1, 36);
     ring(hd[0], hd[1], 52, COL.green, a2); callout([hd[0] + 40, hd[1] - 40], W * .74, H * .27, '② 低头收下巴', COL.green, a2, 38);
-    if (a3 > 0) { soft(bk, a3 * .8, 110); g.save(); g.globalAlpha = a3; arcArrow(F[0] + 60, F[1] - 40, 300, -2.0, -0.7, COL.green, 8, 28); label('③ 顺势往后滚', W * .74, H * .335, 38, COL.green, 900); g.restore(); }
+    if (a3 > 0) { soft(bk, a3 * .8, 110); g.save(); g.globalAlpha = a3; const bc = J.tf(J.B); arcArrow(bc[0], bc[1], 2.2 * U, -2.3, -1.1, COL.green, 8, 28); label('③ 顺势往后滚', W * .74, H * .335, 38, COL.green, 900); g.restore(); }
   }
 });
 // F 怎么防：别卡刃 / 累了就歇、挑自己水平的道
@@ -477,7 +477,7 @@ S.push(lt => {
 // J 三个错误
 S.push(lt => {
   const seg = lt < 6 ? 0 : lt < 12 ? 1 : 2, l2 = lt - seg * 6;
-  drawSky(0); const F = [CX - (seg === 2 ? 340 : 230), GROUND]; snowLine(F);
+  drawSky(0); const F = [CX - 230, GROUND]; snowLine(F);
   if (seg === 0) {
     const st = fallState(l2, F, U, -1, FLAT, BACKHAND, .6, 1.3, 'hand'), J = drawR(F, st.pose, U, st.o), w = J.tf(wristRaw(J));
     spark(J.tf(J.P(-.34, 0)), l2 - .55); burst(w[0], w[1], l2 - 1.3, 24, .5);
@@ -490,8 +490,8 @@ S.push(lt => {
     const a = win(l2, 1.45, 6, .2, .3); hurt(hd, a, lt, 54); callout(hd, hd[0] + 40, H * .4, '后脑着地', COL.red, a, 42);
     g.save(); g.globalAlpha = a; label('应该：低头，收下巴', W * .62, H * .69, 32, COL.green, 900); g.restore();
   } else {
-    const tC = 2.6, tH = 3.3, Fm = [F[0] - Math.max(0, tC - l2) * 70, F[1]];
-    const st = fallState(l2, Fm, U, 1, FLAT, PALM, tC, tH, 'hand'), J = drawR(Fm, st.pose, U, st.o), w = J.tf(wristRaw(J));
+    const tC = 2.6, tH = 3.3, u3 = 145, Fm = [300 - Math.max(0, tC - l2) * 25, F[1]];
+    const st = fallState(l2, Fm, u3, 1, FLAT, PALM, tC, tH, 'hand'), J = drawR(Fm, st.pose, u3, st.o), w = J.tf(wristRaw(J));
     spark(J.tf(J.P(.34, 0)), l2 - tC + .05); burst(w[0], w[1], l2 - tH, 26, .5);
     const big = l2 > tH ? 1.5 : 1; hurt(w, sm((l2 - .2) / .3), lt, 44 * big);
     if (l2 < tH) { g.save(); g.globalAlpha = win(l2, .5, tH, .3, .1); label('疼', w[0] + 80, w[1] - 100, 52, COL.red, 900); label('还接着滑……', CX + 180, H * .3, 40, COL.red, 900); g.restore(); }
@@ -527,12 +527,12 @@ function coverArt(key, w, h) {
   drawSky(0); drawSnowfall(3, .6);
   const art = (F, u) => {
     snowLine(F);
-    const pose = { shin: -15, thigh: -140, torso: -16, head: 6, uarm: 214, farm: 196 };
-    const deg = landDeg(F, pose, u, -1, 'butt', 60), o = fo(-1, deg), J = drawR(F, pose, u, o);
+    const pose = { shin: 2, thigh: -100, torso: -22, head: 4, uarm: 222, farm: 206 };
+    const deg = landDeg(F, pose, u, -1, 'hand', 70), o = fo(-1, deg), J = drawR(F, pose, u, o);
     const wr = J.tf(wristRaw(J)), b = J.tf(buttRaw(J));
-    glow(wr[0], wr[1], u * .8, '240,71,60', .75); ring(wr[0], wr[1], u * .34, COL.red, 1, true);
-    glow(b[0], b[1], u * .9, '240,71,60', .75); ring(b[0], b[1], u * .4, COL.red, 1, true);
-    burst(b[0], b[1] + 10, .18, 26, .5);
+    glow(wr[0], wr[1], u * .75, '240,71,60', .7); ring(wr[0], wr[1], u * .3, COL.red, 1, true);
+    glow(b[0], b[1], u * .85, '240,71,60', .7); ring(b[0], b[1], u * .36, COL.red, 1, true);
+    burst(wr[0], wr[1] - 6, .12, 14, .35);
   };
   const title = (cx, y1, y2, size, subY, subSize, pillY, pillSize) => {
     pill('滑雪不难 · EP.16 · 单板', cx, pillY, pillSize, COL.amber, '#fff');
@@ -541,8 +541,8 @@ function coverArt(key, w, h) {
     let x = cx - ws.reduce((s, v) => s + v, 0) / 2; parts.forEach((q, i) => { label(q[0], x + ws[i] / 2, y2, size, q[1], 900); x += ws[i]; });
     label('伤在哪 · 为什么 · 怎么摔 · 护具', cx, subY, subSize, COL.sub, 700);
   };
-  if (key === '9x16') { art([w * .22, h * .8], 190); title(CX, h * .22, h * .3, 150, h * .37, 42, h * .13, 42); }
-  else if (key === '3x4') { art([w * .24, h * .86], 160); title(CX, h * .15, h * .25, 150, h * .33, 40, h * .055, 40); }
+  if (key === '9x16') { art([w * .14, h * .74], 255); title(CX, h * .22, h * .3, 150, h * .37, 42, h * .13, 42); }
+  else if (key === '3x4') { art([w * .24, h * .88], 170); title(CX, h * .15, h * .25, 150, h * .33, 40, h * .055, 40); }
   else {
     art([w * .6, h * .82], key === '16x9' ? 165 : 135);
     const fade = g.createLinearGradient(0, 0, w * .62, 0); fade.addColorStop(0, 'rgba(240,246,251,.97)'); fade.addColorStop(.75, 'rgba(240,246,251,.9)'); fade.addColorStop(1, 'rgba(240,246,251,0)'); g.fillStyle = fade; g.fillRect(0, 0, w * .62, h);
