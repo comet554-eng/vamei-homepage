@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>滑雪不难 EP.15 单板</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#000;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;aspect-ratio:9/16;max-width:100vw;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;aspect-ratio:auto;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="sbrig.js"></script>
+<script>
+/*
+ * 滑雪不难 EP.15 单板《第一次上中级道：先看再滑》（约 2 分 06 秒）
+ * 俯视地图：山上在画面上方，人往画面下方滑。
+ */
+(() => {
+'use strict';
+const T = [0, 8.0, 11.6, 23.6, 36.6, 47.6, 71.6, 77.6, 94.6, 112.6, 119.6, 126.1];
+const YH = .135, YB = .745;
+
+const TX = [
+  { in: .15, out: 3.8, text: '初级道滑顺了，\n想去{a}中级道{/}？', y: YH, size: 84, w: 900, st: .06 },
+  { in: 4.0, out: 7.8, text: '站在坡顶往下一看，\n{r}腿就软了{/}。', y: YH, size: 80, w: 900 },
+  { in: 8.25, out: 11.35, text: '第一次上中级道：\n先看再滑', y: .3, size: 96, w: 900, st: .05 },
+  { in: 9.0, out: 11.35, text: '看清楚、切小段、怕了就慢慢来', y: .415, size: 42, w: 600, sub: 1 },
+  // C 什么时候能去
+  { in: 11.8, out: 17.4, text: '什么时候能去？\n初级道上{g}能连续转弯{/}。', y: YH, size: 80, w: 900 },
+  { in: 12.6, out: 17.4, text: '弯连得起来，而不是一路直着冲下去。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 17.8, out: 23.4, text: '还要{g}随时停得住{/}，\n速度{g}自己说了算{/}。', y: YH, size: 80, w: 900 },
+  { in: 18.6, out: 23.4, text: '前刃、后刃都能停下来，\n想慢就慢，想停就停。', y: YB, size: 42, w: 500, sub: 1 },
+  // D 上去之前先看
+  { in: 23.8, out: 29.8, text: '上去之前，\n先把这条道{g}看一遍{/}。', y: YH, size: 80, w: 900 },
+  { in: 24.6, out: 29.8, text: '坐缆车的时候、站在坡底，都能看。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 30.2, out: 36.4, text: '哪段{r}最陡{/}？哪里{a}窄{/}？\n哪里{a}人多{/}、{r}结冰{/}？', y: YH, size: 80, w: 900 },
+  { in: 31.0, out: 36.4, text: '心里有张地图，到了那儿就不慌。\n尽量挑人少的时候去。', y: YB, size: 42, w: 500, sub: 1 },
+  // E 站在坡顶
+  { in: 36.8, out: 41.8, text: '到了坡顶，\n先{g}停在边上{/}看清楚。', y: YH, size: 80, w: 900 },
+  { in: 37.6, out: 41.8, text: '别一到顶就往下冲，先喘口气。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 42.2, out: 47.4, text: '选好{g}第一段{/}路线，\n别从{r}最陡的地方{/}直接冲。', y: YH, size: 76, w: 900 },
+  { in: 43.0, out: 47.4, text: '从缓一点、宽一点、人少的那边开始。', y: YB, size: 42, w: 500, sub: 1 },
+  // F 怎么下
+  { in: 47.8, out: 55.4, text: '把整条道切成\n{g}一小段一小段{/}。', y: YH, size: 80, w: 900 },
+  { in: 48.6, out: 55.4, text: '每段转几个弯，就停在边上歇一下，\n看清下一段再走。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 55.8, out: 63.4, text: '弯要{g}走完{/}，\n多横着走一点。', y: YH, size: 84, w: 900 },
+  { in: 56.6, out: 63.4, text: '宽宽的 C 形，用转弯来控速。\n第 5 集讲过：弯走完，就是刹车。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 63.8, out: 71.4, text: '最陡那段不敢转？\n{g}落叶飘{/}下去，{g}不丢人{/}。', y: YH, size: 80, w: 900 },
+  { in: 64.6, out: 71.4, text: '板横在坡上，用后刃一点点往下蹭。\n过了陡的那段，再接着转弯。', y: YB, size: 42, w: 500, sub: 1 },
+  // G 心态
+  { in: 71.8, out: 77.4, text: '怕是正常的，\n{g}慢就是快{/}。', y: YH, size: 84, w: 900 },
+  { in: 72.6, out: 77.4, text: '累了就停在边上歇，别硬撑。\n腿一软，最容易出事。', y: YB, size: 42, w: 500, sub: 1 },
+  // H 练习三步
+  { in: 77.8, out: 80.2, text: '怎么准备？\n三步。', y: YH, size: 80, w: 900 },
+  { in: 80.5, out: 85.4, text: '① 初级道上练急停', y: YH, size: 80, w: 900 },
+  { in: 81.2, out: 85.4, text: '后刃停、前刃停，说停就能停。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 85.8, out: 90.4, text: '② 初级道最陡那段反复练', y: YH, size: 76, w: 900 },
+  { in: 86.5, out: 90.4, text: '在那段上连续转弯、停住，\n滑到不紧张为止。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 90.8, out: 94.4, text: '③ 第一次，找人陪着', y: YH, size: 80, w: 900 },
+  { in: 91.5, out: 94.4, text: '挑人少的时候去，有人在旁边更安心。', y: YB, size: 42, w: 500, sub: 1 },
+  // I 三个错误
+  { in: 94.8, out: 100.4, text: '常见错误一：\n一害怕就{r}往后坐{/}', y: YH, size: 80, w: 900 },
+  { in: 95.6, out: 100.4, text: '重心一往后，板就不听话，越坐越快。\n第 1 集讲过：身体垂直于雪面。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 100.8, out: 106.4, text: '常见错误二：\n不敢转弯，{r}直着往下冲{/}', y: YH, size: 76, w: 900 },
+  { in: 101.6, out: 106.4, text: '越冲越快，到最后想转也转不了。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 106.8, out: 112.4, text: '常见错误三：\n停在{r}看不见的地方{/}歇', y: YH, size: 76, w: 900 },
+  { in: 107.6, out: 112.4, text: '坡中间、坡顶下面，上面的人看不到你。\n第 8 集讲过：要停，就停在边上。', y: YB, size: 42, w: 500, sub: 1 },
+  // K 结尾
+  { in: 119.8, out: 999, text: '你第一次上中级道，\n是什么感觉？', y: .37, size: 84, w: 900, st: .06 },
+  { in: 120.8, out: 999, text: '评论区说说', y: .465, size: 42, w: 500, sub: 1 }
+];
+const STEPS = ['① 练急停', '② 练最陡那段', '③ 找人陪'];
+const CHECK = ['能连续转弯', '前刃、后刃都能停', '速度控制得住'];
+const BLUE = '#2f80ed', GREEN = 'rgb(18,166,121)', AMB = 'rgb(255,159,28)';
+
+/* ───────── 人物（单板） ───────── */
+// 俯视：板沿局部 x；o.face = ±1：正面（护目镜）朝局部 ±y
+function topR(x, y, ang, s, o = {}) {
+  g.save(); g.translate(x, y); g.rotate(ang); g.globalAlpha = o.alpha == null ? 1 : o.alpha;
+  g.fillStyle = COL.board; rrect(-75 * s, -18 * s, 150 * s, 36 * s, 17 * s); g.fill();
+  g.fillStyle = '#2a2f3a'; rrect(-42 * s, -14 * s, 16 * s, 28 * s, 5 * s); g.fill(); rrect(26 * s, -14 * s, 16 * s, 28 * s, 5 * s); g.fill();
+  g.fillStyle = o.jacket || COL.jacket; g.beginPath(); g.ellipse(0, 0, 30 * s, 15 * s, 0, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#fff'; g.strokeStyle = COL.pants; g.lineWidth = 3 * s; g.beginPath(); g.arc(0, 0, 11 * s, 0, Math.PI * 2); g.fill(); g.stroke();
+  const f = o.face || 1; g.fillStyle = COL.amber; g.beginPath(); g.arc(0, f * 8 * s, 5 * s, 0, Math.PI * 2); g.fill();
+  g.restore();
+}
+// 停住时：板横过来，正面朝山下
+const stopAng = v => v < 0 ? 0 : Math.PI;
+const faceFor = ang => Math.cos(ang) >= 0 ? 1 : -1;
+function topRider(x, y, ang, s, o = {}) { topR(x, y, ang, s, Object.assign({ face: faceFor(ang) }, o)); }
+const RS = 1.0; // 地图上人的大小（乘以 V.z）
+
+/* ───────── 俯视：一条雪道的"地图" ───────── */
+const ML = 960; // u 从 0 到 1 的长度（z = 1 时，像素）
+const tc = u => 60 * Math.sin(u * 5.2 + .5);
+const nar = u => sm((u - .58) / .05) * (1 - sm((u - .68) / .05));
+const thw = u => 250 - 100 * nar(u);
+const STEEP = [.34, .5];
+const ICE = [[.455, .42, 1], [.8, -.5, .7]];
+function view(u0, u1, top, bot, cx) { return { u0, u1, top, bot, cx: cx == null ? CX : cx, z: (bot - top) / ((u1 - u0) * ML) }; }
+const MP = (V, u, v) => [V.cx + (tc(u) + v * thw(u)) * V.z, V.top + (u - V.u0) * ML * V.z];
+function band(V, ua, ub, va, vb) {
+  g.beginPath(); const N = 70;
+  for (let i = 0; i <= N; i++) { const p = MP(V, lerp(ua, ub, i / N), va); i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]); }
+  for (let i = N; i >= 0; i--) { const p = MP(V, lerp(ua, ub, i / N), vb); g.lineTo(p[0], p[1]); }
+  g.closePath();
+}
+function tree(x, y, s) {
+  g.fillStyle = '#a9c0d1';
+  for (let j = 0; j < 3; j++) { const w = (30 - j * 7) * s, yy = y - j * 18 * s; g.beginPath(); g.moveTo(x, yy - 34 * s); g.lineTo(x - w, yy); g.lineTo(x + w, yy); g.closePath(); g.fill(); }
+}
+function drawMap(V, o = {}) {
+  const uA = V.u0 - V.top / (ML * V.z) - .03, uB = V.u0 + (H - V.top) / (ML * V.z) + .03, z = V.z;
+  g.fillStyle = '#e2ebf2'; g.fillRect(0, 0, W, H);
+  // 雪道外的树
+  for (let u = Math.floor(uA / .05) * .05; u < uB; u += .05) {
+    [-1, 1].forEach((sd, j) => {
+      for (let r = 0; r < 3; r++) { const p = MP(V, u + hash(u * 100 + j + r * 7) * .03, sd * (1.18 + r * .32 + hash(u * 77 + j + r) * .12)); if (p[0] > -60 && p[0] < W + 60) tree(p[0], p[1], Math.min(1.6, z * .95)); }
+    });
+  }
+  // 雪道
+  band(V, uA, uB, -1, 1); g.fillStyle = '#fbfdff'; g.fill();
+  g.strokeStyle = '#c3d4e4'; g.lineWidth = 4;
+  [-1, 1].forEach(sd => { g.beginPath(); for (let i = 0; i <= 90; i++) { const p = MP(V, lerp(uA, uB, i / 90), sd); i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]); } g.stroke(); });
+  g.strokeStyle = '#edf2f7'; g.lineWidth = 4;
+  for (let i = 0; i < 46; i++) { const u = lerp(uA, uB, hash(i + 40)), p = MP(V, u, hash(i + 3) * 1.6 - .8); g.beginPath(); g.moveTo(p[0], p[1]); g.lineTo(p[0] + 6 * z, p[1] + 34 * z); g.stroke(); }
+  // 陡的一段：深色阴影（右边更陡）
+  const sa = o.easy ? .5 : 1, mu = (STEEP[0] + STEEP[1]) / 2, xl = MP(V, mu, -1)[0], xr = MP(V, mu, 1)[0];
+  g.save(); band(V, STEEP[0] - .035, STEEP[1] + .035, -1, 1); g.fillStyle = `rgba(60,88,120,${.05 * sa})`; g.fill();
+  band(V, STEEP[0], STEEP[1], -1, 1); const gr = g.createLinearGradient(xl, 0, xr, 0); gr.addColorStop(0, `rgba(60,88,120,${.1 * sa})`); gr.addColorStop(1, `rgba(60,88,120,${.34 * sa})`); g.fillStyle = gr; g.fill();
+  g.clip(); g.strokeStyle = `rgba(60,88,120,${.12 * sa})`; g.lineWidth = 3; const yb0 = MP(V, STEEP[0], 0)[1], yb1 = MP(V, STEEP[1], 0)[1];
+  for (let x = -400; x < W + 400; x += 26) { g.beginPath(); g.moveTo(x, yb0); g.lineTo(x + (yb1 - yb0) * .5, yb1); g.stroke(); }
+  g.restore();
+  // 冰面
+  if (o.ice !== false) ICE.forEach(([u, v, r], i) => {
+    const p = MP(V, u, v); g.save(); g.translate(p[0], p[1]); g.rotate(-.18 + i * .3);
+    g.fillStyle = 'rgba(140,208,255,.8)'; g.strokeStyle = '#5bb6f0'; g.lineWidth = 3; g.beginPath(); g.ellipse(0, 0, 72 * r * z, 24 * r * z, 0, 0, Math.PI * 2); g.fill(); g.stroke();
+    g.strokeStyle = 'rgba(255,255,255,.9)'; g.lineWidth = 4 * z; g.lineCap = 'round'; g.beginPath(); g.moveTo(-40 * r * z, -4 * z); g.lineTo(10 * r * z, -10 * z); g.stroke(); g.restore();
+  });
+  // 人群
+  const nC = o.crowd == null ? 11 : o.crowd, cols = [BLUE, COL.green, '#9b59b6', COL.red, COL.amber];
+  for (let i = 0; i < nC; i++) {
+    const p = MP(V, .86 + hash(i + 20) * .1, -.75 + hash(i + 30) * 1.5); g.fillStyle = cols[i % 5]; g.strokeStyle = '#fff'; g.lineWidth = 3;
+    g.beginPath(); g.arc(p[0], p[1], 10 * z, 0, Math.PI * 2); g.fill(); g.stroke();
+  }
+  // 缆车
+  if (o.lift) {
+    const lx = V.cx + 430 * z, ya = MP(V, 1.0, 0)[1], yb = MP(V, -.02, 0)[1];
+    g.save(); g.strokeStyle = '#4a5768'; g.lineWidth = 4; g.beginPath(); g.moveTo(lx, ya); g.lineTo(lx, yb); g.stroke();
+    g.fillStyle = '#8a9bb0'; [0, .33, .66, 1].forEach(k => { g.fillRect(lx - 16, lerp(ya, yb, k) - 5, 32, 10); });
+    for (let j = 0; j < 7; j++) { const k = ((j / 7 + (o.liftT || 0) * .025) % 1), y = lerp(ya, yb, k); g.strokeStyle = '#4a5768'; g.lineWidth = 3; g.beginPath(); g.moveTo(lx, y); g.lineTo(lx - 22, y); g.stroke(); g.fillStyle = '#4f5f73'; rrect(lx - 46, y - 12, 30, 24, 6); g.fill(); }
+    g.restore();
+  }
+}
+// 计划路线：几个"停"点之间各转几个弯
+const STOPS = [[.03, -.72], [.27, -.72], [.55, .72], [.78, -.72], [.97, .72]];
+const SEGM = [2, 3, 3, 3];
+function segUV(i, t) {
+  const [ua, va] = STOPS[i], ub = STOPS[i + 1][0], m = SEGM[i];
+  return [ua + (ub - ua) * (t + .8 * Math.sin(2 * Math.PI * m * t) / (2 * Math.PI * m)), va * Math.cos(Math.PI * m * t)];
+}
+const routeUV = x => { const i = Math.min(SEGM.length - 1, Math.max(0, Math.floor(x))); return segUV(i, clamp(x - i, 0, 1)); };
+const routePt = (V, x) => MP(V, ...routeUV(x));
+const routeHd = (V, x) => { const a = routePt(V, Math.max(0, x - .004)), b = routePt(V, Math.min(SEGM.length, x + .004)); return Math.atan2(b[1] - a[1], b[0] - a[0]); };
+function drawRoute(V, x0, x1, color, dashed, w) {
+  g.save(); g.strokeStyle = color; g.lineWidth = w || 6; g.lineCap = 'round'; if (dashed) g.setLineDash([14, 12]);
+  g.beginPath(); const N = Math.max(2, Math.round((x1 - x0) * 90)); for (let i = 0; i <= N; i++) { const p = routePt(V, lerp(x0, x1, i / N)); i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]); } g.stroke(); g.restore();
+}
+function stopMark(V, i, a, s) {
+  if (a <= 0) return; const [u, v] = STOPS[i], p = MP(V, u, Math.sign(v) * 1.0), r = 24 * (s || 1);
+  g.save(); g.globalAlpha = a; g.fillStyle = COL.green; g.strokeStyle = '#fff'; g.lineWidth = 4; g.beginPath(); g.arc(p[0], p[1], r, 0, Math.PI * 2); g.fill(); g.stroke();
+  label('停', p[0], p[1] + 1, 26 * (s || 1), '#fff', 900); g.restore();
+}
+// 沿路线走：每段走 mv 秒、停 ps 秒；返回位置与朝向
+function tour(V, lt, mv, ps, n0, n1) {
+  n0 = n0 || 0; n1 = n1 == null ? SEGM.length : n1;
+  const per = mv + ps, i = n0 + Math.floor(Math.max(0, lt) / per);
+  if (i >= n1) { const p = routePt(V, n1), v = STOPS[n1][1]; return { p, ang: stopAng(v), x: n1, pause: 1 }; }
+  const r = Math.max(0, lt) - (i - n0) * per;
+  if (r < mv) { const x = i + sm(r / mv); return { p: routePt(V, x), ang: routeHd(V, x), x, pause: 0 }; }
+  const x = i + 1, v = STOPS[x][1], k = sm((r - mv) / .35), h = routeHd(V, x - .01);
+  return { p: routePt(V, x), ang: lerp(h, stopAng(v), k), x, pause: k };
+}
+function cone(x, y, ang, len, spread, color, a) {
+  if (a <= 0) return;
+  g.save(); g.globalAlpha = a; const gr = g.createRadialGradient(x, y, 0, x, y, len); gr.addColorStop(0, color.replace(')', ',.38)').replace('rgb', 'rgba')); gr.addColorStop(1, color.replace(')', ',0)').replace('rgb', 'rgba'));
+  g.fillStyle = gr; g.beginPath(); g.moveTo(x, y); g.arc(x, y, len, ang - spread, ang + spread); g.closePath(); g.fill(); g.restore();
+}
+function puffs(x, y, t, a) { // 呼气
+  if (a <= 0) return; g.save(); g.fillStyle = '#fff'; g.strokeStyle = '#c8d7e5'; g.lineWidth = 2;
+  for (let i = 0; i < 5; i++) { const ph = (t * .8 + i / 5) % 1; g.globalAlpha = a * (1 - ph) * .9; g.beginPath(); g.arc(x + 40 + ph * 70, y - 30 - ph * 60 + Math.sin(ph * 6 + i) * 8, 10 + ph * 16, 0, Math.PI * 2); g.fill(); g.stroke(); }
+  g.restore();
+}
+function snowSpray(x, y, dir, t, amt, s) { // 俯视：往 dir 方向推开的雪
+  if (amt < .02) return; s = s || 1; g.save(); g.fillStyle = '#fff'; g.strokeStyle = '#c8d7e5'; g.lineWidth = 2;
+  for (let i = 0; i < 14; i++) { const ph = (t * 1.6 + hash(i + 11)) % 1, a = dir + (hash(i + 3) - .5) * 1.4, d = (40 + ph * 110) * s;
+    g.globalAlpha = amt * (1 - ph); g.beginPath(); g.arc(x + Math.cos(a) * d, y + Math.sin(a) * d, (6 + hash(i) * 8) * s, 0, Math.PI * 2); g.fill(); g.stroke(); }
+  g.restore();
+}
+
+/* ───────── 普通俯视雪面（ep05 同款） ───────── */
+function slopeTop(scroll) {
+  g.fillStyle = '#f7fafc'; g.fillRect(0, 0, W, H);
+  g.strokeStyle = '#e3ebf2'; g.lineWidth = 3; for (let x = 40; x < W; x += 34) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); }
+  for (let i = 0; i < 14; i++) { const side = i % 2 ? W - 36 : 36, y = ((i * 260 - (scroll || 0)) % (H + 200) + H + 200) % (H + 200) - 100; g.fillStyle = '#cddbe6'; g.beginPath(); g.arc(side, y, 22 + hash(i + 3) * 8, 0, Math.PI * 2); g.fill(); }
+}
+const zPath = (cx, y0, y1, A, n) => k => [cx + A * Math.sin(k * n * Math.PI), lerp(y0, y1, k)];
+const cPath = (cx, y0, y1, A, n) => k => { const ph = k * n * Math.PI, yy = ph / 2 - Math.sin(2 * ph) / 4, ymax = n * Math.PI / 2; return [cx + A * Math.sin(ph), lerp(y0, y1, yy / ymax)]; };
+const heading = (f, k) => { const a = f(Math.max(0, k - .002)), b = f(Math.min(1, k + .002)); return Math.atan2(b[1] - a[1], b[0] - a[0]); };
+const downness = (f, k) => Math.abs(Math.sin(heading(f, k)));
+function speedPath(f, k0, k1, w) {
+  g.save(); g.lineWidth = w || 8; g.lineCap = 'round';
+  let prev = f(k0); for (let i = 1; i <= 160; i++) { const kk = lerp(k0, k1, i / 160), p = f(kk), m = sm((downness(f, kk) - .35) / .45); g.strokeStyle = `rgb(${Math.round(lerp(18, 255, m))},${Math.round(lerp(166, 140, m))},${Math.round(lerp(121, 28, m))})`; g.beginPath(); g.moveTo(prev[0], prev[1]); g.lineTo(p[0], p[1]); g.stroke(); prev = p; }
+  g.restore();
+}
+function ghostPath(f, color) { g.save(); g.strokeStyle = color; g.lineWidth = 6; g.setLineDash([14, 12]); g.beginPath(); for (let i = 0; i <= 160; i++) { const p = f(i / 160); i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]); } g.stroke(); g.restore(); }
+const runaway = k => 12 + 30 * Math.pow(k, 1.2);
+const steady = n => k => 15 - 5 * Math.cos(2 * k * n * Math.PI - .5);
+const zig = (k, n, A) => { const p = k * n, i = Math.floor(p), f = p - i, e = sm(f); return (i % 2 ? 1 - 2 * e : -1 + 2 * e) * A; };
+
+/* ───────── 侧面：坡顶 ───────── */
+const X0 = W * .4, Y0 = H * .44, TN = Math.tan(30 * D2R), R0 = 140;
+const hill = x => { const d = x - X0; return d <= 0 ? Y0 : d < R0 ? Y0 + d * d / (2 * R0) * TN : Y0 + (R0 / 2 + d - R0) * TN; };
+function crestScene() {
+  drawSky(0);
+  g.save(); const gr = g.createLinearGradient(0, Y0, 0, H); gr.addColorStop(0, '#ffffff'); gr.addColorStop(1, '#dde8f2'); g.fillStyle = gr;
+  g.beginPath(); g.moveTo(0, H); for (let x = 0; x <= W; x += 8) g.lineTo(x, hill(x)); g.lineTo(W, H); g.closePath(); g.fill();
+  g.strokeStyle = '#c3d4e4'; g.lineWidth = 4; g.beginPath(); for (let x = 0; x <= W; x += 8) { x ? g.lineTo(x, hill(x)) : g.moveTo(x, hill(x)); } g.stroke(); g.restore();
+  tree(W * .66, hill(W * .66) + 4, 2.2); tree(W * .93, hill(W * .93) + 4, 2.2); tree(W * .1, Y0 + 4, 1.8);
+  g.strokeStyle = COL.amber; g.lineWidth = 9; [W * .55, W * .8].forEach(x => { g.beginPath(); g.moveTo(x, hill(x)); g.lineTo(x, hill(x) - 110); g.stroke(); });
+}
+function crestRider(lt, tremble) { // 板横在坡顶，面朝山下
+  const w = Math.sin(lt * 34) * tremble, pose = withP(RP.ride, { shin: RP.ride.shin + w * 4, thigh: RP.ride.thigh - w * 5, torso: RP.ride.torso + w * 2 });
+  return rider([X0 - 130, Y0], 0, pose, 118, { facing: 1 });
+}
+// 侧面坡度小面板（初级 vs 中级）
+function slopePanel(x, y, w, h, th, name, c, a) {
+  if (a <= 0) return; g.save(); g.globalAlpha = a; g.fillStyle = '#fff'; g.shadowColor = 'rgba(27,40,56,.12)'; g.shadowBlur = 24; rrect(x, y, w, h, 28); g.fill(); g.shadowBlur = 0;
+  rrect(x, y, w, h, 28); g.clip(); g.fillStyle = '#e8f1f8'; g.fillRect(x, y, w, h);
+  const F = [x + w * .5, y + h * .6]; drawSlope(F, th, 0, { noProps: true }); sbRider(F, th, SP.neutral, 52);
+  g.restore();
+  g.save(); g.globalAlpha = a; pill(name, x + w / 2, y + h + 44, 34, c, '#fff'); g.restore();
+}
+function sideSlopeRider(F, th, pose, u) { return sbRider(F, th, pose, u); }
+
+/* ───────── 场景 ───────── */
+const S = [];
+// A 钩子：站在坡顶往下看
+S.push(lt => {
+  const zk = 1 + .06 * (1 - sm(lt / 3)); g.save(); g.translate(CX, H * .45); g.scale(zk, zk); g.translate(-CX, -H * .45);
+  crestScene();
+  const J = crestRider(lt, lt > 4 ? .8 : 0);
+  const a = sm((lt - 1) / .5), tgt = [W * .86, hill(W * .86) - 20];
+  g.save(); g.globalAlpha = a; g.setLineDash([12, 10]); g.strokeStyle = COL.amber; g.lineWidth = 5; g.beginPath(); g.moveTo(J.Hd[0] + 20, J.Hd[1]); g.lineTo(tgt[0], tgt[1]); g.stroke(); g.restore();
+  g.save(); g.globalAlpha = sm((lt - 1.4) / .4); pill('中级道', W * .74, hill(W * .74) + 110, 36, COL.blue, '#fff'); g.restore();
+  if (lt > 4.4) { const b = sm((lt - 4.4) / .4); g.save(); g.globalAlpha = b; label('好陡……', W * .77, hill(W * .62) - 170, 44, COL.red, 900); g.restore(); }
+  g.restore();
+});
+// B 标题：初级 vs 中级
+S.push(lt => {
+  drawSky(0); drawSnowfall(lt + 8, .4);
+  pill('滑雪不难 · EP.15 · 单板', CX, H * .19, 40, COL.amber, '#fff', eout(lt / .3));
+  slopePanel(W * .06, H * .47, W * .42, H * .17, 10, '初级道', COL.green, eout((lt - .3) / .4));
+  slopePanel(W * .52, H * .47, W * .42, H * .17, 22, '中级道', COL.blue, eout((lt - .7) / .4));
+});
+// C 什么时候能去
+S.push(lt => {
+  slopeTop(lt * 30);
+  pill('初级道', W * .12, H * .225, 32, COL.green, '#fff');
+  const f = cPath(CX + 20, H * .225, H * .44, 230, 3), k = 1 - Math.pow(1 - clamp(lt / 7, 0, 1), 1.6), p = f(k);
+  ghostPath(f, 'rgba(106,92,255,.18)'); speedPath(f, 0, k, 7);
+  const h = lt < 7 ? heading(f, k) : 0; topRider(p[0], p[1], h, 1.1);
+  if (lt > 6.6 && lt < 8.4) snowSpray(p[0], p[1], Math.PI / 2, lt, 1 - sm((lt - 7.6) / .8), 1);
+  if (lt > 7.2) { markV(p[0] + 150, p[1] - 10, 28, sm((lt - 7.2) / .3)); g.save(); g.globalAlpha = sm((lt - 7.2) / .3); label('停住', p[0] + 196, p[1] - 10, 36, COL.green, 900, 'left'); g.restore(); }
+  CHECK.forEach((t, i) => {
+    const a = sm((lt - [1.2, 7.0, 8.6][i]) / .35); if (a <= 0) return; const y = H * (.53 + i * .065);
+    g.save(); g.globalAlpha = a; g.fillStyle = 'rgba(255,255,255,.92)'; rrect(W * .12, y - 44, W * .76, 88, 44); g.fill(); g.restore();
+    markV(W * .12 + 52, y, 26, a); g.save(); g.globalAlpha = a; label(t, W * .12 + 100, y + 2, 40, COL.ink, 900, 'left'); g.restore();
+  });
+});
+// D 上去之前：缆车上看一遍
+const VF = view(-.02, 1.0, H * .22, H * .69);
+S.push(lt => {
+  drawMap(VF, { lift: true, liftT: lt });
+  const ya = MP(VF, 1.0, 0)[1], yb = MP(VF, -.02, 0)[1], lx = VF.cx + 430 * VF.z;
+  const k = clamp(lt / 6, 0, 1), cy = lerp(ya - 20, yb + 120, k), sweep = Math.sin(lt * 1.3) * .35;
+  cone(lx - 40, cy, Math.PI + sweep, 520, .42, GREEN, lt < 6.4 ? sm(lt / .4) * (1 - sm((lt - 6) / .4)) : 0);
+  g.save(); g.fillStyle = COL.jacket; rrect(lx - 50, cy - 16, 38, 32, 8); g.fill(); g.restore();
+  if (lt < 6.4) { g.save(); g.globalAlpha = sm(lt / .4) * (1 - sm((lt - 6) / .4)); label('缆车上看', lx - 20, cy - 52, 32, COL.green, 900); g.restore(); }
+  // 标注
+  const A = i => sm((lt - 6.8 - i * .9) / .35);
+  if (A(0) > 0) { const p = MP(VF, .4, .55); pill('最陡', p[0], p[1], 32, 'rgba(27,40,56,.85)', '#fff', A(0)); }
+  if (A(1) > 0) { g.save(); g.globalAlpha = A(1); const l = MP(VF, .635, -1), r = MP(VF, .635, 1); arrow(l[0] - 90, l[1], l[0] - 14, l[1], COL.amber, 6, 20); arrow(r[0] + 90, r[1], r[0] + 14, r[1], COL.amber, 6, 20); label('窄', r[0] + 130, r[1], 36, COL.amber, 900); g.restore(); }
+  if (A(2) > 0) { g.save(); g.globalAlpha = A(2); const p = MP(VF, .92, -1); label('人多', p[0] - 40, p[1], 36, COL.amber, 900, 'right'); g.restore(); }
+  if (A(3) > 0) { g.save(); g.globalAlpha = A(3); const p = MP(VF, ICE[0][0], ICE[0][1]); ring(p[0], p[1], 66, COL.blue, 1, true); label('结冰', p[0], p[1] + 96, 34, COL.blue, 900); g.restore(); }
+});
+// E 站在坡顶：停在边上，选第一段
+const VE = view(-.06, .52, H * .2, H * .7, CX + 10);
+S.push(lt => {
+  drawMap(VE, { crowd: 0 });
+  const s0 = MP(VE, ...STOPS[0]), from = MP(VE, -.07, .25), k = sm(lt / 2);
+  const p = [lerp(from[0], s0[0], k), lerp(from[1], s0[1], k) + Math.sin(k * Math.PI) * -20], ang = lt < 1.6 ? Math.atan2(s0[1] - from[1], s0[0] - from[0]) : lerp(Math.atan2(s0[1] - from[1], s0[0] - from[0]), 0, sm((lt - 1.6) / .4));
+  const steepP = MP(VE, .42, .55); pill('最陡', steepP[0], steepP[1], 34, 'rgba(27,40,56,.85)', '#fff');
+  if (lt < 5.6) {
+    cone(p[0], p[1], Math.PI / 2 + .25, 560, .5, GREEN, sm((lt - 2.2) / .4));
+    topRider(p[0], p[1], ang, RS * VE.z * .8);
+    if (lt > 2.2) { g.save(); g.globalAlpha = sm((lt - 2.2) / .3); label('停在边上，看清楚', p[0] - 40, p[1] + 112, 36, COL.green, 900, 'left'); g.restore(); }
+  } else {
+    const l2 = lt - 5.6, a1 = sm((l2 - .2) / .3), a2 = sm((l2 - 1.4) / .3);
+    // 红：从最陡处直冲
+    g.save(); g.globalAlpha = a1; const r0 = MP(VE, .02, .5), r1 = MP(VE, .46, .55); g.setLineDash([16, 12]); arrow(r0[0], r0[1], r1[0], r1[1], COL.red, 7, 28); g.restore();
+    markX(r0[0] + 70, lerp(r0[1], r1[1], .35), 30, a1);
+    // 绿：第一段
+    g.save(); g.globalAlpha = a2; drawRoute(VE, 0, 1, 'rgba(18,166,121,.85)', true, 7); g.restore();
+    stopMark(VE, 1, a2, 1.2);
+    const s1 = MP(VE, ...STOPS[1]); if (a2 > 0) { g.save(); g.globalAlpha = a2; label('第一段', s1[0] + 70, s1[1] + 4, 38, COL.green, 900, 'left'); g.restore(); }
+    const T2 = tour(VE, l2 - 2.2, 2.6, 9, 0, 1); cone(T2.p[0], T2.p[1], Math.PI / 2, 360, .45, GREEN, l2 < 2.2 ? 1 - sm(l2 / .4) : 0);
+    topRider(T2.p[0], T2.p[1], l2 < 2.2 ? 0 : T2.ang, RS * VE.z * .8);
+  }
+});
+// F 怎么下：切小段 / 宽 C / 陡的那段落叶飘
+const VR = view(-.02, 1.0, H * .21, H * .69);
+S.push(lt => {
+  if (lt < 8) {
+    drawMap(VR, {});
+    drawRoute(VR, 0, SEGM.length, 'rgba(18,166,121,.45)', true, 5);
+    const T1 = tour(VR, lt - .5, 1.25, .5);
+    drawRoute(VR, 0, T1.x, 'rgba(106,92,255,.55)', false, 6);
+    for (let i = 1; i < STOPS.length; i++) stopMark(VR, i, sm((lt - .1 - i * .15) / .3), 1);
+    if (T1.pause > .5) cone(T1.p[0], T1.p[1], Math.PI / 2, 260, .45, GREEN, T1.pause * .9);
+    topRider(T1.p[0], T1.p[1], T1.ang, RS * VR.z * .75);
+  } else if (lt < 16) {
+    const l2 = lt - 8; slopeTop(lt * 40);
+    const fZ = zPath(W * .27, H * .33, H * .68, 55, 6), fC = cPath(W * .7, H * .33, H * .68, 190, 3), k = clamp((l2 - .3) / 7, 0, 1);
+    label('窄弯直冲', W * .27, H * .235, 42, COL.red, 900); label('宽 C 形', W * .7, H * .235, 42, COL.green, 900);
+    ghostPath(fZ, 'rgba(240,71,60,.18)'); speedPath(fZ, 0, k, 7); const pz = fZ(k); topRider(pz[0], pz[1], heading(fZ, k), .85);
+    ghostPath(fC, 'rgba(18,166,121,.18)'); speedPath(fC, 0, k, 7); const pc = fC(k); topRider(pc[0], pc[1], heading(fC, k), .85);
+    const vz = Math.round(runaway(k)), vc = Math.round(steady(3)(k));
+    label(`${vz} km/h`, W * .27, H * .285, 40, vz > 28 ? COL.red : COL.ink, 900); label(`${vc} km/h`, W * .7, H * .285, 40, COL.green, 900);
+  } else {
+    const l2 = lt - 16; slopeTop(0);
+    const b0 = H * .33, b1 = H * .6; g.save(); const gr = g.createLinearGradient(0, b0 - 40, 0, b1 + 40); gr.addColorStop(0, 'rgba(60,88,120,0)'); gr.addColorStop(.12, 'rgba(60,88,120,.22)'); gr.addColorStop(.88, 'rgba(60,88,120,.22)'); gr.addColorStop(1, 'rgba(60,88,120,0)'); g.fillStyle = gr; g.fillRect(0, b0 - 40, W, b1 - b0 + 80);
+    g.beginPath(); g.rect(0, b0, W, b1 - b0); g.clip(); g.strokeStyle = 'rgba(60,88,120,.1)'; g.lineWidth = 3; for (let x = -300; x < W; x += 26) { g.beginPath(); g.moveTo(x, b0); g.lineTo(x + (b1 - b0) * .5, b1); g.stroke(); } g.restore();
+    pill('最陡的一段', W * .17, b0 + 40, 32, 'rgba(27,40,56,.85)', '#fff');
+    const k = clamp((l2 - .2) / 7.4, 0, 1), xf = kk => CX + 70 + zig(kk, 4, 150), yf = kk => lerp(H * .24, H * .66, kk);
+    g.save(); g.strokeStyle = 'rgba(106,92,255,.5)'; g.lineWidth = 6; g.setLineDash([14, 12]); g.beginPath(); for (let i = 0; i <= 120; i++) { const kk = k * i / 120; i ? g.lineTo(xf(kk), yf(kk)) : g.moveTo(xf(kk), yf(kk)); } g.stroke(); g.restore();
+    const x = xf(k), y = yf(k); snowSpray(x, y + 20, Math.PI / 2, lt, .7 * (k < 1 ? 1 : 0), .8);
+    topRider(x, y, 0, 1.15);
+    g.save(); g.globalAlpha = sm((l2 - 1) / .4); label('板一直横着', W * .17, b1 - 40, 32, COL.boardDark, 900); g.restore();
+  }
+});
+// G 心态：累了就停
+const VG = view(-.02, .38, H * .22, H * .6, CX - 50);
+S.push(lt => {
+  drawMap(VG, { crowd: 0 });
+  drawRoute(VG, 0, 1, 'rgba(18,166,121,.4)', true, 5); stopMark(VG, 1, 1, 1.2);
+  const T1 = tour(VG, lt - .3, 2.8, 9, 0, 1); drawRoute(VG, 0, T1.x, 'rgba(106,92,255,.55)', false, 6);
+  topRider(T1.p[0], T1.p[1], T1.ang, RS * VG.z * .7);
+  const rest = sm((lt - 3.4) / .4); puffs(T1.p[0], T1.p[1], lt, rest);
+  if (rest > 0) { g.save(); g.globalAlpha = rest; label('歇一下', T1.p[0] + 80, T1.p[1] + 100, 38, COL.green, 900, 'left'); g.restore(); }
+  // 体力条
+  const e = lt < 3.1 ? lerp(1, .3, clamp(lt / 3.1, 0, 1)) : lerp(.3, .9, sm((lt - 3.4) / 2.4)), bx = W * .22, by = H * .655, bw = W * .62;
+  label('体力', W * .14, by, 34, COL.sub, 900);
+  g.save(); g.fillStyle = 'rgba(255,255,255,.95)'; rrect(bx, by - 20, bw, 40, 20); g.fill(); g.strokeStyle = '#d3dee8'; g.lineWidth = 3; g.stroke();
+  g.fillStyle = e > .6 ? COL.green : e > .4 ? COL.amber : COL.red; rrect(bx + 5, by - 15, (bw - 10) * e, 30, 15); g.fill(); g.restore();
+});
+// H 练习三步
+const V2 = view(.22, .62, H * .24, H * .66, CX - 30);
+S.push(lt => {
+  const cur = lt < 2.6 ? -1 : lt < 8.2 ? 0 : lt < 13 ? 1 : lt < 16.8 ? 2 : 3;
+  if (cur <= 0) {
+    slopeTop(lt * 20);
+    [[W * .3, 2.8, 0, '后刃停'], [W * .7, 5.5, Math.PI, '前刃停']].forEach(([x, t0, endA, name]) => {
+      const t = lt - t0; if (t < 0 && cur >= 0) return; const tt = cur < 0 ? 0 : t;
+      const y = H * .27 + 300 * eout(clamp(tt / 1.5, 0, 1)), turn = sm((tt - .9) / .45), ang = lerp(Math.PI / 2, endA, turn);
+      if (cur >= 0) snowSpray(x, y + 10, Math.PI / 2, lt, turn * (1 - sm((tt - 1.6) / .6)), 1);
+      topR(x, y, ang, 1.2, { face: 1 });
+      if (tt > 1.4) { g.save(); g.globalAlpha = sm((tt - 1.4) / .3); markV(x, y + 120, 26, 1); label(name, x, y + 180, 38, COL.green, 900); g.restore(); }
+    });
+  } else if (cur === 1) {
+    drawMap(V2, { easy: true, ice: false, crowd: 0 });
+    pill('初级道', W * .16, H * .275, 32, COL.green, '#fff');
+    const l2 = lt - 8.2, lap = Math.floor(l2 / 2.4), kk = clamp((l2 - lap * 2.4) / 2.2, 0, 1), ph = kk * 3 * Math.PI;
+    const uv = [lerp(.3, .5, (ph / 2 - Math.sin(2 * ph) / 4) / (1.5 * Math.PI)), .55 * Math.sin(ph)], q = MP(V2, ...uv), q2 = MP(V2, uv[0] + .002, .55 * Math.sin(ph + .02));
+    topRider(q[0], q[1], Math.atan2(q2[1] - q[1], q2[0] - q[0]), 1.1);
+    pill('初级道最陡的一段', W * .3, H * .605, 32, 'rgba(27,40,56,.8)', '#fff');
+    pill(`第 ${Math.min(2, lap + 1)} 遍`, W * .8, H * .605, 34, COL.amber, '#fff');
+  } else {
+    drawMap(VF, { crowd: 2 });
+    drawRoute(VF, 0, SEGM.length, 'rgba(18,166,121,.4)', true, 5);
+    const l2 = lt - 13, xa = clamp(l2 / 4 * 1.6 + .3, 0, SEGM.length), xb = Math.max(0, xa - .35);
+    const pa = routePt(VF, xa), pb = routePt(VF, xb);
+    topRider(pa[0], pa[1], routeHd(VF, xa), RS * VF.z * .75, { jacket: BLUE }); topRider(pb[0], pb[1], routeHd(VF, xb), RS * VF.z * .75);
+    pill('人少的时候', W * .16, H * .25, 30, COL.green, '#fff'); pill('有人陪', W * .16, H * .305, 30, BLUE, '#fff');
+  }
+  stepChips(STEPS, H * .235 + (cur === 2 ? 0 : 0), cur, eout((lt - .3) / .4), 34);
+});
+// I 三个错误
+S.push(lt => {
+  const seg = lt < 6 ? 0 : lt < 12 ? 1 : 2, l2 = lt - seg * 6;
+  if (seg === 0) {
+    drawSky(0); const th = 24, F = [CX + 20, H * .6], k = sm((l2 - .6) / 1);
+    drawSlope(F, th, lt * (200 + 300 * k)); speedLines(F, th, lt, .3 + .5 * k, 1);
+    const J = sideSlopeRider(F, th, lerpPose(SP.neutral, SP.back, k), 150);
+    if (k > .3) sbBalance(J, sm((k - .3) / .4));
+  } else if (seg === 1) {
+    slopeTop(lt * 120); const k = clamp(l2 / 5.4, 0, 1), y = lerp(H * .24, H * .62, Math.pow(k, 1.3)), x = CX + 30;
+    g.save(); g.strokeStyle = 'rgba(240,71,60,.55)'; g.lineWidth = 8; g.lineCap = 'round'; g.beginPath(); g.moveTo(x, H * .24); g.lineTo(x, y); g.stroke(); g.restore();
+    topR(x, y, Math.PI / 2, 1.2, { face: 1 });
+    const v = Math.round(runaway(k)); label(`${v} km/h`, W * .78, H * .29, 52, v > 28 ? COL.red : COL.ink, 900);
+    if (k > .55) { g.save(); g.globalAlpha = sm((k - .55) / .1); label('转不了了！', W * .78, H * .345, 42, COL.red, 900); g.restore(); }
+  } else {
+    drawSky(0);
+    const crest = [W * .46, H * .5], hl = x => x < crest[0] ? crest[1] + (crest[0] - x) * -.05 + Math.pow((crest[0] - x) / 260, 2) * -10 : crest[1] + Math.pow((x - crest[0]) / 300, 2) * 160;
+    g.save(); g.fillStyle = '#fff'; g.beginPath(); g.moveTo(0, H); for (let x = 0; x <= W; x += 8) g.lineTo(x, hl(x)); g.lineTo(W, H); g.closePath(); g.fill();
+    g.strokeStyle = '#c3d4e4'; g.lineWidth = 4; g.beginPath(); for (let x = 0; x <= W; x += 8) { x ? g.lineTo(x, hl(x)) : g.moveTo(x, hl(x)); } g.stroke(); g.restore();
+    const sx = W * .7, sy = hl(sx), sth = Math.atan2(hl(sx + 5) - hl(sx - 5), 10) / D2R;
+    sbRider([sx, sy], sth, SP.fallen, 70);
+    const kx = clamp(l2 / 5, 0, 1), ux = lerp(W * .05, W * .36, kx), uy = hl(ux), uth = Math.atan2(hl(ux + 5) - hl(ux - 5), 10) / D2R, J = sbRider([ux, uy], uth, SP.neutral, 70);
+    g.save(); g.setLineDash([10, 8]); g.strokeStyle = COL.red; g.lineWidth = 4; g.beginPath(); g.moveTo(J.Hd[0], J.Hd[1]); const hit = [crest[0], crest[1] - 6]; g.lineTo(hit[0], hit[1]); g.stroke(); g.restore();
+    markX(hit[0] + 10, hit[1] - 50, 26, sm((l2 - 1.2) / .3));
+    label('看不见', hit[0] + 10, hit[1] - 110, 34, COL.red, 900);
+    label('坐在坡顶下面', sx, sy + 110, 34, COL.red, 900);
+  }
+  markX(W * .14, H * .3, 40, win(l2, .3, 6, .2, .3));
+});
+// J 口诀卡
+S.push(lt => {
+  drawSky(0); drawSnowfall(lt + 112, .5);
+  const a = eout(lt / .4), x = W * .08, y = H * .24, w = W * .84, h = H * .42;
+  g.save(); g.globalAlpha = a; g.translate(0, (1 - a) * 50);
+  g.fillStyle = '#fff'; g.shadowColor = 'rgba(27,40,56,.14)'; g.shadowBlur = 50; rrect(x, y, w, h, 44); g.fill(); g.shadowBlur = 0;
+  label('记住这几句', CX, y + 100, 50, COL.amber, 900);
+  [['上去前', '先看 · 再滑', COL.green], ['下的时候', '一小段一小段', COL.green], ['最陡那段', '怕了就落叶飘', COL.amber]].forEach(([t1, t2, c], i) => {
+    const ra = eout((lt - .8 - i * 1.2) / .35); if (ra <= 0) return; const ry = y + 250 + i * 225;
+    g.save(); g.globalAlpha = a * ra; g.translate((1 - ra) * 40, 0); pill(t1, x + 70 + (t1.length * 38 + 52) / 2, ry - 44, 38, c, '#fff'); label(t2, x + 70, ry + 42, 54, COL.ink, 900, 'left'); g.restore();
+  });
+  g.restore();
+  label('慢就是快，累了就停。', CX, H * .75, 46, COL.sub, 700);
+});
+// K 结尾
+S.push(lt => {
+  slopeTop(lt * 30); g.fillStyle = 'rgba(247,250,252,.6)'; g.fillRect(0, 0, W, H);
+  const f = cPath(CX, H * .62, H * .88, 230, 2), k = clamp(lt / 6, 0, 1); speedPath(f, 0, k, 7); const p = f(k); topRider(p[0], p[1], heading(f, k), 1);
+  pill('想看什么？评论区点题', CX, H * .55, 38, COL.amber, '#fff', eout((lt - 1.8) / .4));
+});
+
+/* ───────── 封面 ───────── */
+function coverArt(key, w, h) {
+  const art = (cx, top, bot) => {
+    const V = view(-.02, 1.0, top, bot, cx); drawMap(V, {});
+    drawRoute(V, 0, SEGM.length, 'rgba(18,166,121,.85)', true, 7);
+    for (let i = 1; i < STOPS.length; i++) stopMark(V, i, 1, 1.2 * Math.max(.8, V.z));
+    const p = routePt(V, 1.35); topRider(p[0], p[1], routeHd(V, 1.35), RS * V.z * .85);
+    const sp = MP(V, .4, .55); pill('最陡', sp[0], sp[1], 34 * Math.max(.85, V.z), 'rgba(27,40,56,.85)', '#fff');
+  };
+  const title = (cx, y1, y2, size, subY, subSize, pillY, pillSize) => {
+    pill('滑雪不难 · EP.15 · 单板', cx, pillY, pillSize, COL.amber, '#fff');
+    label('第一次上中级道', cx, y1, size, COL.ink, 900);
+    g.font = `900 ${size * .78}px ${SANS}`; const parts = [['先看', COL.green], ['，再滑', COL.ink]], ws = parts.map(q => g.measureText(q[0]).width);
+    let x = cx - ws.reduce((s, v) => s + v, 0) / 2; parts.forEach((q, i) => { label(q[0], x + ws[i] / 2, y2, size * .78, q[1], 900); x += ws[i]; });
+    label('看路线 · 切小段 · 落叶飘 · 三个错误', cx, subY, subSize, COL.sub, 700);
+  };
+  if (key === '9x16') {
+    art(CX, h * .4, h * .98);
+    const fade = g.createLinearGradient(0, 0, 0, h * .44); fade.addColorStop(0, 'rgba(240,246,251,1)'); fade.addColorStop(.82, 'rgba(240,246,251,.96)'); fade.addColorStop(1, 'rgba(240,246,251,0)'); g.fillStyle = fade; g.fillRect(0, 0, w, h * .44);
+    title(CX, h * .2, h * .275, 118, h * .34, 40, h * .12, 42);
+  } else if (key === '3x4') {
+    art(CX, h * .4, h * 1.0);
+    const fade = g.createLinearGradient(0, 0, 0, h * .44); fade.addColorStop(0, 'rgba(240,246,251,1)'); fade.addColorStop(.82, 'rgba(240,246,251,.96)'); fade.addColorStop(1, 'rgba(240,246,251,0)'); g.fillStyle = fade; g.fillRect(0, 0, w, h * .44);
+    title(CX, h * .15, h * .245, 112, h * .325, 38, h * .055, 40);
+  } else {
+    art(w * .74, h * .06, h * .97);
+    const fade = g.createLinearGradient(0, 0, w * .62, 0); fade.addColorStop(0, 'rgba(240,246,251,.97)'); fade.addColorStop(.75, 'rgba(240,246,251,.9)'); fade.addColorStop(1, 'rgba(240,246,251,0)'); g.fillStyle = fade; g.fillRect(0, 0, w * .62, h);
+    const size = key === '16x9' ? 104 : 82;
+    title(w * .29, h * .43, h * .58, size, h * .7, key === '16x9' ? 36 : 30, h * .26, key === '16x9' ? 38 : 34);
+  }
+}
+
+/* ───────── 声音 ───────── */
+function sound(K, c, DUR) {
+  K.bed(8.0, DUR, t => t < 23.6 ? 'verse' : t < 36.6 ? 'chorus' : t < 47.6 ? 'verse' : t < 71.6 ? 'chorus' : t < 77.6 ? 'verse' : t < 94.6 ? 'chorus' : t < 112.6 ? 'tense' : 'outro');
+  K.wind(DUR, t => t < 8 ? .35 : 0);
+  for (let t = 4.4; t < 7.8; t += .72) { K.tone(58, t, .22, .32); K.tone(52, t + .2, .26, .26); } // 心跳
+  K.ding(11.6 + 1.2); K.ding(11.6 + 7.2); K.ding(11.6 + 8.6);
+  for (let i = 0; i < 4; i++) K.tick(23.6 + 6.8 + i * .9); K.ding(23.6 + 10);
+  K.ding(36.6 + 2.2); K.wrong(36.6 + 5.8); K.ding(36.6 + 7);
+  for (let i = 0; i < 4; i++) K.tick(47.6 + .5 + 1.25 + i * 1.75);
+  K.ding(47.6 + 8 + 3); K.whoosh(47.6 + 16.2); K.ding(47.6 + 17.4);
+  K.ding(71.6 + 3.6);
+  [77.6 + 2.6, 77.6 + 8.2, 77.6 + 13].forEach(K.ding); K.whoosh(77.6 + 3.7); K.whoosh(77.6 + 6.4);
+  K.riser(93.2, 94.6, .12);
+  [94.6 + .3, 100.6 + .3, 106.6 + .3].forEach(K.wrong);
+  for (let i = 0; i < 3; i++) K.tone(880 + i * 110, 112.6 + .8 + i * 1.2, .25, .07, 'triangle');
+}
+
+kitRun({
+  T, S, TX, seed: 251,
+  allText: STEPS.join('') + CHECK.join('') + '好陡……中级道初级缆车上看最陡窄人多结冰停在边，清楚第一段绿红km/h宽C形窄弯直冲的板一直横着歇下体力后刃前刃初级道最陡的一段第遍人少时候有陪转不了！看见坐坡顶面记住这几句上去前下最那怕就落叶飘再小慢是快累想什么？评论区点题次路线切三个错误，',
+  audio: sound, cover: coverArt
+});
+})();
+</script>
+</body>
+</html>
