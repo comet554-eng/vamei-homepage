@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>滑雪不难 EP.12 双板</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#000;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;aspect-ratio:9/16;max-width:100vw;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;aspect-ratio:auto;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="skirig.js"></script>
+<script>
+/*
+ * 滑雪不难 EP.12 双板《雪鞋怎么穿才不疼》（约 2 分 05 秒）
+ * 主画面：雪鞋侧面剖面（外壳 + 内胆 + 4 个扣 + 魔术贴），里面是脚和小腿。
+ */
+(() => {
+'use strict';
+const T = [0, 8.0, 11.6, 25.6, 39.6, 53.6, 65.6, 75.6, 93.6, 111.6, 118.6, 125.1];
+const YH = .135, YB = .745;
+
+const TX = [
+  { in: .15, out: 3.8, text: '滑一会儿，\n脚就{r}疼{/}？', y: YH, size: 92, w: 900, st: .06 },
+  { in: 4.0, out: 7.8, text: '很多时候，\n是{a}雪鞋没穿对{/}。', y: YH, size: 84, w: 900 },
+  { in: 8.25, out: 11.35, text: '雪鞋怎么穿\n才不疼', y: .3, size: 100, w: 900, st: .05 },
+  { in: 9.0, out: 11.35, text: '穿对了，脚才听你的', y: .415, size: 42, w: 600, sub: 1 },
+  { in: 11.8, out: 18.4, text: '先说袜子：\n只穿{g}一双薄袜{/}。', y: YH, size: 84, w: 900 },
+  { in: 12.6, out: 18.4, text: '一双滑雪袜就够了。\n别穿两双，也别穿厚棉袜。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 18.8, out: 25.4, text: '袜子{g}拉平{/}，\n裤腿{r}别塞进鞋里{/}。', y: YH, size: 80, w: 900 },
+  { in: 19.6, out: 25.4, text: '袜子起皱会磨脚；\n秋裤、裤腿都留在鞋外面。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 25.8, out: 32.4, text: '扣子{g}全打开{/}，\n鞋舌往外拉开。', y: YH, size: 84, w: 900 },
+  { in: 26.6, out: 32.4, text: '脚伸进去，再把鞋舌放回来，\n贴住小腿。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 32.8, out: 39.4, text: '{g}跺一跺脚跟{/}，\n让脚跟落到底。', y: YH, size: 84, w: 900 },
+  { in: 33.6, out: 39.4, text: '脚跟在地上敲两下，或者小腿往前顶一顶，\n脚跟就会滑进鞋跟里。', y: YB, size: 40, w: 500, sub: 1 },
+  { in: 39.8, out: 46.4, text: '扣子：{g}从下往上{/}，\n先松后紧。', y: YH, size: 84, w: 900 },
+  { in: 40.6, out: 46.4, text: '先把每个扣都轻轻挂上，\n再从下往上，一个个收紧。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 46.8, out: 53.4, text: '下面的扣{g}稳住脚{/}，\n上面的扣{g}贴住小腿{/}。', y: YH, size: 80, w: 900 },
+  { in: 47.6, out: 53.4, text: '最后拉紧魔术贴绑带。\n贴住就好，不用勒死。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 53.8, out: 59.4, text: '站起来屈膝，\n小腿{g}压住鞋舌{/}。', y: YH, size: 84, w: 900 },
+  { in: 54.6, out: 59.4, text: '直着站，脚趾碰到鞋头是正常的；\n一屈膝，脚趾会稍微往后。', y: YB, size: 40, w: 500, sub: 1 },
+  { in: 59.8, out: 65.4, text: '脚跟{g}不往上提{/}，\n脚在里面{g}不乱晃{/}。', y: YH, size: 80, w: 900 },
+  { in: 60.6, out: 65.4, text: '屈膝时脚跟能抬起来，\n就是还太松，再紧一格。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 65.8, out: 70.4, text: '但也{r}别勒得发麻{/}。', y: YH, size: 84, w: 900 },
+  { in: 66.6, out: 70.4, text: '脚发麻、发凉，多半是扣太紧了，\n松一格试试。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 70.8, out: 75.4, text: '坐缆车时，\n扣子可以{g}松一点{/}。', y: YH, size: 84, w: 900 },
+  { in: 71.6, out: 75.4, text: '让脚歇一歇；下了缆车、滑之前，再扣紧。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 75.8, out: 77.9, text: '穿好以后，\n检查三步。', y: YH, size: 80, w: 900 },
+  { in: 78.2, out: 83.2, text: '① 跺脚跟', y: YH, size: 84, w: 900 },
+  { in: 78.9, out: 83.2, text: '脚跟敲两下，让脚跟落到鞋跟里。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 83.4, out: 88.4, text: '② 从下往上扣', y: YH, size: 84, w: 900 },
+  { in: 84.1, out: 88.4, text: '先轻轻挂上，再一个个收紧，\n最后拉魔术贴。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 88.6, out: 93.4, text: '③ 屈膝试一下脚跟', y: YH, size: 80, w: 900 },
+  { in: 89.3, out: 93.4, text: '脚跟不提、脚不晃、也不发麻，就对了。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 93.8, out: 99.4, text: '常见错误一：\n穿{r}两双厚袜子{/}', y: YH, size: 84, w: 900 },
+  { in: 94.6, out: 99.4, text: '越厚越挤，脚反而更冷、更容易磨。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 99.8, out: 105.4, text: '常见错误二：\n裤腿{r}塞进鞋里{/}', y: YH, size: 84, w: 900 },
+  { in: 100.6, out: 105.4, text: '布料堆在小腿前面，越滑越疼。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 105.8, out: 111.4, text: '常见错误三：\n扣子{r}没扣对{/}', y: YH, size: 84, w: 900 },
+  { in: 106.6, out: 111.4, text: '只扣上面、下面松着，脚跟会晃；\n反过来全部扣死，又会发麻。', y: YB, size: 40, w: 500, sub: 1 },
+  { in: 118.8, out: 999, text: '你滑雪时，\n哪里最容易疼？', y: .37, size: 88, w: 900, st: .06 },
+  { in: 119.8, out: 999, text: '评论区说说', y: .465, size: 42, w: 500, sub: 1 }
+];
+const STEPS = ['① 跺脚跟', '② 从下往上扣', '③ 屈膝试脚跟'];
+
+/* ───────── 2D 仿射矩阵 ───────── */
+const mMul = (m, n) => [m[0] * n[0] + m[2] * n[1], m[1] * n[0] + m[3] * n[1], m[0] * n[2] + m[2] * n[3], m[1] * n[2] + m[3] * n[3], m[0] * n[4] + m[2] * n[5] + m[4], m[1] * n[4] + m[3] * n[5] + m[5]];
+const mT = (x, y) => [1, 0, 0, 1, x, y];
+const mR = th => [Math.cos(th), Math.sin(th), -Math.sin(th), Math.cos(th), 0, 0];
+const mRot = (th, p) => mMul(mMul(mT(p[0], p[1]), mR(th)), mT(-p[0], -p[1]));
+const mAp = (m, p) => [m[0] * p[0] + m[2] * p[1] + m[4], m[1] * p[0] + m[3] * p[1] + m[5]];
+
+/* ───────── 雪鞋剖面（局部坐标：鞋底中点附近为原点，鞋头朝 +x，y 向下） ───────── */
+const BL = 15 * D2R, BU = [Math.sin(BL), -Math.cos(BL)], BPF = [Math.cos(BL), Math.sin(BL)], BA = [-40, -150], CUFF = 300;
+const sF = (t, off = 78) => [BA[0] + BPF[0] * off + BU[0] * t, BA[1] + BPF[1] * off + BU[1] * t];
+const sB = t => sF(t, -92);
+const SHELL_T = 16, LINER_T = 18;
+const SHELL = '#3b5675', LINER = '#efe2cb', CAV = '#fbf8f2', SOCK = '#9dbcd3', SOCKD = '#7b9db8', THICK = '#e3cfa8';
+function bootPath(closed) {
+  const f3 = sF(CUFF), f0 = sF(45), c0 = [f0[0] - BU[0] * 25, f0[1] - BU[1] * 25], b0 = sB(40), b3 = sB(CUFF);
+  g.beginPath(); g.moveTo(f3[0], f3[1]); g.lineTo(f0[0], f0[1]);
+  g.quadraticCurveTo(c0[0], c0[1], 100, -126); g.lineTo(170, -96);
+  g.quadraticCurveTo(210, -88, 210, -52); g.lineTo(210, -24); g.lineTo(-154, -24); g.lineTo(-154, -80);
+  g.bezierCurveTo(-154, -130, b0[0] - BU[0] * 40, b0[1] - BU[1] * 40, b0[0], b0[1]); g.lineTo(b3[0], b3[1]);
+  if (closed) g.closePath();
+}
+function legClip() {
+  bootPath(true);
+  const f3 = sF(CUFF), b3 = sB(CUFF), E = 2000;
+  g.moveTo(f3[0] + BPF[0] * E, f3[1] + BPF[1] * E); g.lineTo(f3[0] + BPF[0] * E + BU[0] * E, f3[1] + BPF[1] * E + BU[1] * E);
+  g.lineTo(b3[0] - BPF[0] * E + BU[0] * E, b3[1] - BPF[1] * E + BU[1] * E); g.lineTo(b3[0] - BPF[0] * E, b3[1] - BPF[1] * E); g.closePath();
+}
+function smoothPath(pts) {
+  const n = pts.length, P = i => pts[(i + n) % n];
+  g.beginPath(); const m0 = mid(P(0), P(1)); g.moveTo(m0[0], m0[1]);
+  for (let i = 1; i <= n; i++) { const p = P(i), q = mid(P(i), P(i + 1)); g.quadraticCurveTo(p[0], p[1], q[0], q[1]); }
+  g.closePath();
+}
+const FOOT = [[-100, -58], [60, -58], [130, -58], [178, -58], [181, -84], [150, -102], [60, -132], [18, -168], [-92, -172], [-121, -150], [-121, -60]];
+const BALL = [130, -58], J0 = [-40, -128];
+function wave(x1, y1, x2, y2, amp, n) {
+  if (amp < .3) return; g.beginPath();
+  const dx = x2 - x1, dy = y2 - y1, L0 = Math.hypot(dx, dy), nx = -dy / L0, ny = dx / L0;
+  for (let i = 0; i <= 24; i++) { const k = i / 24, w = Math.sin(k * Math.PI * 2 * n) * amp; const x = x1 + dx * k + nx * w, y = y1 + dy * k + ny * w; i ? g.lineTo(x, y) : g.moveTo(x, y); }
+  g.stroke();
+}
+function legMat(o) {
+  const k = o.enter == null ? 1 : o.enter, ea = (1 - k) * 22 * D2R;
+  let m = mMul(mT(o.dx || 0, 0), mRot(o.lift || 0, BALL));
+  m = mMul(mRot(ea, J0), m);
+  m = mMul(mT(BU[0] * (1 - k) * 280, BU[1] * (1 - k) * 280), m);
+  return { m, ea };
+}
+// 脚 + 小腿（袜子），o.free = 不在鞋里（单独画脚）
+function drawLeg(o) {
+  const { m } = legMat(o), J = mAp(m, J0), ang = (o.a == null ? 15 : o.a) * D2R;
+  const dir = [Math.sin(ang), -Math.cos(ang)], perp = [Math.cos(ang), Math.sin(ang)], len = o.leg || 500;
+  const P = (t, w = 0) => [J[0] + dir[0] * t + perp[0] * w, J[1] + dir[1] * t + perp[1] * w];
+  const tc = (CUFF - ((J[0] - BA[0]) * BU[0] + (J[1] - BA[1]) * BU[1])) / (dir[0] * BU[0] + dir[1] * BU[1]);
+  const LG = { m, J, dir, perp, P, tc, len };
+  const fadeStroke = (rgb, t0, t1, w) => {
+    const a = P(t0), b = P(t1), f = P(Math.max(t0, t1 - 110)), gr = g.createLinearGradient(f[0], f[1], b[0], b[1]);
+    gr.addColorStop(0, `rgba(${rgb},1)`); gr.addColorStop(1, `rgba(${rgb},0)`);
+    g.save(); g.lineCap = 'butt'; g.strokeStyle = `rgba(${rgb},1)`; g.lineWidth = w; g.beginPath(); g.moveTo(...a); g.lineTo(...f); g.stroke();
+    g.strokeStyle = gr; g.beginPath(); g.moveTo(...f); g.lineTo(...b); g.stroke(); g.restore();
+  };
+  const sockEnd = o.free || o.pants !== 'out' ? len : Math.min(len, tc + 60);
+  if (o.free && o.socks === 2) {
+    fadeStroke('227,207,168', -10, sockEnd, 128);
+    g.save(); g.transform(...m); smoothPath(FOOT); g.strokeStyle = THICK; g.lineWidth = 30; g.lineJoin = 'round'; g.stroke(); g.fillStyle = THICK; g.fill(); g.restore();
+  }
+  if (o.free) fadeStroke('157,188,211', -10, sockEnd, 100);
+  else { g.save(); g.lineCap = 'butt'; g.strokeStyle = SOCK; g.lineWidth = 100; g.beginPath(); g.moveTo(...P(-10)); g.lineTo(...P(sockEnd)); g.stroke(); g.restore(); }
+  g.save(); g.transform(...m); smoothPath(FOOT); g.fillStyle = SOCK; g.fill(); g.save(); g.clip();
+  g.fillStyle = SOCKD; g.beginPath(); g.arc(182, -74, 42, 0, Math.PI * 2); g.fill(); g.beginPath(); g.arc(-122, -82, 44, 0, Math.PI * 2); g.fill(); g.restore();
+  if (o.wr > 0) { g.strokeStyle = '#5f819c'; g.lineWidth = 4; wave(-70, -146, -5, -150, 7 * o.wr, 3); wave(-20, -118, 45, -112, 7 * o.wr, 3); wave(70, -104, 130, -86, 6 * o.wr, 2.5); }
+  g.restore();
+  if (o.wr > 0) { g.save(); g.strokeStyle = '#5f819c'; g.lineWidth = 4; [70, 115, 160].forEach(t => { const a = P(t, -38), b = P(t + 8, 38); wave(a[0], a[1], b[0], b[1], 7 * o.wr, 3); }); g.restore(); }
+  if (o.pants === 'in') {
+    g.save(); g.beginPath(); const pts = [P(40, -62), P(40, 64), P(len, 64), P(len, -62)]; pts.forEach((q, i) => i ? g.lineTo(...q) : g.moveTo(...q)); g.closePath();
+    const f = P(len - 110), b = P(len), gr = g.createLinearGradient(f[0], f[1], b[0], b[1]); gr.addColorStop(0, 'rgba(38,64,94,1)'); gr.addColorStop(1, 'rgba(38,64,94,0)');
+    g.fillStyle = gr; g.fill();
+    g.strokeStyle = '#4b6a8e'; g.lineWidth = 5; for (let i = 0; i < 6; i++) { const t = 55 + i * 34, a = P(t, -56), b = P(t + 18, 58); wave(a[0], a[1], b[0], b[1], 6, 2); }
+    g.restore();
+  }
+  return LG;
+}
+function pantsOut(LG) {
+  const { P, tc, len } = LG, t0 = tc - 16;
+  g.save(); const pts = [P(t0, -104), P(t0, 90), P(t0 + 70, 70), P(len, 70), P(len, -80), P(t0 + 70, -82)];
+  g.beginPath(); pts.forEach((q, i) => i ? g.lineTo(...q) : g.moveTo(...q)); g.closePath();
+  const f = P(len - 110), b = P(len), gr = g.createLinearGradient(f[0], f[1], b[0], b[1]); gr.addColorStop(0, 'rgba(38,64,94,1)'); gr.addColorStop(1, 'rgba(38,64,94,0)');
+  g.fillStyle = gr; g.fill();
+  g.strokeStyle = 'rgba(26,42,61,.9)'; g.lineWidth = 6; g.beginPath(); g.moveTo(...P(t0 + 3, -102)); g.lineTo(...P(t0 + 3, 88)); g.stroke();
+  g.restore();
+}
+function tongue(open, hl) {
+  const o0 = sF(14, 49);
+  g.save(); g.translate(o0[0], o0[1]); g.rotate(Math.atan2(BU[1], BU[0]) + open * 30 * D2R);
+  rrect(0, -12, CUFF + 14, 24, 12); g.fillStyle = '#e6d6b8'; g.fill(); g.strokeStyle = '#bfa67c'; g.lineWidth = 3; g.stroke();
+  if (hl > 0) { g.globalAlpha = hl * .75; g.fillStyle = COL.green; rrect(120, -12, CUFF - 106, 24, 12); g.fill(); }
+  g.restore();
+}
+const BK = [{ h: [150, -105], tg: [-.919, -.394] }, { h: [85, -132], tg: [-.919, -.394] }, { h: sF(140), tg: BU }, { h: sF(230), tg: BU }];
+BK.forEach(b => { b.out = [-b.tg[1], b.tg[0]]; });
+function buckle(b, c, col) {
+  const p0 = [b.h[0] - b.tg[0] * 22 + b.out[0] * 5, b.h[1] - b.tg[1] * 22 + b.out[1] * 5], an = (1 - c) * 62 * D2R;
+  const d = [b.tg[0] * Math.cos(an) + b.out[0] * Math.sin(an), b.tg[1] * Math.cos(an) + b.out[1] * Math.sin(an)], tip = [p0[0] + d[0] * 46, p0[1] + d[1] * 46];
+  g.strokeStyle = '#9fb2c4'; g.lineWidth = 4;
+  for (let k = 30; k <= 54; k += 12) { const p = [b.h[0] + b.tg[0] * k, b.h[1] + b.tg[1] * k]; g.beginPath(); g.moveTo(p[0] - b.out[0] * 3, p[1] - b.out[1] * 3); g.lineTo(p[0] + b.out[0] * 7, p[1] + b.out[1] * 7); g.stroke(); }
+  g.lineCap = 'round'; g.strokeStyle = '#1c2530'; g.lineWidth = 19; g.beginPath(); g.moveTo(...p0); g.lineTo(...tip); g.stroke();
+  g.strokeStyle = col || '#cbd5df'; g.lineWidth = 12; g.beginPath(); g.moveTo(...p0); g.lineTo(...tip); g.stroke();
+  g.fillStyle = '#1c2530'; g.beginPath(); g.arc(p0[0], p0[1], 7, 0, Math.PI * 2); g.fill();
+}
+function strap(c, col) {
+  const p = sF(282, 62);
+  g.save(); g.translate(p[0], p[1]); g.rotate(Math.atan2(BPF[1], BPF[0]) - (1 - c) * 55 * D2R);
+  rrect(-26, -13, 66, 26, 8); g.fillStyle = '#1c2530'; g.fill();
+  g.fillStyle = col || '#5d6f82'; rrect(-18, -7, 50, 14, 5); g.fill(); g.restore();
+  const q = sF(282, -92); g.fillStyle = '#1c2530'; rrect(q[0] - 14, q[1] - 13, 22, 26, 6); g.fill();
+}
+/* o: a 小腿角度, dx 脚前后, lift 脚跟抬起(弧度), enter 脚伸入 0..1, open 鞋舌, bk[4] 扣子 0开~1扣紧, bc[4] 扣子颜色,
+ *    strap 魔术贴, sc 魔术贴颜色, socks 1|2, wr 袜子褶皱, pants 'out'|'in', leg 小腿长度, rot 鞋整体抬跟(度), over 勒太紧, tg 鞋舌高亮, num 编号透明度, cur 当前编号 */
+function boot(B, o) {
+  o = Object.assign({ a: 15, dx: 0, lift: 0, enter: 1, open: 0, bk: [1, 1, 1, 1], bc: [], strap: 1, sc: null, socks: 1, wr: 0, pants: 'out', leg: 500, rot: 0, over: 0, tg: 0, num: 0, cur: -1 }, o);
+  const MB = mRot(o.rot * D2R, [210, 0]), sc = p => { const q = mAp(MB, p); return [B.cx + q[0] * B.s, B.cy + q[1] * B.s]; };
+  g.save(); g.fillStyle = 'rgba(40,60,80,.13)'; g.beginPath(); g.ellipse(B.cx + 28 * B.s, B.cy + 4, 215 * B.s, 13 * B.s, 0, 0, Math.PI * 2); g.fill(); g.restore();
+  g.save(); g.translate(B.cx, B.cy); g.scale(B.s, B.s); g.transform(...MB); g.lineJoin = 'round'; g.lineCap = 'round';
+  g.save(); bootPath(true); g.clip(); g.fillStyle = CAV; g.fillRect(-300, -700, 700, 800); g.restore();
+  g.save(); legClip(); g.clip(); const LG = drawLeg(o); g.restore();
+  g.save(); bootPath(true); g.clip(); bootPath(false); g.strokeStyle = LINER; g.lineWidth = 2 * (SHELL_T + LINER_T); g.stroke(); g.strokeStyle = SHELL; g.lineWidth = 2 * SHELL_T; g.stroke();
+  if (o.socks === 2) {
+    g.save(); g.transform(...LG.m); smoothPath(FOOT); g.strokeStyle = THICK; g.lineWidth = 28; g.stroke(); g.restore();
+    g.strokeStyle = THICK; g.lineWidth = 26; [-50, 50].forEach(w => { g.beginPath(); g.moveTo(...LG.P(30, w)); g.lineTo(...LG.P(LG.tc + 10, w)); g.stroke(); });
+  }
+  g.restore();
+  tongue(o.open, o.tg);
+  bootPath(false); g.strokeStyle = '#22303f'; g.lineWidth = 5; g.stroke();
+  g.fillStyle = '#1f2731'; rrect(-158, -27, 370, 27, 6); g.fill(); rrect(-180, -48, 32, 24, 5); g.fill(); rrect(204, -46, 24, 22, 5); g.fill();
+  if (o.pants === 'out') pantsOut(LG);
+  strap(o.strap, o.sc);
+  BK.forEach((b, i) => buckle(b, o.bk[i], o.bc[i]));
+  if (o.over > 0) { g.save(); g.globalAlpha = o.over; BK.forEach(b => arrow(b.h[0] + b.out[0] * 88, b.h[1] + b.out[1] * 88, b.h[0] + b.out[0] * 34, b.h[1] + b.out[1] * 34, COL.red, 7, 22)); g.restore(); }
+  if (o.num > 0) {
+    g.save(); g.globalAlpha = o.num; BK.forEach((b, i) => { const p = [b.h[0] + b.out[0] * 72, b.h[1] + b.out[1] * 72]; g.fillStyle = i === o.cur ? COL.amber : o.bk[i] > .95 ? COL.green : '#fff'; g.strokeStyle = '#c9d6e2'; g.lineWidth = 3; g.beginPath(); g.arc(p[0], p[1], 21, 0, Math.PI * 2); g.fill(); if (i !== o.cur && o.bk[i] <= .95) g.stroke(); label(String(i + 1), p[0], p[1] + 1, 26, i === o.cur || o.bk[i] > .95 ? '#fff' : COL.sub, 900); }); g.restore();
+  }
+  g.restore();
+  const fp = p => sc(mAp(LG.m, p));
+  return {
+    sc, toe: fp([182, -74]), heel: fp([-112, -64]), heelBack: fp([-121, -100]), instep: fp([70, -120]),
+    shinF: t => sc(LG.P(t, 50)), shinC: t => sc(LG.P(t)), tc: LG.tc, buck: BK.map(b => sc(b.h)), strap: sc(sF(282, 70)), tongue: (() => { const o0 = sF(14, 49), an = Math.atan2(BU[1], BU[0]) + o.open * 30 * D2R; return sc([o0[0] + Math.cos(an) * 230, o0[1] + Math.sin(an) * 230]); })()
+  };
+}
+const place = (s, cyF) => ({ cx: CX - 28 * s, cy: H * cyF, s });
+function floor(y) {
+  const gr = g.createLinearGradient(0, y, 0, H); gr.addColorStop(0, '#ffffff'); gr.addColorStop(1, '#e3ecf4');
+  g.fillStyle = gr; g.fillRect(0, y, W, H - y); g.strokeStyle = '#c3d4e4'; g.lineWidth = 4; g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke();
+}
+function freeLeg(cx, floorY, s, o) { g.save(); g.translate(cx, floorY + 58 * s); g.scale(s, s); g.lineJoin = 'round'; drawLeg(Object.assign({ free: 1, a: 4, leg: 400 }, o)); g.restore(); }
+// 标签 + 虚线指引
+function callout(text, x, y, tx, ty, color, a, size = 36) {
+  if (a <= .01) return; g.save(); g.globalAlpha = a;
+  g.setLineDash([8, 8]); g.strokeStyle = color; g.lineWidth = 3; g.beginPath(); g.moveTo(x, y + (ty > y ? 28 : -28)); g.lineTo(tx, ty); g.stroke(); g.setLineDash([]);
+  g.fillStyle = color; g.beginPath(); g.arc(tx, ty, 7, 0, Math.PI * 2); g.fill();
+  label(text, x, y, size, color, 900); g.restore();
+}
+function numb(x, y, a) { g.save(); g.globalAlpha = a; g.strokeStyle = COL.red; g.lineWidth = 5; g.lineJoin = 'round'; for (let k = 0; k < 3; k++) { g.beginPath(); for (let i = 0; i <= 5; i++) { const xx = x + i * 12, yy = y + k * 22 + (i % 2 ? -7 : 7); i ? g.lineTo(xx, yy) : g.moveTo(xx, yy); } g.stroke(); } g.restore(); }
+// 跺脚跟：返回 rot（度）与已经完成的进度 0..n
+function taps(l, ts) {
+  let rot = 0, prog = 0;
+  ts.forEach(t => { if (l > t - .45 && l < t) rot += 6 * Math.sin(Math.PI * (l - (t - .45)) / .45); prog += sm((l - t) / .25); });
+  return { rot, prog };
+}
+
+/* ───────── 场景 ───────── */
+const S = [];
+// A 钩子：脚疼
+S.push(lt => {
+  drawSky(0); drawSnowfall(lt, .3); floor(H * .68);
+  const B = place(1.3, .68), lift = .05 * Math.max(0, Math.sin(lt * 5)) * sm((lt - 2) / .5);
+  const R = boot(B, { a: 7, dx: 6, lift });
+  const pu = .6 + .25 * Math.sin(lt * 6), a1 = sm((lt - .5) / .4), a2 = sm((lt - 1.3) / .4), a3 = sm((lt - 2.1) / .4);
+  glow(R.toe[0], R.toe[1], 80, '240,71,60', a1 * pu); glow(...R.shinF(R.tc - 50), 80, '240,71,60', a2 * pu); glow(R.heel[0], R.heel[1], 70, '240,71,60', a3 * pu);
+  callout('脚趾顶', 920, R.toe[1] - 150, R.toe[0] + 10, R.toe[1], COL.red, a1);
+  const sf = R.shinF(R.tc - 50); callout('小腿酸', 920, sf[1] - 60, sf[0] + 10, sf[1], COL.red, a2);
+  callout('脚跟晃', 150, R.heel[1] - 170, R.heel[0] - 20, R.heel[1] - 10, COL.red, a3);
+  if (lt > 4.2) { g.save(); g.globalAlpha = sm((lt - 4.2) / .4); label('?', 160, H * .3, 110, COL.amber, 900); g.restore(); }
+});
+// B 标题
+S.push(lt => {
+  drawSky(0); g.fillStyle = 'rgba(247,250,252,.5)'; g.fillRect(0, 0, W, H); floor(H * .86);
+  pill('滑雪不难 · EP.12 · 双板', CX, H * .19, 40, COL.amber, '#fff', eout(lt / .3));
+  const bk = [0, 1, 2, 3].map(i => sm((lt - .5 - i * .45) / .3));
+  boot(place(.95, .86), { bk, strap: sm((lt - 2.4) / .3), leg: 420 });
+});
+// C 袜子
+S.push(lt => {
+  drawSky(0); drawSnowfall(lt + 12, .3);
+  if (lt < 7) {
+    const fy = H * .64; floor(fy);
+    freeLeg(CX - 250 - 30 * .9, fy, .9, {}); freeLeg(CX + 250 - 30 * .9, fy, .9, { socks: 2, wr: .8 });
+    const a = sm((lt - .9) / .4), b = sm((lt - 1.6) / .4);
+    markV(CX - 250, H * .3, 40, a); markX(CX + 250, H * .3, 40, b);
+    g.save(); g.globalAlpha = a; label('一双薄滑雪袜', CX - 250, fy + 70, 38, COL.green, 900); g.restore();
+    g.save(); g.globalAlpha = b; label('两双 · 厚棉袜', CX + 250, fy + 70, 38, COL.red, 900); label('挤脚、起皱', CX + 250, fy + 125, 32, COL.sub, 700); g.restore();
+  } else if (lt < 10.4) {
+    const l2 = lt - 7, fy = H * .64, s = 1.25, wr = 1 - sm((l2 - 1) / 1.4); floor(fy);
+    freeLeg(CX - 30 * s - 60, fy, s, { wr });
+    const a = sm((l2 - .2) / .3);
+    if (wr > .5) { g.save(); g.globalAlpha = a; label('起皱 = 磨脚', 860, H * .44, 38, COL.red, 900); g.restore(); }
+    else { label('拉平', 860, H * .44, 44, COL.green, 900); markV(860, H * .36, 34, sm((l2 - 2.4) / .3)); }
+    g.save(); g.globalAlpha = sm((l2 - .9) / .3) * (1 - sm((l2 - 2.8) / .3)); arrow(760, H * .6, 760, H * .48, COL.green, 8, 28); g.restore();
+  } else {
+    const l2 = lt - 10.4, ok = l2 > 1.9; floor(H * .68);
+    const R = boot(place(1.3, .68), { pants: ok ? 'out' : 'in' }), p = R.shinC(R.tc - 70);
+    if (!ok) { ring(p[0], p[1], 120, COL.red, sm((l2 - .2) / .3), true); markX(W * .14, H * .3, 40, sm((l2 - .2) / .3)); callout('裤腿在鞋里', 900, H * .3, p[0] + 80, p[1] - 40, COL.red, sm((l2 - .4) / .3)); }
+    else { const k = sm((l2 - 1.9) / .3), q = R.shinC(R.tc + 30); markV(W * .14, H * .3, 40, k); callout('盖在鞋外面', 900, H * .3, q[0] + 90, q[1], COL.green, k); }
+  }
+});
+// D 穿鞋：打开、伸进去、跺脚跟
+S.push(lt => {
+  drawSky(0); floor(H * .68); const B = place(1.3, .68);
+  if (lt < 6.8) {
+    const open = sm((lt - .3) / .7) * (1 - sm((lt - 4.3) / .7)), enter = sm((lt - 1.4) / 2.2);
+    const R = boot(B, { bk: [0, 0, 0, 0], strap: 0, open, enter, dx: 14, lift: .05, a: 8, leg: 500 - (1 - enter) * 280 });
+    const ta = R.tongue; callout('鞋舌', 930, H * .3, ta[0] + 14, ta[1], COL.amber, win(lt, .6, 4.6, .3, .4));
+    g.save(); g.globalAlpha = win(lt, 1.6, 3.8, .3, .3); arrow(250, H * .27, 250, H * .4, COL.amber, 8, 28); label('脚伸进去', 250, H * .23, 36, COL.amber, 900); g.restore();
+  } else {
+    const l2 = lt - 6.8, tp = taps(l2, [.8, 2.0, 3.2]), k2 = sm((l2 - 3.7) / .8);
+    const dx = lerp(14 * (1 - tp.prog / 3), 0, k2), lift = lerp(.05 * (1 - tp.prog / 3), 0, k2);
+    const R = boot(B, { bk: [0, 0, 0, 0], strap: 0, rot: tp.rot, dx, lift, a: lerp(8, 15, k2) });
+    [.8, 2.0, 3.2].forEach(t => { const a = win(l2, t - .05, t + .6, .05, .3); if (a > 0) { g.save(); g.globalAlpha = a; label('咚', R.heel[0] - 120, R.heel[1] + 20 - (l2 - t) * 60, 54, COL.amber, 900); g.restore(); } });
+    const a = sm((l2 - 4.6) / .4); ring(R.heelBack[0] + 10, R.heelBack[1] + 15, 62, COL.green, a);
+    callout('脚跟到位', 150, H * .42, R.heelBack[0] - 30, R.heelBack[1] - 20, COL.green, a);
+    g.save(); g.globalAlpha = win(l2, 3.6, 7.2, .3, .3); const sf = R.shinF(R.tc - 80); arrow(sf[0] + 150, sf[1] + 40, sf[0] + 40, sf[1] + 10, COL.green, 8, 26); label('小腿往前顶', 900, sf[1] - 60, 34, COL.green, 900); g.restore();
+  }
+});
+// E 扣子：从下往上，先松后紧
+S.push(lt => {
+  drawSky(0); floor(H * .68); const B = place(1.3, .68);
+  if (lt < 6.8) {
+    const st = [2.0, 2.9, 3.8, 4.7], bk = st.map((s0, i) => lerp(.45 * sm((lt - .3 - i * .25) / .3), 1, sm((lt - s0) / .4)));
+    const cur = lt < 1.9 ? -1 : lt < 5.2 ? Math.min(3, Math.floor((lt - 1.9) / .9)) : -1;
+    const R = boot(B, { bk, strap: sm((lt - 5.6) / .4), num: sm((lt - .1) / .3), cur });
+    const a = sm((lt - 1.9) / .4), y1 = R.buck[0][1], y2 = R.buck[3][1] + 20;
+    g.save(); g.globalAlpha = a; arrow(950, y1, 950, lerp(y1, y2, sm((lt - 1.9) / 3.2)), COL.amber, 9, 30); label('从下往上', 950, y1 + 60, 34, COL.amber, 900); g.restore();
+    callout('先轻轻挂上', 880, H * .3, R.buck[3][0] + 30, R.buck[3][1] - 20, COL.sub, win(lt, .4, 1.9, .3, .3), 34);
+    callout('魔术贴', 150, H * .26, R.strap[0] - 40, R.strap[1], COL.green, sm((lt - 5.6) / .4), 34);
+  } else {
+    const l2 = lt - 6.8, a = sm((l2 - .2) / .4), b = sm((l2 - 1.6) / .4), c = sm((l2 - 3.2) / .4);
+    const R = boot(B, { bc: [a > .5 ? COL.green : null, a > .5 ? COL.green : null, b > .5 ? COL.blue : null, b > .5 ? COL.blue : null], sc: c > .5 ? COL.blue : null, tg: b * .8 });
+    glow(R.instep[0], R.instep[1] + 10, 120, '18,166,121', a * .5);
+    callout('稳住脚', 930, R.buck[0][1] + 150, R.buck[0][0] + 30, R.buck[0][1] - 20, COL.green, a);
+    callout('贴住小腿', 930, R.buck[2][1] - 30, R.buck[2][0] + 50, R.buck[2][1], COL.blue, b);
+    callout('魔术贴：贴住不勒', 880, R.strap[1] - 110, R.strap[0] + 40, R.strap[1], COL.blue, c, 34);
+  }
+});
+// F 屈膝、脚跟不提
+S.push(lt => {
+  drawSky(0); floor(H * .68); const B = place(1.3, .68);
+  if (lt < 6) {
+    const k = sm((lt - 1) / 1.6), R = boot(B, { a: lerp(6, 17, k), dx: lerp(6, -5, k), tg: k * .9 });
+    callout('脚趾碰到鞋头', 900, R.toe[1] - 160, R.toe[0] + 10, R.toe[1], COL.amber, (1 - k) * sm((lt - .2) / .3), 34);
+    callout('脚趾稍微往后', 900, R.toe[1] - 160, R.toe[0] + 10, R.toe[1], COL.green, sm((lt - 2.6) / .3), 34);
+    const tgp = R.tongue; callout('小腿压住鞋舌', 900, tgp[1] - 120, tgp[0] + 20, tgp[1], COL.green, sm((lt - 2.8) / .3), 34);
+    drawSkier([W * .17, H * .38], 0, lerpPose(POSES.stand, POSES.neutral, k), 52, { noPoles: true });
+    label(k < .5 ? '直着站' : '屈膝', W * .17, H * .38 + 50, 32, k < .5 ? COL.sub : COL.green, 900);
+  } else {
+    const l2 = lt - 6, tight = sm((l2 - 2.8) / .6), fl = .5 - .5 * Math.cos(Math.max(0, l2 - .3) * 3.2);
+    const lift = .07 * fl * (1 - tight);
+    const R = boot(B, { a: lerp(8, 17, fl), dx: lerp(4, -4, fl), lift, bk: [lerp(.45, 1, tight), lerp(.45, 1, tight), 1, 1], bc: tight > .5 ? [COL.green, COL.green] : [] });
+    const bad = 1 - tight;
+    if (lift > .01) { glow(R.heel[0], R.heel[1] + 10, 70, '240,71,60', lift / .07 * .8); }
+    g.save(); g.globalAlpha = bad * sm((l2 - .3) / .3); arrow(R.heel[0] - 150, R.heel[1] + 10, R.heel[0] - 150, R.heel[1] - 90, COL.red, 8, 26); g.restore();
+    callout('脚跟提起来', 150, H * .42, R.heelBack[0] - 30, R.heelBack[1], COL.red, bad * sm((l2 - .3) / .3));
+    const ga = sm((l2 - 3.6) / .4); ring(R.heelBack[0] + 10, R.heelBack[1] + 15, 62, COL.green, ga);
+    callout('脚跟不动', 150, H * .42, R.heelBack[0] - 30, R.heelBack[1], COL.green, ga);
+    callout('再紧一格', 920, R.buck[0][1] - 200, R.buck[0][0] + 30, R.buck[0][1] - 20, COL.green, win(l2, 2.8, 6, .3, .3));
+  }
+});
+// G 别勒太紧 / 缆车上松一点
+S.push(lt => {
+  drawSky(0); floor(H * .68); const B = place(1.3, .68);
+  if (lt < 5) {
+    const over = sm((lt - .2) / .6) * (1 - sm((lt - 2.8) / .6)), loose = sm((lt - 2.8) / .5);
+    const R = boot(B, { over, bk: [1, lerp(1, .82, loose), 1, 1], bc: over > .3 ? [COL.red, COL.red, COL.red, COL.red] : loose > .5 ? [null, COL.green] : [] });
+    glow(R.instep[0], R.instep[1] + 10, 130, '240,71,60', over * (.6 + .2 * Math.sin(lt * 8))); glow(R.toe[0] - 20, R.toe[1], 80, '240,71,60', over * .5);
+    numb(220, H * .44, over); g.save(); g.globalAlpha = over; label('勒得发麻', 250, H * .38, 38, COL.red, 900); g.restore();
+    callout('松一格', 930, R.buck[1][1] - 230, R.buck[1][0] + 40, R.buck[1][1] - 30, COL.green, sm((lt - 3) / .3));
+  } else {
+    const l2 = lt - 5, k = sm((l2 - .3) / .5) * (1 - sm((l2 - 2.6) / .5)), on = l2 < 2.6;
+    boot(B, { bk: [1, 1, lerp(1, .55, k), lerp(1, .55, k)], strap: lerp(1, .5, k), leg: 460 });
+    pill(on ? '坐缆车 · 松一点' : '滑之前 · 再扣紧', CX, H * .235, 42, on ? COL.blue : COL.green, '#fff', sm((l2 - .1) / .3));
+  }
+});
+// H 检查三步
+S.push(lt => {
+  const cur = lt < 2.6 ? -1 : lt < 7.8 ? 0 : lt < 13 ? 1 : 2;
+  drawSky(0); floor(H * .68); const B = place(1.3, .68);
+  if (cur <= 0) {
+    const l2 = lt - 2.6, tp = taps(l2, [.7, 1.7, 2.7]), dx = cur < 0 ? 12 : 12 * (1 - tp.prog / 3), lift = cur < 0 ? .04 : .04 * (1 - tp.prog / 3);
+    const R = boot(B, { bk: [0, 0, 0, 0], strap: 0, rot: cur < 0 ? 0 : tp.rot, dx, lift, a: 10 });
+    if (cur === 0) {
+      [.7, 1.7, 2.7].forEach(t => { const a = win(l2, t - .05, t + .6, .05, .3); if (a > 0) { g.save(); g.globalAlpha = a; label('咚', R.heel[0] - 120, R.heel[1] + 20 - (l2 - t) * 60, 54, COL.amber, 900); g.restore(); } });
+      const a = sm((l2 - 3.1) / .4); ring(R.heelBack[0] + 10, R.heelBack[1] + 15, 62, COL.green, a); callout('脚跟到位', 150, H * .42, R.heelBack[0] - 30, R.heelBack[1] - 20, COL.green, a);
+    }
+  } else if (cur === 1) {
+    const l2 = lt - 7.8, st = [.6, 1.4, 2.2, 3.0], bk = st.map(s0 => lerp(.45, 1, sm((l2 - s0) / .35)));
+    const c2 = l2 < .5 ? -1 : l2 < 3.4 ? Math.min(3, Math.floor((l2 - .5) / .8)) : -1;
+    const R = boot(B, { bk, strap: sm((l2 - 3.8) / .4), num: 1, cur: c2 });
+    callout('魔术贴', 150, H * .3, R.strap[0] - 40, R.strap[1], COL.green, sm((l2 - 3.8) / .4), 34);
+  } else {
+    const l2 = lt - 13, fl = .5 - .5 * Math.cos(Math.max(0, l2 - .3) * 3.4), R = boot(B, { a: lerp(8, 17, fl), dx: lerp(4, -4, fl), tg: fl * .8 });
+    const ga = sm((l2 - .6) / .4); ring(R.heelBack[0] + 10, R.heelBack[1] + 15, 62, COL.green, ga); callout('脚跟不动', 150, H * .42, R.heelBack[0] - 30, R.heelBack[1], COL.green, ga);
+    if (l2 > 3.6) markV(900, H * .4, 44, 1, pop(l2 - 3.6));
+  }
+  stepChips(STEPS, H * .235, cur, eout((lt - .3) / .4), 34);
+});
+// I 三个错误
+S.push(lt => {
+  const seg = lt < 6 ? 0 : lt < 12 ? 1 : 2, l2 = lt - seg * 6;
+  drawSky(0); floor(H * .68); const B = place(1.3, .68);
+  if (seg === 0) {
+    const R = boot(B, { socks: 2 }), a = win(l2, .8, 6, .3, .3), pu = .6 + .2 * Math.sin(lt * 7);
+    glow(R.instep[0], R.instep[1], 120, '240,71,60', a * pu); glow(R.toe[0] - 20, R.toe[1], 80, '240,71,60', a * pu * .8);
+    callout('太挤', 920, R.toe[1] - 170, R.toe[0], R.toe[1] - 10, COL.red, a); callout('两双袜子', 160, H * .42, R.heelBack[0] - 20, R.heelBack[1], COL.red, a);
+  } else if (seg === 1) {
+    const R = boot(B, { pants: 'in' }), a = win(l2, .8, 6, .3, .3), p = R.shinC(R.tc - 80);
+    ring(p[0], p[1], 120, COL.red, a, true); glow(...R.shinF(R.tc - 60), 70, '240,71,60', a * .6);
+    callout('布料堆在这里', 900, H * .3, p[0] + 100, p[1] - 40, COL.red, a, 34);
+  } else if (l2 < 3.3) {
+    const fl = .5 - .5 * Math.cos(Math.max(0, l2 - .3) * 3.4), R = boot(B, { bk: [.2, .2, 1, 1], a: lerp(8, 17, fl), lift: .07 * fl, bc: [COL.red, COL.red] });
+    glow(R.heel[0], R.heel[1] + 10, 70, '240,71,60', fl * .8);
+    callout('下面松着', 920, R.buck[0][1] - 200, R.buck[0][0] + 30, R.buck[0][1] - 20, COL.red, sm((l2 - .4) / .3));
+    callout('脚跟晃', 150, H * .42, R.heelBack[0] - 30, R.heelBack[1], COL.red, sm((l2 - .8) / .3));
+  } else {
+    const k = sm((l2 - 3.3) / .4), R = boot(B, { over: k, bc: [COL.red, COL.red, COL.red, COL.red], sc: COL.red });
+    glow(R.instep[0], R.instep[1] + 10, 130, '240,71,60', k * .7); numb(220, H * .44, k);
+    g.save(); g.globalAlpha = k; label('全部扣死', 250, H * .38, 38, COL.red, 900); g.restore();
+  }
+  markX(W * .14, H * .3, 40, win(l2, .3, 6, .2, .3));
+});
+// J 口诀卡
+S.push(lt => {
+  drawSky(0); drawSnowfall(lt + 112, .5);
+  const a = eout(lt / .4), x = W * .08, y = H * .24, w = W * .84, h = H * .42;
+  g.save(); g.globalAlpha = a; g.translate(0, (1 - a) * 50);
+  g.fillStyle = '#fff'; g.shadowColor = 'rgba(27,40,56,.14)'; g.shadowBlur = 50; rrect(x, y, w, h, 44); g.fill(); g.shadowBlur = 0;
+  label('记住这几句', CX, y + 100, 50, COL.amber, 900);
+  [['袜子', '一双薄袜 · 拉平', COL.green], ['穿鞋', '跺脚跟 · 小腿顶鞋舌', COL.amber], ['扣子', '从下往上 · 贴住不勒', COL.blue]].forEach(([t1, t2, c], i) => {
+    const ra = eout((lt - .8 - i * 1.2) / .35); if (ra <= 0) return; const ry = y + 250 + i * 225;
+    g.save(); g.globalAlpha = a * ra; g.translate((1 - ra) * 40, 0); pill(t1, x + 70 + (t1.length * 38 + 52) / 2, ry - 44, 38, c, '#fff'); label(t2, x + 70, ry + 42, 50, COL.ink, 900, 'left'); g.restore();
+  });
+  g.restore();
+  label('鞋穿对了，脚才听你的。', CX, H * .75, 46, COL.sub, 700);
+});
+// K 结尾
+S.push(lt => {
+  drawSky(0); const th = 8, F = [CX - 40, H * .84]; drawSlope(F, th, lt * 160, { noProps: true }); speedLines(F, th, lt, .25);
+  drawSkier(F, th, POSES.neutral, 115);
+  pill('下集 · 魔毯、拖牵、缆车：双板怎么上下', CX, H * .55, 36, COL.amber, '#fff', eout((lt - 1.8) / .4));
+});
+
+/* ───────── 封面 ───────── */
+function coverArt(key, w, h) {
+  drawSky(0);
+  const art = (cx, cy, s) => {
+    floor(cy);
+    const R = boot({ cx: cx - 28 * s, cy, s }, { tg: .8, leg: 420 });
+    ring(R.heelBack[0] + 10 * s / 1.2, R.heelBack[1] + 15 * s / 1.2, 55 * s, COL.green, 1);
+  };
+  const title = (cx, y1, y2, size, subY, subSize, pillY, pillSize) => {
+    pill('滑雪不难 · EP.12 · 双板', cx, pillY, pillSize, COL.amber, '#fff');
+    label('雪鞋穿着疼？', cx, y1, size, COL.ink, 900);
+    g.font = `900 ${size * .6}px ${SANS}`; const parts = [['先', COL.ink], ['跺脚跟', COL.green], ['，再从下往上扣', COL.ink]], ws = parts.map(q => g.measureText(q[0]).width);
+    let x = cx - ws.reduce((s, v) => s + v, 0) / 2; parts.forEach((q, i) => { label(q[0], x + ws[i] / 2, y2, size * .6, q[1], 900); x += ws[i]; });
+    label('袜子 · 穿鞋 · 扣子 · 三个错误', cx, subY, subSize, COL.sub, 700);
+  };
+  if (key === '9x16') { art(w * .5, h * .93, 1.65); title(w / 2, h * .24, h * .31, 116, h * .36, 40, h * .16, 42); }
+  else if (key === '3x4') { art(w * .5, h * .95, 1.1); title(w / 2, h * .17, h * .26, 108, h * .32, 38, h * .07, 40); }
+  else {
+    art(key === '16x9' ? w * .76 : w * .74, h * .92, key === '16x9' ? .95 : .9);
+    const fade = g.createLinearGradient(0, 0, w * .62, 0); fade.addColorStop(0, 'rgba(240,246,251,.96)'); fade.addColorStop(1, 'rgba(240,246,251,0)'); g.fillStyle = fade; g.fillRect(0, 0, w * .56, h);
+    const size = key === '16x9' ? 104 : 80;
+    title(w * .28, h * .43, h * .58, size, h * .7, key === '16x9' ? 36 : 30, h * .26, key === '16x9' ? 38 : 34);
+  }
+}
+
+/* ───────── 声音 ───────── */
+function sound(K, c, DUR) {
+  const click = t => { K.noise(t, .05, .45, 'highpass', 2600); K.tone(1900, t, .05, .04, 'square'); };
+  const rip = t => K.noise(t, .28, .22, 'bandpass', 3200, null, 1.5);
+  K.bed(8.0, DUR, t => t < 25.6 ? 'verse' : t < 53.6 ? 'chorus' : t < 75.6 ? 'verse' : t < 93.6 ? 'chorus' : t < 111.6 ? 'tense' : 'outro');
+  K.wrong(1.5); K.ding(5.0);
+  [0, 1, 2, 3].forEach(i => click(8 + .65 + i * .45)); rip(8 + 2.5);
+  K.ding(11.6 + 1.0); K.wrong(11.6 + 1.7); K.whoosh(11.6 + 8.0); K.ding(11.6 + 9.5); K.wrong(11.6 + 10.7); K.ding(11.6 + 12.4);
+  K.whoosh(25.6 + .4); K.thud(25.6 + 3.5, .25); [.8, 2.0, 3.2].forEach(t => K.thud(25.6 + 6.8 + t, .3)); K.ding(25.6 + 6.8 + 4.6);
+  [0, 1, 2, 3].forEach(i => click(39.6 + .45 + i * .25)); [2.0, 2.9, 3.8, 4.7].forEach(t => click(39.6 + t + .3)); rip(39.6 + 5.7); K.ding(39.6 + 6.8 + .4); K.ding(39.6 + 6.8 + 1.8);
+  K.ding(53.6 + 2.7); K.wrong(59.6 + .6); click(59.6 + 3.0); click(59.6 + 3.2); K.ding(59.6 + 3.8);
+  K.wrong(65.6 + .5); click(65.6 + 3.0); K.ding(65.6 + 3.4); click(70.6 + .5); click(70.6 + 2.9); click(70.6 + 3.1); K.ding(70.6 + 3.3);
+  [.7, 1.7, 2.7].forEach(t => K.thud(75.6 + 2.6 + t, .3)); K.ding(75.6 + 2.6 + 3.2);
+  [.6, 1.4, 2.2, 3.0].forEach(t => click(75.6 + 7.8 + t + .25)); rip(75.6 + 7.8 + 3.9); K.ding(75.6 + 13 + 3.6);
+  K.riser(92.2, 93.6, .12);
+  [93.6 + .3, 99.6 + .3, 105.6 + .3, 105.6 + 3.4].forEach(K.wrong);
+  for (let i = 0; i < 3; i++) K.tone(880 + i * 110, 111.6 + .8 + i * 1.2, .25, .07, 'triangle');
+}
+
+kitRun({
+  T, S, TX, seed: 211,
+  allText: STEPS.join('') + '脚趾顶小腿酸脚跟晃?一双薄滑雪袜两双·厚棉袜挤脚、起皱=磨拉平裤腿在鞋里盖外面舌伸进去咚到位往前顶从下上先轻轻挂魔术贴稳住贴：不勒碰头稍微后压直着站屈膝提起来动再紧一格得发麻松坐缆车点之扣太堆这布料全部死记句穿对了，才听你的。下集毯拖牵怎么上双板12345' + '雪鞋疼？跺袜子三个错误',
+  audio: sound, cover: coverArt
+});
+})();
+</script>
+</body>
+</html>
