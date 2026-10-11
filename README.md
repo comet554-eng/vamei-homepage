@@ -36,3 +36,5 @@
 - EP.07 单板《腿为什么这么累：像弹簧一样起伏》：`video/ski-ep07-sb.html`（起伏地形 `terrain()` / `bumpState()`，吸收与伸直两种模式，头部高度轨迹对比）。
 - EP.07 双板《搓雪还是刻滑：双板的两种痕迹》：`video/ski-ep07-ski.html`（俯视双板 `topSkis()`、两条"铁轨"痕迹 `railTrack()`、两块板横截面 `crossSkis()`）。
 - EP.08 双板《腿为什么这么累：学会用腿吸收》：`video/ski-ep08-ski.html`（侧面双板小人走起伏地形，按头部高度自动选蹲起幅度）。
+- EP.08 单板《雪道上，谁该让谁？》：`video/ski-ep08-sb.html`（俯视多人雪道、视线扇形 `cone()`、侧面坡顶遮挡视线）。
+- EP.09 单板《雪况：硬雪、粉雪、烂雪怎么滑》：`video/ski-ep09-sb.html`（侧面雪面质感 `surface()`：灯芯绒 / 冰面 / 雪包，粉雪前景 `powderFront()`）。

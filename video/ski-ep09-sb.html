@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>滑雪不难 EP.09 单板</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#000;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;aspect-ratio:9/16;max-width:100vw;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;aspect-ratio:auto;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="sbrig.js"></script>
+<script>
+/*
+ * 滑雪不难 EP.09 单板《雪况：硬雪、粉雪、烂雪怎么滑》（约 2 分 05 秒）
+ */
+(() => {
+'use strict';
+const T = [0, 8.0, 11.6, 29.6, 45.6, 61.6, 77.6, 93.6, 111.6, 118.6, 125.1];
+const YH = .135, YB = .745;
+
+const TX = [
+  { in: .15, out: 3.8, text: '同一条雪道，\n早上和下午{a}不一样{/}？', y: YH, size: 80, w: 900, st: .06 },
+  { in: 4.0, out: 7.8, text: '雪况变了，\n滑法也要{g}跟着变{/}。', y: YH, size: 84, w: 900 },
+  { in: 8.25, out: 11.35, text: '雪况：硬雪、粉雪、\n烂雪怎么滑', y: .3, size: 92, w: 900, st: .05 },
+  { in: 9.0, out: 11.35, text: '读懂雪，滑得更稳', y: .415, size: 42, w: 600, sub: 1 },
+  { in: 11.8, out: 17.4, text: '早上：压雪车刚压过，\n{g}最好滑{/}。', y: YH, size: 80, w: 900 },
+  { in: 12.6, out: 17.4, text: '雪面平整，像一道道灯芯绒。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 17.8, out: 23.4, text: '中午：被滑开、变软，\n堆成{a}雪包{/}。', y: YH, size: 80, w: 900 },
+  { in: 18.6, out: 23.4, text: '天暖的时候更明显，雪变得又软又沉。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 23.8, out: 29.4, text: '下午、背阴处：\n变硬，甚至{r}结冰{/}。', y: YH, size: 80, w: 900 },
+  { in: 24.6, out: 29.4, text: '温度一降，软雪冻住，发亮、发硬。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 29.8, out: 37.4, text: '硬雪、冰面：\n动作要{g}柔{/}。', y: YH, size: 84, w: 900 },
+  { in: 30.6, out: 37.4, text: '刃不容易咬住。别猛拧、别急刹，\n提前立刃，慢慢加力。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 37.8, out: 45.4, text: '速度{a}放慢一点{/}，\n重心稳在中间。', y: YH, size: 84, w: 900 },
+  { in: 38.6, out: 45.4, text: '冰面上滑一下很正常，\n别慌，保持姿势滑过去。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 45.8, out: 53.4, text: '粉雪：重心\n{a}稍微靠后{/}一点。', y: YH, size: 84, w: 900 },
+  { in: 46.6, out: 53.4, text: '板头容易扎进雪里，\n后脚多压一点，让板头浮起来。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 53.8, out: 61.4, text: '保持{g}速度{/}，\n别停在平缓的地方。', y: YH, size: 84, w: 900 },
+  { in: 54.6, out: 61.4, text: '粉雪阻力大，一慢下来就容易陷住。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 61.8, out: 69.4, text: '烂雪、雪包：\n腿{g}放软{/}。', y: YH, size: 84, w: 900 },
+  { in: 62.6, out: 69.4, text: '雪又软又沉，一路都是小雪包，\n用腿把它们吸收掉。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 69.8, out: 77.4, text: '板放平一点，\n别{r}被雪包绊住{/}。', y: YH, size: 80, w: 900 },
+  { in: 70.6, out: 77.4, text: '速度别太慢；板立得太高，\n容易卡进雪堆里。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 77.8, out: 85.4, text: '怎么判断雪况？\n{g}看、听、试{/}。', y: YH, size: 84, w: 900 },
+  { in: 78.6, out: 85.4, text: '发亮发蓝多半是冰；\n声音"嘎嘎"响就是硬雪。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 85.8, out: 93.4, text: '先在简单的道上\n{g}试一趟{/}。', y: YH, size: 84, w: 900 },
+  { in: 86.6, out: 93.4, text: '摸清今天的雪，再去难一点的道。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 93.8, out: 99.4, text: '常见错误一：\n冰面上{r}急刹猛拧{/}', y: YH, size: 80, w: 900 },
+  { in: 94.6, out: 99.4, text: '刃一滑，人就摔出去。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 99.8, out: 105.4, text: '常见错误二：\n粉雪里{r}重心往前{/}', y: YH, size: 80, w: 900 },
+  { in: 100.6, out: 105.4, text: '板头一扎，人直接栽进雪里。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 105.8, out: 111.4, text: '常见错误三：\n烂雪里{r}腿伸直{/}', y: YH, size: 80, w: 900 },
+  { in: 106.6, out: 111.4, text: '雪包一绊，整个人被顶起来。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 118.8, out: 999, text: '你最怕\n哪一种雪？', y: .37, size: 88, w: 900, st: .06 },
+  { in: 119.8, out: 999, text: '评论区说说', y: .465, size: 42, w: 500, sub: 1 }
+];
+
+/* ───────── 雪面 ───────── */
+const TH = 10;
+function surface(type, F, th, sc, t) {
+  const fr = frameOf(th), at = s => [F[0] + fr.d[0] * s, F[1] + fr.d[1] * s], dn = (p, h) => [p[0] - fr.n[0] * h, p[1] - fr.n[1] * h];
+  g.save();
+  if (type === 'groom') {
+    g.strokeStyle = '#d3e0ea'; g.lineWidth = 5; g.lineCap = 'round';
+    const off = ((sc % 28) + 28) % 28; for (let k = -80; k <= 80; k++) { const p = at(k * 28 - off); for (let r = 0; r < 4; r++) { const a = dn(p, 8 + r * 34), b = dn(p, 22 + r * 34); g.globalAlpha = 1 - r * .22; g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke(); } }
+  } else if (type === 'ice') {
+    const p0 = at(-3000), p1 = at(3000); g.fillStyle = 'rgba(150,200,240,.4)'; g.beginPath(); g.moveTo(...p0); g.lineTo(...p1); g.lineTo(p1[0], p1[1] + 900); g.lineTo(p0[0], p0[1] + 900); g.closePath(); g.fill();
+    g.strokeStyle = 'rgba(255,255,255,.9)'; g.lineWidth = 6; g.lineCap = 'round';
+    for (let k = -20; k <= 20; k++) { const s = k * 170 - ((sc % 170) + 170) % 170 + hash(k) * 40, a = dn(at(s), 14 + hash(k + 3) * 40), b = dn(at(s + 70 + hash(k) * 60), 14 + hash(k + 3) * 40); g.beginPath(); g.moveTo(...a); g.lineTo(...b); g.stroke(); }
+    for (let k = 0; k < 10; k++) { const s = ((k * 230 - sc * .9) % 2000 + 2000) % 2000 - 1000, p = dn(at(s), 8), tw = .5 + .5 * Math.sin(t * 6 + k * 2); g.globalAlpha = tw; g.fillStyle = '#fff'; g.beginPath(); for (let i = 0; i < 8; i++) { const r = i % 2 ? 4 : 14, a = i * Math.PI / 4; g.lineTo(p[0] + Math.cos(a) * r, p[1] - 14 + Math.sin(a) * r); } g.closePath(); g.fill(); }
+  } else if (type === 'slush') {
+    const p0 = at(-3000), p1 = at(3000); g.fillStyle = 'rgba(200,190,175,.16)'; g.beginPath(); g.moveTo(...p0); g.lineTo(...p1); g.lineTo(p1[0], p1[1] + 900); g.lineTo(p0[0], p0[1] + 900); g.closePath(); g.fill();
+    const off = ((sc % 120) + 120) % 120;
+    for (let k = -30; k <= 30; k++) { const kk = k + Math.floor(sc / 120), s = k * 120 - off + hash(kk) * 50, p = at(s), r = 34 + hash(kk + 5) * 34;
+      g.fillStyle = '#efe9df'; g.strokeStyle = '#cfc6b8'; g.lineWidth = 3; g.beginPath(); g.ellipse(p[0], p[1] + 4, r * 1.3, r * .7, th * D2R, Math.PI, 0); g.closePath(); g.fill(); g.stroke(); }
+  }
+  g.restore();
+}
+function powderFront(F, th, u, depth, sc, t) { // 盖在板和鞋上的粉雪
+  const fr = frameOf(th), at = s => [F[0] + fr.d[0] * s, F[1] + fr.d[1] * s];
+  g.save(); g.fillStyle = '#ffffff'; g.strokeStyle = '#dbe6ef'; g.lineWidth = 4; g.beginPath();
+  for (let i = 0; i <= 120; i++) { const s = -1400 + i * 24, p = at(s), h = depth * u * (.85 + .15 * Math.sin((s + sc) / 60) + .1 * Math.sin((s + sc) / 23)); const q = [p[0] + fr.n[0] * h, p[1] + fr.n[1] * h]; i ? g.lineTo(...q) : g.moveTo(...q); }
+  const e = at(1500), b = at(-1400); g.lineTo(e[0], e[1] + 900); g.lineTo(b[0], b[1] + 900); g.closePath(); g.fill(); g.stroke();
+  // 扬起的粉雪
+  for (let i = 0; i < 26; i++) { const ph = (t * 1.2 + hash(i)) % 1, p = at(-1.6 * u - ph * 300), h = depth * u + ph * (60 + hash(i + 2) * 140); g.globalAlpha = (1 - ph) * .9; g.fillStyle = '#fff'; g.beginPath(); g.arc(p[0] + fr.n[0] * h, p[1] + fr.n[1] * h, 14 + hash(i + 4) * 22 + ph * 20, 0, Math.PI * 2); g.fill(); }
+  g.restore();
+}
+const SNOWLABEL = { groom: ['压过的雪 · 灯芯绒', COL.green], slush: ['烂雪 · 雪包', COL.amber], ice: ['硬雪 · 冰面', COL.blue] };
+function sideScene(type, lt, o = {}) {
+  const th = TH, F = o.F || [CX - 20, H * .6], sc = lt * (o.spd || 220), u = o.u || 160;
+  drawSky(0); drawSnowfall(lt, type === 'powder' ? 1 : .3); drawSlope(F, th, sc, { noProps: true });
+  if (type !== 'powder') surface(type, F, th, sc, lt);
+  let J;
+  if (type === 'slush') { const v = .5 + .35 * Math.sin(lt * 5.3) + .15 * Math.sin(lt * 8.1), p = o.pose || lerpPose(SP.deep, SP.neutral, v); J = sbRider([F[0], F[1] - Math.abs(Math.sin(lt * 5.3)) * 4], th, p, u); }
+  else J = sbRider(F, th - (o.pitch || 0), o.pose || SP.neutral, u);
+  if (type === 'powder') powderFront(F, th, u, o.depth || .5, sc, lt);
+  return J;
+}
+
+/* ───────── 场景 ───────── */
+const S = [];
+// A 钩子：同一条道，三种样子
+S.push(lt => {
+  const type = lt < 2.6 ? 'groom' : lt < 5.2 ? 'slush' : 'ice';
+  sideScene(type, lt, { pose: SP.neutral });
+  const [t1, c] = SNOWLABEL[type]; pill(['早上', '中午', '下午'][type === 'groom' ? 0 : type === 'slush' ? 1 : 2] + ' · ' + t1, CX, H * .29, 40, c, '#fff');
+});
+// B 标题
+S.push(lt => {
+  sideScene('powder', lt + 3, { u: 120, F: [CX, H * .74], depth: .45, pitch: 4, pose: { hipS: -.12, hipH: 1.42, lean: 2, armF: 112, armB: -118, look: .7 } });
+  g.fillStyle = 'rgba(247,250,252,.25)'; g.fillRect(0, 0, W, H * .5);
+  pill('滑雪不难 · EP.09 · 单板', CX, H * .19, 40, COL.amber, '#fff', eout(lt / .3));
+});
+// C 一天里的变化
+S.push(lt => {
+  const seg = lt < 6 ? 0 : lt < 12 ? 1 : 2, type = ['groom', 'slush', 'ice'][seg];
+  sideScene(type, lt, { pose: seg === 1 ? null : SP.neutral });
+  // 时间轴
+  const x0 = W * .12, x1 = W * .88, y = H * .27, k = clamp(lt / 18, 0, 1);
+  g.save(); g.strokeStyle = 'rgba(27,40,56,.18)'; g.lineWidth = 8; g.lineCap = 'round'; g.beginPath(); g.moveTo(x0, y); g.lineTo(x1, y); g.stroke();
+  g.strokeStyle = COL.amber; g.beginPath(); g.moveTo(x0, y); g.lineTo(lerp(x0, x1, k), y); g.stroke(); g.restore();
+  const sx = lerp(x0, x1, k), sy = y - 60 - Math.sin(k * Math.PI) * 50; glow(sx, sy, 70, '255,190,60', .7); g.fillStyle = '#ffc23d'; g.beginPath(); g.arc(sx, sy, 26, 0, Math.PI * 2); g.fill();
+  ['早上', '中午', '下午'].forEach((t, i) => label(t, lerp(x0, x1, i / 2), y + 44, 32, i === seg ? COL.ink : COL.sub, i === seg ? 900 : 700));
+  const [t1, c] = SNOWLABEL[type]; pill(t1, CX, H * .7, 34, c, '#fff');
+});
+// D 冰面：柔
+function forceCard(x, y, w, h, k) {
+  g.save(); g.fillStyle = 'rgba(255,255,255,.94)'; g.shadowColor = 'rgba(27,40,56,.1)'; g.shadowBlur = 20; rrect(x - 20, y - 50, w + 40, h + 90, 24); g.fill(); g.shadowBlur = 0;
+  label('立刃用的力', x, y - 22, 28, COL.sub, 700, 'left');
+  const curve = (fn, col, kk) => { g.strokeStyle = col; g.lineWidth = 6; g.beginPath(); for (let i = 0; i <= 60; i++) { const t = i / 60 * kk; const xx = x + t * w, yy = y + h - fn(t) * h; i ? g.lineTo(xx, yy) : g.moveTo(xx, yy); } g.stroke(); };
+  curve(t => t < .25 ? 0 : t < .32 ? sm((t - .25) / .07) : 1 - .2 * sm((t - .5) / .3), COL.red, k); curve(t => sm(t / .9) * .85, COL.green, k);
+  label('猛：一下咬不住', x + w, y - 22, 26, COL.red, 900, 'right'); label('柔：慢慢加力', x + w, y + h + 22, 26, COL.green, 900, 'right');
+  g.restore();
+}
+S.push(lt => {
+  if (lt < 8) {
+    const J = sideScene('ice', lt, { spd: 200 }); forceCard(W * .14, H * .66 - 40, W * .72, 90, clamp((lt - .6) / 5, 0, 1));
+    label('嘎嘎…', J.Hd[0] + 220, J.Hd[1] + 60, 40, COL.blue, 900);
+  } else {
+    const l2 = lt - 8, J = sideScene('ice', lt, { spd: 140, pose: SP.neutral }); sbBalance(J, sm((l2 - .4) / .4), true);
+    label(`${Math.round(lerp(26, 16, sm((l2 - .3) / 2)))} km/h`, W * .8, H * .27, 52, COL.green, 900);
+  }
+});
+// E 粉雪
+const BACKP = { hipS: -.16, hipH: 1.42, lean: 2, armF: 112, armB: -118, look: .7 };
+S.push(lt => {
+  if (lt < 8) {
+    const k = sm((lt - .8) / 1), J = sideScene('powder', lt, { pose: lerpPose(SP.neutral, BACKP, k), pitch: 6 * k, depth: .5 });
+    const nose = J.P(1.75, .2); if (k > .5) { g.save(); g.globalAlpha = k; arrow(nose[0], nose[1] + 40, nose[0] + 10, nose[1] - 70, COL.green, 7, 24); label('板头浮起来', nose[0] - 20, nose[1] - 110, 34, COL.green, 900); g.restore(); }
+    const bk = J.P(-.55, .4); g.save(); g.globalAlpha = k; arrow(bk[0] - 210, bk[1] - 140, bk[0] - 40, bk[1] - 20, COL.amber, 8, 26); label('后脚多压一点', bk[0] - 230, bk[1] - 180, 34, COL.amber, 900); g.restore();
+  } else {
+    const l2 = lt - 8, slow = sm((l2 - 3) / 1.5), spd = lerp(260, 40, slow), depth = lerp(.5, .95, slow);
+    sideScene('powder', lt, { pose: BACKP, pitch: 6 * (1 - slow), depth, spd });
+    label(`${Math.round(lerp(22, 4, slow))} km/h`, W * .8, H * .27, 52, slow > .5 ? COL.red : COL.green, 900);
+    if (slow > .5) { g.save(); g.globalAlpha = sm((slow - .5) / .3); label('陷住了', CX, H * .33, 48, COL.red, 900); g.restore(); }
+  }
+});
+// F 烂雪
+S.push(lt => {
+  if (lt < 8) { const J = sideScene('slush', lt); ring(J.Kf[0], J.Kf[1], 46, COL.green, 1); label('腿放软', J.Kf[0] + 80, J.Kf[1] - 70, 36, COL.green, 900, 'left'); }
+  else {
+    const l2 = lt - 8, J = sideScene('slush', lt, { spd: 200 });
+    g.save(); g.globalAlpha = sm((l2 - .4) / .4); label('板放平 · 重心在中间', CX, H * .3, 38, COL.green, 900); g.restore();
+  }
+});
+// G 怎么判断
+S.push(lt => {
+  drawSky(0); drawSnowfall(lt + 77, .4);
+  const items = [
+    ['看颜色', '发亮、发蓝', '多半是冰', COL.blue, 0],
+    ['听声音', '"嘎嘎"响', '硬雪', COL.blue, 1.4],
+    ['看时间', '中午软、下午硬', '背阴处更硬', COL.amber, 2.8],
+    ['先试一趟', '简单道上', '摸清今天的雪', COL.green, 8.4]
+  ];
+  items.forEach(([t1, t2, t3, c, d], i) => {
+    const a = eout((lt - .4 - d) / .4); if (a <= 0) return; const col = i % 2, row = Math.floor(i / 2), x = W * (.27 + col * .46), y = H * (.3 + row * .2);
+    g.save(); g.globalAlpha = a; g.translate(0, (1 - a) * 30); g.fillStyle = '#fff'; g.shadowColor = 'rgba(27,40,56,.12)'; g.shadowBlur = 30; rrect(x - 220, y - 150, 440, 300, 34); g.fill(); g.shadowBlur = 0;
+    pill(t1, x, y - 90, 36, c, '#fff'); label(t2, x, y, 44, COL.ink, 900); label(t3, x, y + 70, 34, COL.sub, 700); g.restore();
+  });
+});
+// H 三个错误
+S.push(lt => {
+  const seg = lt < 6 ? 0 : lt < 12 ? 1 : 2, l2 = lt - seg * 6;
+  if (seg === 0) {
+    const k = ein(clamp((l2 - 1) / 1.2, 0, 1)), J = sideScene('ice', lt, { spd: 200 * (1 - k * .6), pose: lerpPose(SP.neutral, SP.fallen, k) });
+    if (l2 > .6 && l2 < 2) { g.save(); g.globalAlpha = win(l2, .6, 2, .2, .3); label('急刹！', CX + 200, H * .3, 52, COL.red, 900); g.restore(); }
+    if (k > .3) label('刃一滑', J.P(0, 0)[0] + 200, J.P(0, 0)[1] + 90, 36, COL.red, 900);
+  } else if (seg === 1) {
+    const k = sm((l2 - .6) / 1.4), dive = ein(clamp((l2 - 2.2) / 1, 0, 1));
+    const J = sideScene('powder', lt, { spd: 260 * (1 - dive * .8), pose: lerpPose(SP.neutral, { hipS: .38, hipH: 1.38, lean: 26, armF: 80, armB: -100, look: .9 }, k), pitch: -14 * dive - 4 * k, depth: .5 + dive * .3 });
+    if (dive > .2) { const n = J.P(1.6, .2); ring(n[0], n[1], 70, COL.red, dive, true); label('板头扎进雪里', n[0] - 40, n[1] - 150, 36, COL.red, 900); }
+  } else {
+    const ph = (l2 % 1.6) / 1.6, hop = 70 * Math.max(0, Math.sin(Math.min(1, Math.max(0, ph - .2) / .4) * Math.PI));
+    drawSky(0); const F = [CX - 20, H * .6], sc = lt * 220; drawSlope(F, TH, sc, { noProps: true }); surface('slush', F, TH, sc, lt);
+    const fr = frameOf(TH); sbRider([F[0] + fr.n[0] * hop, F[1] + fr.n[1] * hop], TH, { hipS: 0, hipH: 1.66, lean: 2, armF: 150, armB: -150, look: .4 }, 160);
+    if (hop > 8) label('被顶起来', F[0] + 330, F[1] - 60, 36, COL.red, 900);
+  }
+  markX(W * .14, H * .3, 40, win(l2, .3, 6, .2, .3));
+});
+// I 口诀卡
+S.push(lt => {
+  drawSky(0); drawSnowfall(lt + 112, .5);
+  const a = eout(lt / .4), x = W * .08, y = H * .24, w = W * .84, h = H * .42;
+  g.save(); g.globalAlpha = a; g.translate(0, (1 - a) * 50);
+  g.fillStyle = '#fff'; g.shadowColor = 'rgba(27,40,56,.14)'; g.shadowBlur = 50; rrect(x, y, w, h, 44); g.fill(); g.shadowBlur = 0;
+  label('记住这几句', CX, y + 100, 50, COL.amber, 900);
+  [['冰面', '动作柔 · 慢一点', COL.blue], ['粉雪', '重心稍后 · 保持速度', COL.green], ['烂雪', '腿放软 · 板放平', COL.amber]].forEach(([t1, t2, c], i) => {
+    const ra = eout((lt - .8 - i * 1.2) / .35); if (ra <= 0) return; const ry = y + 250 + i * 225;
+    g.save(); g.globalAlpha = a * ra; g.translate((1 - ra) * 40, 0); pill(t1, x + 70 + (t1.length * 38 + 52) / 2, ry - 44, 38, c, '#fff'); label(t2, x + 70, ry + 42, 50, COL.ink, 900, 'left'); g.restore();
+  });
+  g.restore();
+  label('先看雪，再决定怎么滑。', CX, H * .75, 46, COL.sub, 700);
+});
+// J 结尾
+S.push(lt => {
+  sideScene('groom', lt, { u: 110, F: [CX, H * .86] });
+  pill('下集 · 立刃：板立多高才咬得住', CX, H * .55, 36, COL.amber, '#fff', eout((lt - 1.8) / .4));
+});
+
+/* ───────── 封面 ───────── */
+function coverArt(key, w, h) {
+  drawSky(0);
+  const art = (cx, cy, u) => {
+    const F = [cx, cy]; drawSlope(F, TH, 0, { noProps: true });
+    const fr = frameOf(TH);
+    // 三段雪：左冰、中压雪、右粉雪
+    g.save(); g.beginPath(); g.rect(0, 0, cx - 2.2 * u, h); g.clip(); surface('ice', F, TH, 0, .3); g.restore();
+    sbRider(F, TH - 4, BACKP, u);
+    g.save(); g.beginPath(); g.rect(cx - 2.6 * u, 0, w, h); g.clip(); powderFront(F, TH, u, .42, 0, .4); g.restore();
+  };
+  const title = (cx, y1, y2, size, subY, subSize, pillY, pillSize) => {
+    pill('滑雪不难 · EP.09 · 单板', cx, pillY, pillSize, COL.amber, '#fff');
+    g.font = `900 ${size}px ${SANS}`; const p1 = [['硬雪', COL.blue], ['·', COL.sub], ['粉雪', COL.green], ['·', COL.sub], ['烂雪', COL.amber]], w1 = p1.map(q => g.measureText(q[0]).width);
+    let x = cx - w1.reduce((s, v) => s + v, 0) / 2; p1.forEach((q, i) => { label(q[0], x + w1[i] / 2, y1, size, q[1], 900); x += w1[i]; });
+    label('雪况不同，滑法不同', cx, y2, size * .58, COL.ink, 900);
+    label('一天的变化 · 三种雪 · 怎么判断', cx, subY, subSize, COL.sub, 700);
+  };
+  if (key === '9x16') { art(CX, h * .66, 150); title(CX, h * .24, h * .315, 120, h * .37, 38, h * .16, 42); }
+  else if (key === '3x4') { art(CX, h * .7, 125); title(CX, h * .17, h * .265, 112, h * .325, 36, h * .07, 40); }
+  else {
+    art(w * .72, h * .7, key === '16x9' ? 130 : 105);
+    const fade = g.createLinearGradient(0, 0, w * .62, 0); fade.addColorStop(0, 'rgba(240,246,251,.96)'); fade.addColorStop(1, 'rgba(240,246,251,0)'); g.fillStyle = fade; g.fillRect(0, 0, w * .56, h);
+    const size = key === '16x9' ? 104 : 84;
+    title(w * .29, h * .43, h * .58, size, h * .7, key === '16x9' ? 34 : 28, h * .26, key === '16x9' ? 38 : 34);
+  }
+}
+
+/* ───────── 声音 ───────── */
+function sound(K, c, DUR) {
+  K.bed(8.0, DUR, t => t < 29.6 ? 'verse' : t < 45.6 ? 'chorus' : t < 61.6 ? 'verse' : t < 77.6 ? 'chorus' : t < 93.6 ? 'verse' : t < 111.6 ? 'tense' : 'outro');
+  // 冰面：嘎嘎；烂雪：哗哗；粉雪：轻柔的"噗"
+  const scrape = (a, b) => { for (let t = a; t < b; t += .11) K.noise(t, .09, .06, 'bandpass', 3200 + 800 * Math.sin(t * 13), null, 3); };
+  const slush = (a, b) => { for (let t = a; t < b; t += .3) K.noise(t, .35, .06, 'lowpass', 900); };
+  const puff = (a, b) => { for (let t = a; t < b; t += .9) K.noise(t, .8, .05, 'lowpass', 600); };
+  slush(2.6, 5.2); scrape(5.2, 8); puff(8, 11.6);
+  slush(17.6, 23.6); scrape(23.6, 29.6); scrape(29.6, 45.6); puff(45.6, 61.6); slush(61.6, 77.6);
+  K.ding(5.0); [29.6 + 1.2, 45.6 + 1.6, 61.6 + 1.2, 77.6 + 1, 77.6 + 2.4, 77.6 + 3.8, 77.6 + 9.4].forEach(K.ding);
+  K.wrong(45.6 + 8 + 3.6);
+  [93.6 + .3, 99.6 + .3, 105.6 + .3].forEach(K.wrong); K.thud(93.6 + 2.3, .6); K.thud(99.6 + 3.1, .5);
+  for (let i = 0; i < 3; i++) K.tone(880 + i * 110, 111.6 + .8 + i * 1.2, .25, .07, 'triangle');
+  K.riser(92.2, 93.6, .12);
+}
+
+kitRun({
+  T, S, TX, seed: 151,
+  allText: '早上中午下午·压过的雪灯芯绒烂包硬冰面立刃用力猛：一下咬不住柔慢加嘎…km/h板头浮起来后脚多点陷了腿放软平重心在间看颜色发亮蓝多半是听声音"响时背阴处更先试趟简单道上摸清今天急刹！滑扎进被顶记住几句动作粉保持速度决定怎么集高才得你最怕哪种？况不同法变化三判断两侧前',
+  audio: sound, cover: coverArt
+});
+})();
+</script>
+</body>
+</html>
