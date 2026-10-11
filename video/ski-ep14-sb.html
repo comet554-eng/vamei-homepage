@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>滑雪不难 EP.14 单板</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#000;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;aspect-ratio:9/16;max-width:100vw;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;aspect-ratio:auto;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="sbrig.js"></script>
+<script>
+/*
+ * 滑雪不难 EP.14 单板《小跳：第一个 ollie》（约 2 分 07 秒）
+ */
+(() => {
+'use strict';
+const T = [0, 8.0, 11.6, 27.6, 61.6, 79.6, 95.6, 113.6, 120.6, 127.1];
+const YH = .135, YB = .745;
+
+const TX = [
+  { in: .15, out: 3.8, text: '看别人在平地上\n"啪"地{a}跳起来{/}？', y: YH, size: 84, w: 900, st: .06 },
+  { in: 4.0, out: 7.8, text: '那叫 {g}ollie{/}，\n很多动作的基础。', y: YH, size: 84, w: 900 },
+  { in: 8.25, out: 11.35, text: '小跳：\n第一个 ollie', y: .3, size: 100, w: 900, st: .05 },
+  { in: 9.0, out: 11.35, text: '先让板弹起来，再谈跳多高', y: .415, size: 42, w: 600, sub: 1 },
+  { in: 11.8, out: 19.4, text: '板是一根{g}弹簧{/}。', y: YH, size: 88, w: 900 },
+  { in: 12.6, out: 19.4, text: '重心移到后脚、压住板尾，\n板弯起来，这就是蓄力。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 19.8, out: 27.4, text: '板尾{g}弹回来{/}，\n把你带起来。', y: YH, size: 84, w: 900 },
+  { in: 20.6, out: 27.4, text: '不是硬往上蹦，是板把你"弹"上去。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 27.8, out: 34.2, text: '① 蹲低，\n重心在{g}中间{/}', y: YH, size: 84, w: 900 },
+  { in: 28.6, out: 34.2, text: '膝盖弯、上身放松，两只脚一样用力。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 34.6, out: 41.0, text: '② 前脚抬，\n重心{a}移到后脚{/}', y: YH, size: 84, w: 900 },
+  { in: 35.4, out: 41.0, text: '板头先离地，后脚压住板尾，板弯起来。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 41.4, out: 47.8, text: '③ 后脚{g}一弹{/}', y: YH, size: 88, w: 900 },
+  { in: 42.2, out: 47.8, text: '像原地起跳一样，板尾离开雪面。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 48.2, out: 54.6, text: '④ 空中{g}收膝{/}', y: YH, size: 88, w: 900 },
+  { in: 49.0, out: 54.6, text: '膝盖往胸口收，让板跟着你上来。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 55.0, out: 61.4, text: '⑤ 落地：\n两脚{g}同时{/}', y: YH, size: 84, w: 900 },
+  { in: 55.8, out: 61.4, text: '膝盖弯着缓冲，板放平。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 61.8, out: 67.4, text: '先{g}原地{/}练，\n再慢慢滑着练。', y: YH, size: 84, w: 900 },
+  { in: 62.6, out: 67.4, text: '还可以先只练压板尾：\n板头抬起、板弯一下，不跳。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 67.8, out: 73.4, text: '找{g}平缓、人少{/}的地方', y: YH, size: 80, w: 900 },
+  { in: 68.6, out: 73.4, text: '别在雪道中间练，\n后面的人不一定看得到你。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 73.8, out: 79.4, text: '落地，板要{g}放平{/}。', y: YH, size: 84, w: 900 },
+  { in: 74.6, out: 79.4, text: '立着刃落地，刃一卡，人就摔出去。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 79.8, out: 81.8, text: '怎么练？\n三步。', y: YH, size: 80, w: 900 },
+  { in: 82.2, out: 86.6, text: '① 原地压板尾', y: YH, size: 84, w: 900 },
+  { in: 82.9, out: 86.6, text: '板头抬起、板弯一下，再放下。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 87.0, out: 91.0, text: '② 原地小跳', y: YH, size: 84, w: 900 },
+  { in: 87.7, out: 91.0, text: '压、弹、收、落，先跳一点点高。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 91.4, out: 95.4, text: '③ 慢速滑行中小跳', y: YH, size: 80, w: 900 },
+  { in: 92.1, out: 95.4, text: '在平缓的地方慢慢滑，一次跳一下。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 95.8, out: 101.4, text: '常见错误一：\n只用{r}上身往上蹿{/}', y: YH, size: 76, w: 900 },
+  { in: 96.6, out: 101.4, text: '手一甩、人一窜，板还贴在雪上。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 101.8, out: 107.4, text: '常见错误二：\n落地{r}腿是直的{/}', y: YH, size: 80, w: 900 },
+  { in: 102.6, out: 107.4, text: '没有缓冲，冲击全砸在膝盖和腰上。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 107.8, out: 113.4, text: '常见错误三：\n落地时{r}板立着刃{/}', y: YH, size: 76, w: 900 },
+  { in: 108.6, out: 113.4, text: '刃卡进雪里，人就被甩出去。', y: YB, size: 42, w: 500, sub: 1 },
+  { in: 120.8, out: 999, text: '你的第一个 ollie，\n卡在哪一步？', y: .37, size: 84, w: 900, st: .06 },
+  { in: 121.8, out: 999, text: '评论区说说', y: .465, size: 42, w: 500, sub: 1 }
+];
+const STEPS = ['① 压板尾', '② 原地跳', '③ 滑行跳'];
+const BREAK = ['蹲', '压', '弹', '收', '落'];
+
+/* ───────── ollie 的一个周期：ph 0 → 1 ─────────
+ * 0–.2 蹲低；.2–.42 压板尾（板头抬起、板弯）；.42–.46 起跳；.46–.78 空中；.78 落地；之后回到站姿。
+ * 姿势按"板坐标"写，pitch（板头抬起的角度）由 comp() 补偿，让身体在画面里保持竖直。 */
+const PIT = 15, A0 = .46, A1 = .78;
+const N0 = SP.neutral;
+const LOW = { hipS: .05, hipH: 1.15, lean: 14, armF: 100, armB: -112, look: .7 };
+const LOAD = { hipS: -.52, hipH: 1.22, lean: 6, armF: 122, armB: -122, look: .8 };
+const POP = { hipS: -.12, hipH: 1.58, lean: 6, armF: 150, armB: -140, look: .8 };
+const TUCK = { hipS: .02, hipH: .98, lean: 18, armF: 98, armB: -108, look: .8 };
+const LAND = { hipS: .05, hipH: 1.1, lean: 14, armF: 100, armB: -112, look: .7 };
+const STR = { hipS: 0, hipH: 1.64, lean: 2, armF: 150, armB: -150, look: .4 };   // 腿伸直
+const comp = (p, pit) => withP(p, { hipS: p.hipS + p.hipH * Math.tan(pit * D2R), lean: p.lean + pit, armF: p.armF + pit, armB: p.armB + pit });
+function ollieAt(ph, o = {}) {
+  ph = clamp(ph, 0, 1); const amp = o.amp == null ? .7 : o.amp, lp = o.land || LAND, air = o.tuck || TUCK;
+  let pose, pitch = 0, lift = 0;
+  if (ph < .2) pose = lerpPose(N0, LOW, sm(ph / .2));
+  else if (ph < .42) { const k = sm((ph - .2) / .22); pose = lerpPose(LOW, LOAD, k); pitch = PIT * k; }
+  else if (ph < A0) { pose = lerpPose(LOAD, POP, sm((ph - .42) / .06)); pitch = PIT; }
+  else if (ph < A1) {
+    const s = (ph - A0) / (A1 - A0); lift = amp * 4 * s * (1 - s); pitch = PIT * (1 - sm(s / .45));
+    pose = ph < .5 ? lerpPose(LOAD, POP, sm((ph - .42) / .06)) : ph < .6 ? lerpPose(POP, air, sm((ph - .5) / .1)) : ph < .7 ? air : lerpPose(air, lp, sm((ph - .7) / .08));
+  } else pose = lerpPose(lp, N0, sm((ph - .84) / .16));
+  if (o.press) { lift = 0; } // 只压板尾，不跳
+  return { pose, pitch, lift, ph, air: ph >= A0 && ph < A1 };
+}
+// G：板中心下方的雪面点；th0：雪面角度
+function placeOllie(G, th0, st, u) {
+  const f0 = frameOf(th0), th = th0 - st.pitch, fr = frameOf(th);
+  const TP = [G[0] - f0.d[0] * 1.65 * u, G[1] - f0.d[1] * 1.65 * u];
+  const F = [TP[0] + f0.n[0] * st.lift * u + fr.d[0] * 1.65 * u, TP[1] + f0.n[1] * st.lift * u + fr.d[1] * 1.65 * u];
+  return { F, th, TP, pose: comp(st.pose, st.pitch) };
+}
+function drawOllie(G, th0, ph, u, o = {}) {
+  const st = ollieAt(ph, o), pl = placeOllie(G, th0, st, u);
+  if (st.lift > .02 && !o.noShadow) { g.save(); g.fillStyle = `rgba(40,60,80,${.14 * (1 - st.lift)})`; g.beginPath(); g.ellipse(G[0], G[1] + 4, 1.9 * u * (1 - st.lift * .3), 12, th0 * D2R, 0, Math.PI * 2); g.fill(); g.restore(); }
+  const J = sbRider(pl.F, pl.th, pl.pose, u, o);
+  return Object.assign(J, { st, pl, G, th0 });
+}
+// 分段线性的相位：keys = [[时间, 相位], ...]，按 period 循环
+function seqPh(l, keys, period) {
+  if (period) l = ((l % period) + period) % period;
+  if (l <= keys[0][0]) return keys[0][1];
+  for (let i = 1; i < keys.length; i++) if (l < keys[i][0]) { const [t0, p0] = keys[i - 1], [t1, p1] = keys[i]; return lerp(p0, p1, (l - t0) / (t1 - t0)); }
+  return keys[keys.length - 1][1];
+}
+const loopPh = (l, period, delay = 0) => l < delay ? 0 : ((l - delay) % period) / period;
+
+/* ───────── 示意小部件 ───────── */
+// 板弯：沿板底画一条弧，越压越弯
+function flex(J, k, a = 1) {
+  if (k < .02) return; const P = J.P, u = J.u;
+  const p0 = P(-1.6, -.04), p1 = P(.6, -.04), c = P(-.5, -.04 - .32 * k);
+  g.save(); g.globalAlpha = a; g.strokeStyle = 'rgba(255,159,28,.35)'; g.lineWidth = 26; g.lineCap = 'round';
+  g.beginPath(); g.moveTo(...p0); g.quadraticCurveTo(c[0], c[1], p1[0], p1[1]); g.stroke();
+  g.strokeStyle = COL.amber; g.lineWidth = 8; g.beginPath(); g.moveTo(...p0); g.quadraticCurveTo(c[0], c[1], p1[0], p1[1]); g.stroke(); g.restore();
+}
+// 竖着的弹簧：底在 yb，长度 len
+function spring(x, yb, len, a, c) {
+  c = c || COL.green; const y0 = yb - len, y1 = yb; g.save(); g.globalAlpha = a; g.strokeStyle = c; g.lineWidth = 6; g.lineJoin = 'round'; g.beginPath(); const n = 7;
+  for (let i = 0; i <= n * 2; i++) { const yy = lerp(y0 + 6, y1 - 6, i / (n * 2)), xx = x + (i === 0 || i === n * 2 ? 0 : (i % 2 ? 26 : -26)); i ? g.lineTo(xx, yy) : g.moveTo(xx, yy); }
+  g.stroke(); g.fillStyle = c; rrect(x - 34, y0 - 4, 68, 10, 4); g.fill(); rrect(x - 34, y1 - 6, 68, 10, 4); g.fill(); g.restore();
+}
+const springLen = ph => ph < .42 ? lerp(170, 92, sm((ph - .2) / .22)) : ph < .52 ? lerp(92, 240, sm((ph - .43) / .08)) : lerp(240, 170, sm((ph - .56) / .2));
+// 板中心的空中轨迹（虚线抛物线）：雪面在滚动，过去的点向后退
+function ollieArc(G, th0, phNow, period, spd, u, o = {}) {
+  const f0 = frameOf(th0), pts = [], to = o.full ? A1 + .02 : Math.min(phNow, A1 + .02);
+  for (let p = .36; p <= to; p += .01) {
+    const st = ollieAt(p, o), pl = placeOllie(G, th0, st, u), sh = (p - phNow) * period * spd;
+    pts.push([pl.F[0] + f0.d[0] * sh, pl.F[1] + f0.d[1] * sh - .3 * u]);
+  }
+  if (pts.length < 2) return;
+  g.save(); g.globalAlpha = o.alpha == null ? 1 : o.alpha; g.strokeStyle = o.color || COL.blue; g.lineWidth = 6; g.setLineDash([4, 12]); g.lineCap = 'round';
+  g.beginPath(); pts.forEach((q, i) => i ? g.lineTo(...q) : g.moveTo(...q)); g.stroke(); g.restore();
+}
+function landPuff(G, l, u) { if (l < 0 || l > 1.2) return; g.save(); g.fillStyle = '#fff'; g.strokeStyle = '#c8d7e5'; g.lineWidth = 2;
+  for (let i = 0; i < 14; i++) { const dir = i % 2 ? 1 : -1, v = (.6 + hash(i + 3) * 1.2) * u, x = G[0] + dir * (1.4 * u + v * l), y = G[1] - (1.1 + hash(i) * .8) * u * l + 1.6 * u * l * l; g.globalAlpha = Math.max(0, 1 - l / 1.2) * .9; g.beginPath(); g.arc(x, y, 6 + hash(i + 9) * 9, 0, Math.PI * 2); g.fill(); g.stroke(); }
+  g.restore(); }
+function ground(G, th0, sc) { drawSlope(G, th0, sc || 0, { noProps: true }); }
+
+/* 顺着板看（横截面）：落地时板平 / 立着刃 */
+const FLAT = { shin: 14, thigh: -30, torso: 16, head: 10, uarm: 150, farm: 105 };
+const FLATLOW = { shin: 30, thigh: -70, torso: 30, head: 16, uarm: 145, farm: 100 };
+function crossLand(x, gy, l, u, edge, o = {}) {
+  // l：0–.8 在空中落下，.8 触地；edge：空中板的倾斜角
+  const hop = l < .8 ? 1.1 * u * (1 - (l / .8) ** 2) : 0;
+  let rot = l < .8 ? edge * sm(l / .5) : edge, pose = FLAT;
+  if (l >= .8) {
+    if (Math.abs(edge) < 3) pose = lerpPose(FLAT, FLATLOW, Math.sin(clamp((l - .8) / .6, 0, 1) * Math.PI) * .8);
+    else rot = edge + (o.fall || 0) * ein(clamp((l - .8) / .45, 0, 1));
+  }
+  return rider([x, gy - hop], 0, pose, u, { rot, pivot: rot >= 0 ? 'toe' : 'heel', alpha: o.alpha, mono: o.mono });
+}
+
+/* 俯视小单板（同 EP.12） */
+function topSB(x, y, ang, s, o = {}) {
+  g.save(); g.translate(x, y); g.rotate(ang); g.globalAlpha = o.alpha == null ? 1 : o.alpha;
+  g.fillStyle = COL.board; rrect(-110 * s, -30 * s, 220 * s, 60 * s, 28 * s); g.fill();
+  g.fillStyle = '#2a2f3a'; rrect(42 * s, -24 * s, 30 * s, 48 * s, 8 * s); g.fill(); rrect(-72 * s, -24 * s, 30 * s, 48 * s, 8 * s); g.fill();
+  g.fillStyle = COL.boot; [57, -57].forEach(bx => { g.beginPath(); g.ellipse(bx * s, 0, 16 * s, 26 * s, 0, 0, Math.PI * 2); g.fill(); });
+  g.fillStyle = o.jacket || COL.jacket; g.beginPath(); g.ellipse(0, 0, 30 * s, 16 * s, 0, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#fff'; g.strokeStyle = COL.pants; g.lineWidth = 3 * s; g.beginPath(); g.arc(0, 0, 12 * s, 0, Math.PI * 2); g.fill(); g.stroke();
+  g.fillStyle = COL.amber; g.beginPath(); g.arc(0, 10 * s, 5 * s, 0, Math.PI * 2); g.fill();
+  g.restore();
+}
+
+/* ───────── 场景 ───────── */
+const S = [], PHF = []; // PHF[i](lt)：该场景里 ollie 的相位，用来对齐起跳/落地的声音
+const SPX = 240;
+// A 钩子：平地上滑着，"啪"地一下跳起来
+PHF.push(lt => loopPh(lt, 3.2, .4));
+S.push(lt => {
+  const G = [CX, H * .62], u = 150, ph = PHF[0](lt); drawSky(lt * 10); drawSnowfall(lt, .35); ground(G, 0, lt * SPX); speedLines(G, 0, lt, .25);
+  ollieArc(G, 0, ph, 3.2, SPX, u, { alpha: ph > A1 ? 1 - sm((ph - A1) / .15) : 1 });
+  const J = drawOllie(G, 0, ph, u);
+  if (ph > .42 && ph < .62) { g.save(); g.globalAlpha = 1 - sm((ph - .54) / .08); label('啪！', J.pl.TP[0] - 20, G[1] - 2.2 * u, 64, COL.amber, 900); g.restore(); }
+  landPuff(G, (ph - A1) * 3.2, u);
+});
+// B 标题
+PHF.push(lt => loopPh(lt, 2.8, .3));
+S.push(lt => {
+  drawSky(0); g.fillStyle = 'rgba(247,250,252,.5)'; g.fillRect(0, 0, W, H);
+  pill('滑雪不难 · EP.14 · 单板', CX, H * .19, 40, COL.amber, '#fff', eout(lt / .3));
+  const G = [CX, H * .69], u = 105, ph = PHF[1](lt); ground(G, 0, lt * 180);
+  ollieArc(G, 0, ph, 2.8, 180, u); drawOllie(G, 0, ph, u); landPuff(G, (ph - A1) * 2.8, u);
+});
+// C 原理：板是弹簧
+PHF.push(lt => lt < 8 ? .42 * sm(clamp((lt - .6) / 3.2, 0, 1)) : lt < 13.6 ? .42 + .58 * clamp((lt - 8.6) / 4.2, 0, 1) : loopPh(lt - 13.6, 2.4));
+S.push(lt => {
+  const G = [CX + 70, H * .6], u = 150, ph = PHF[2](lt); drawSky(0); ground(G, 0, 0);
+  const J = drawOllie(G, 0, ph, u), P = J.P, load = J.st.lift > 0 ? 0 : J.st.pitch / PIT;
+  flex(J, ph < .44 ? load : 0);
+  const sl = springLen(ph), loaded = ph >= .3 && ph < .44, rel = ph >= .44 && ph < .7;
+  spring(W * .11, G[1], sl, 1, loaded ? COL.amber : COL.green);
+  if (loaded || rel) label(loaded ? '蓄力' : '释放', W * .11, G[1] - sl - 44, 40, loaded ? COL.amber : COL.green, 900);
+  if (lt < 8) {
+    const a = sm((lt - 2.2) / .4); g.save(); g.globalAlpha = a;
+    const t0 = P(-1.35, 1.75), t1 = P(-1.35, .5); arrow(t0[0], t0[1], t1[0], t1[1], COL.amber, 8, 28); label('压板尾', t0[0], t0[1] - 40, 40, COL.amber, 900);
+    const n0 = P(1.95, .45), n1 = P(1.95, 1.2); arrow(n0[0], n0[1], n1[0], n1[1], COL.green, 7, 24); label('板头抬起', Math.min(n0[0], W - 100), G[1] + 90, 36, COL.green, 900);
+    g.restore();
+    const b = sm((lt - 3.6) / .4); g.save(); g.globalAlpha = b; const lp = J.P(-.5, -.9); label('板弯了 = 蓄力', lp[0], lp[1], 40, COL.amber, 900); g.restore();
+  } else if (lt < 13.6) {
+    if (ph > .42 && ph < .66) { const a = Math.sin(clamp((ph - .42) / .24, 0, 1) * Math.PI); g.save(); g.globalAlpha = a; const tp = J.pl.TP, t0 = [tp[0] + 30, G[1] - 40], t1 = [tp[0] + 30, G[1] - 230]; arrow(t0[0], t0[1], t1[0], t1[1], COL.green, 8, 28); label('板尾弹起来', t0[0], G[1] + 90, 40, COL.green, 900); g.restore(); }
+    if (ph > .58) { const a = sm((ph - .58) / .05) * (1 - sm((lt - 13) / .5)); g.save(); g.globalAlpha = a; label('人被带起来', J.Hd[0] + 220, J.Hd[1], 40, COL.blue, 900); g.restore(); }
+    landPuff(G, (ph - A1) * 4.2 * .6, u);
+  } else landPuff(G, (ph - A1) * 2.4, u);
+});
+// D 分解五步
+const DK = [
+  { k: [[0, 0], [1.2, .2], [6.8, .2]], p: 6.8 },
+  { k: [[0, .2], [1.4, .42], [2.8, .42], [3.4, .2]], p: 3.4 },
+  { k: [[0, .2], [.8, .42], [1.4, .42], [2.6, .58], [3.4, .58]], p: 3.4 },
+  { k: [[0, .2], [.6, .42], [1.4, .55], [2.4, .66], [3.4, .66]], p: 3.4 },
+  { k: [[0, .5], [1.2, .7], [2.0, .8], [2.6, .86], [3.4, .86]], p: 3.4 }
+];
+PHF.push(lt => { const i = Math.min(4, Math.floor(lt / 6.8)), l2 = lt - i * 6.8; return seqPh(l2, DK[i].k, DK[i].p); });
+S.push(lt => {
+  const i = Math.min(4, Math.floor(lt / 6.8)), l2 = lt - i * 6.8, ph = PHF[3](lt), G = [CX + 40, H * .62], u = 160;
+  drawSky(0); ground(G, 0, 0);
+  const J = drawOllie(G, 0, ph, u), P = J.P, a = sm((l2 - .9) / .4);
+  g.save(); g.globalAlpha = a;
+  if (i === 0) { sbBalance(J, 1, true); }
+  else if (i === 1) {
+    flex(J, J.st.lift > 0 ? 0 : J.st.pitch / PIT);
+    const t0 = P(-1.35, 1.75), t1 = P(-1.35, .5); arrow(t0[0], t0[1], t1[0], t1[1], COL.amber, 8, 28); label('压板尾', t0[0], t0[1] - 40, 40, COL.amber, 900);
+    const n0 = P(1.95, .45), n1 = P(1.95, 1.2); arrow(n0[0], n0[1], n1[0], n1[1], COL.green, 7, 24); label('板头先离地', Math.min(n0[0], W - 120), G[1] + 90, 36, COL.green, 900);
+  } else if (i === 2) {
+    if (ph > .42) { const tp = J.pl.TP, t0 = [tp[0] + 30, G[1] - 30], t1 = [tp[0] + 30, G[1] - 240]; arrow(t0[0], t0[1], t1[0], t1[1], COL.green, 8, 28); label('后脚一弹', t1[0] + 20, t1[1] - 44, 40, COL.green, 900); }
+    if (ph > .42 && ph < .52) burst(J.pl.TP[0] + 20, G[1], (ph - .42) * 4, 16, .4);
+  } else if (i === 3) {
+    const k = J.Kf, ch = [lerp(J.Hc[0], J.S[0], .6) + 40, lerp(J.Hc[1], J.S[1], .6)], c = [mid(k, ch)[0] + 40, mid(k, ch)[1]], r = Math.hypot(k[0] - c[0], k[1] - c[1]);
+    let a0 = Math.atan2(k[1] - c[1], k[0] - c[0]), a1 = Math.atan2(ch[1] - c[1], ch[0] - c[0]); if (a1 > a0) a1 -= Math.PI * 2;
+    ring(k[0], k[1], 44, COL.amber, 1); arcArrow(c[0], c[1], r, a0 - .25, a1 + .1, COL.amber, 7, 24);
+    label('膝盖往胸口收', J.Hd[0] + 270, J.Hd[1] - 20, 40, COL.amber, 900);
+  } else {
+    if (ph >= A1) {
+      [J.Ab, J.Af].forEach(q => ring(q[0], q[1] + 8, 34, COL.green, 1));
+      label('两脚同时', G[0], G[1] + 110, 40, COL.green, 900);
+      ring(J.Kf[0], J.Kf[1], 40, COL.amber, 1); label('膝盖弯', J.Kf[0] + 150, J.Kf[1] - 30, 36, COL.amber, 900);
+      label('板平', P(-1.3, 0)[0], G[1] + 110, 36, COL.blue, 900);
+    }
+  }
+  g.restore();
+  if (i === 4) landPuff(G, l2 % 3.4 - 2.0, u);
+  stepChips(BREAK, H * .235, i, eout((lt - .3) / .4), 36);
+});
+// E 先原地练 / 平缓人少 / 板要平
+PHF.push(lt => lt < 6 ? seqPh(lt, [[0, 0], [.6, .2], [1.4, .42], [2.2, .42], [2.8, .2]], 2.8) : 0);
+S.push(lt => {
+  const seg = lt < 6 ? 0 : lt < 12 ? 1 : 2, l2 = lt - seg * 6;
+  if (seg === 0) {
+    const G = [CX + 40, H * .6], u = 160, ph = PHF[4](lt); drawSky(0); drawSnowfall(lt + 61, .35); ground(G, 0, 0);
+    const J = drawOllie(G, 0, ph, u, { press: true }); flex(J, J.st.pitch / PIT);
+    pill('原地 · 只压板尾，不跳', CX, H * .27, 38, COL.green, '#fff', sm((l2 - 1) / .4));
+    const lp = J.P(-.5, -.9); g.save(); g.globalAlpha = J.st.pitch / PIT; label('板弯一下', lp[0], lp[1], 38, COL.amber, 900); g.restore();
+  } else if (seg === 1) {
+    g.fillStyle = '#f7fafc'; g.fillRect(0, 0, W, H);
+    const x0 = W * .06, x1 = W * .94, y0 = H * .22, y1 = H * .69;
+    g.save(); g.fillStyle = '#ffffff'; g.strokeStyle = '#d3dee8'; g.lineWidth = 4; rrect(x0, y0, x1 - x0, y1 - y0, 30); g.fill(); g.stroke(); g.restore();
+    g.save(); g.beginPath(); g.rect(x0, y0, x1 - x0, y1 - y0); g.clip();
+    [W * .3, W * .5].forEach((x, i) => { for (let k = 0; k < 2; k++) { const y = y0 - 120 + ((l2 * 300 + k * 520 + i * 260) % (y1 - y0 + 240)); topSB(x + Math.sin(y * .01 + i) * 30, y, Math.PI / 2 + Math.sin(y * .01 + i) * .3, 1.1, { jacket: i ? COL.blue : '#8a6cff' }); } });
+    g.restore();
+    g.save(); g.globalAlpha = .6; g.strokeStyle = '#9fb6ca'; g.lineWidth = 5; g.setLineDash([14, 12]); g.beginPath(); g.moveTo(W * .4, y0 + 40); g.lineTo(W * .4, y1 - 40); g.stroke(); g.restore();
+    pill('↓ 往下滑的人', W * .4, y0 + 44, 28, '#eef3f8', '#7d93a8');
+    const zx = W * .66, zy = H * .43; g.save(); g.fillStyle = 'rgba(18,166,121,.1)'; g.strokeStyle = COL.green; g.lineWidth = 5; g.setLineDash([12, 10]); rrect(zx, zy - 150, W * .25, 300, 26); g.fill(); g.stroke(); g.restore();
+    const hop = Math.max(0, Math.sin(l2 * 4)) * .15; topSB(zx + W * .125, zy, Math.PI / 2, 1.1 * (1 + hop));
+    label('边上、平缓', zx + W * .125, zy + 190, 34, COL.green, 900); markV(zx + W * .125, zy - 190, 30, sm((l2 - .6) / .3));
+    const a = sm((l2 - 1.6) / .3); topSB(W * .4, H * .5, Math.PI / 2, 1.1, { alpha: a, jacket: COL.red }); markX(W * .4 + 90, H * .5 - 90, 30, a);
+    g.save(); g.globalAlpha = a; label('雪道中间', W * .2, H * .5 + 160, 34, COL.red, 900); g.restore();
+  } else {
+    drawSky(0); const gy = H * .62; g.fillStyle = '#fff'; g.fillRect(0, gy, W, H - gy); g.strokeStyle = '#c3d4e4'; g.lineWidth = 4; g.beginPath(); g.moveTo(0, gy); g.lineTo(W, gy); g.stroke();
+    const l3 = (l2 - .3) % 2.9, u = 100;
+    crossLand(W * .3, gy, l3, u, 0); crossLand(W * .74, gy, l3, u, 22, { fall: 50 });
+    if (l3 > .8) { burst(W * .74 + 40, gy, l3 - .8, 18, .45); landPuff([W * .3, gy], (l3 - .8) * .8, 70); }
+    markV(W * .3, H * .27, 34, sm((l2 - .5) / .3)); markX(W * .74, H * .27, 34, sm((l2 - .5) / .3));
+    label('板平：稳', W * .3, gy + 90, 38, COL.green, 900); label('立着刃：卡住', W * .74, gy + 90, 38, COL.red, 900);
+  }
+});
+// F 练习三步
+PHF.push(lt => lt < 2.4 ? 0 : lt < 7 ? seqPh(lt - 2.4, [[0, 0], [.5, .2], [1.2, .42], [1.8, .42], [2.3, .2]], 2.3) : lt < 11.4 ? loopPh(lt - 7, 2.2) : loopPh(lt - 11.4, 2.3));
+S.push(lt => {
+  const cur = lt < 2.4 ? -1 : lt < 7 ? 0 : lt < 11.4 ? 1 : lt < 16 ? 2 : 3, ph = PHF[5](lt);
+  drawSky(0);
+  if (cur <= 0) {
+    const G = [CX + 40, H * .62], u = 160; ground(G, 0, 0); const J = drawOllie(G, 0, ph, u, { press: true }); flex(J, J.st.pitch / PIT);
+  } else if (cur === 1) {
+    const G = [CX + 40, H * .62], u = 160; ground(G, 0, 0); const J = drawOllie(G, 0, ph, u, { amp: .45 });
+    spring(W * .1, G[1], springLen(ph), 1, ph >= .3 && ph < .44 ? COL.amber : COL.green); landPuff(G, (ph - A1) * 2.2, u);
+  } else {
+    const G = [CX, H * .62], u = 150, th0 = 4, sp = 150; ground(G, th0, (lt - 11.4) * sp); speedLines(G, th0, lt, .15);
+    ollieArc(G, th0, ph, 2.3, sp, u, { amp: .45, alpha: ph > A1 ? 1 - sm((ph - A1) / .15) : 1 }); drawOllie(G, th0, ph, u, { amp: .45 }); landPuff(G, (ph - A1) * 2.3, u);
+    pill('慢速 · 平缓', CX, H * .3, 36, COL.green, '#fff', sm((lt - 11.8) / .4));
+  }
+  stepChips(STEPS, H * .235, cur, eout((lt - .3) / .4), 34);
+});
+// G 三个错误
+PHF.push(lt => lt >= 6 && lt < 12 ? seqPh(lt - 6, [[0, 0], [.4, 0], [2.4, .78], [3.4, .86]], 3.4) : 0);
+S.push(lt => {
+  const seg = lt < 6 ? 0 : lt < 12 ? 1 : 2, l2 = lt - seg * 6;
+  drawSky(0);
+  if (seg === 0) {
+    const G = [CX + 40, H * .62], u = 160; ground(G, 0, 0);
+    const c = (l2 % 2) / 2, up = c < .35 ? sm(c / .35) : 1 - sm((c - .5) / .4);
+    const J = sbRider(G, 0, lerpPose(LOW, { hipS: .05, hipH: 1.66, lean: -6, armF: 178, armB: -178, look: .4 }, up), u);
+    if (up > .3) { g.save(); g.globalAlpha = up; arrow(J.Hd[0] + 120, J.Hd[1] + 60, J.Hd[0] + 120, J.Hd[1] - 80, COL.red, 7, 24); label('人往上窜', J.Hd[0] + 230, J.Hd[1] - 10, 38, COL.red, 900); g.restore(); }
+    const a = win(l2, 1.4, 6, .3, .3); g.save(); g.globalAlpha = a; g.strokeStyle = COL.red; g.lineWidth = 6; g.setLineDash([10, 8]); rrect(G[0] - 2 * u, G[1] - .5 * u, 4 * u, .8 * u, 30); g.stroke(); g.restore();
+    g.save(); g.globalAlpha = a; label('板没离地', G[0], G[1] + 110, 40, COL.red, 900); g.restore();
+  } else if (seg === 1) {
+    const G = [CX + 40, H * .62], u = 160, ph = PHF[6](lt); ground(G, 0, 0);
+    const shake = ph >= A1 && ph < .84 ? Math.sin(l2 * 70) * 6 : 0;
+    const J = drawOllie([G[0] + shake, G[1]], 0, ph, u, { tuck: lerpPose(POP, STR, .6), land: STR, amp: .55 });
+    if (ph >= A1) { const a = 1 - sm((ph - .82) / .04) * 0; glow(J.Kf[0], J.Kf[1], .6 * u, '240,71,60', .8 * a); glow(J.Kb[0], J.Kb[1], .5 * u, '240,71,60', .6 * a); label('腿直着硬接', J.Hd[0] + 240, J.Hd[1] + 10, 38, COL.red, 900); }
+  } else {
+    const gy = H * .62; g.fillStyle = '#fff'; g.fillRect(0, gy, W, H - gy); g.strokeStyle = '#c3d4e4'; g.lineWidth = 4; g.beginPath(); g.moveTo(0, gy); g.lineTo(W, gy); g.stroke();
+    const l3 = clamp((l2 - .4) / 1.1, 0, 3), u = 120, x = CX - 110;
+    crossLand(x, gy, l3, u, 24, { fall: 50 });
+    if (l3 > .8) { burst(x + 50, gy, (l3 - .8) * 1.1, 26, .6); }
+    if (l3 > .85) { const a = sm((l3 - .85) / .2); g.save(); g.globalAlpha = a; ring(x + .34 * u, gy - 4, 46, COL.red, 1, true); label('刃卡进雪里', x + 40, gy + 110, 40, COL.red, 900); g.restore(); }
+  }
+  markX(W * .14, H * .3, 40, win(l2, .3, 6, .2, .3));
+});
+// H 口诀卡
+PHF.push(() => 0);
+S.push(lt => {
+  drawSky(0); drawSnowfall(lt + 112, .5);
+  const a = eout(lt / .4), x = W * .08, y = H * .24, w = W * .84, h = H * .42;
+  g.save(); g.globalAlpha = a; g.translate(0, (1 - a) * 50);
+  g.fillStyle = '#fff'; g.shadowColor = 'rgba(27,40,56,.14)'; g.shadowBlur = 50; rrect(x, y, w, h, 44); g.fill(); g.shadowBlur = 0;
+  label('记住这几句', CX, y + 100, 50, COL.amber, 900);
+  [['蓄力', '重心后移 · 压板尾', COL.amber], ['起跳', '后脚一弹 · 收膝', COL.green], ['落地', '两脚同时 · 腿弯 · 板平', COL.blue]].forEach(([t1, t2, c], i) => {
+    const ra = eout((lt - .8 - i * 1.2) / .35); if (ra <= 0) return; const ry = y + 250 + i * 225;
+    g.save(); g.globalAlpha = a * ra; g.translate((1 - ra) * 40, 0); pill(t1, x + 70 + (t1.length * 38 + 52) / 2, ry - 44, 38, c, '#fff'); label(t2, x + 70, ry + 42, 50, COL.ink, 900, 'left'); g.restore();
+  });
+  g.restore();
+  label('先学会压板，再谈跳多高。', CX, H * .75, 46, COL.sub, 700);
+});
+// I 结尾
+PHF.push(lt => loopPh(lt, 3, .5));
+S.push(lt => {
+  drawSky(0); const G = [CX, H * .85], u = 100, ph = PHF[8](lt); ground(G, 0, lt * 160);
+  ollieArc(G, 0, ph, 3, 160, u, { alpha: ph > A1 ? 1 - sm((ph - A1) / .15) : 1 }); drawOllie(G, 0, ph, u); landPuff(G, (ph - A1) * 3, u);
+  pill('下集 · 第一次上中级道：先看再滑', CX, H * .55, 36, COL.amber, '#fff', eout((lt - 1.8) / .4));
+});
+
+/* ───────── 封面 ───────── */
+function coverArt(key, w, h) {
+  drawSky(0);
+  const art = (cx, base, u) => {
+    g.save(); g.fillStyle = '#fff'; g.fillRect(0, base, w, h - base); g.strokeStyle = '#c3d4e4'; g.lineWidth = 4; g.beginPath(); g.moveTo(0, base); g.lineTo(w, base); g.stroke(); g.restore();
+    const G = [cx, base], ph = .6, st = ollieAt(ph, { amp: .95 }), pl = placeOllie(G, 0, st, u), top = pl.F[1], half = 2.6 * u;
+    g.save(); g.strokeStyle = COL.blue; g.lineWidth = 7; g.setLineDash([4, 14]); g.lineCap = 'round'; g.beginPath();
+    for (let i = 0; i <= 40; i++) { const k = i / 40 * 2 - 1, x = cx + k * half, y = lerp(base - 6, top, 1 - k * k); i ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke(); g.restore();
+    const J = drawOllie(G, 0, ph, u, { amp: .95 }); spring(cx - half - 60, base, 210, 1, COL.green);
+    return J;
+  };
+  const title = (cx, y1, y2, size, subY, subSize, pillY, pillSize) => {
+    pill('滑雪不难 · EP.14 · 单板', cx, pillY, pillSize, COL.amber, '#fff');
+    label('第一个 ollie', cx, y1, size, COL.ink, 900);
+    g.font = `900 ${size * .62}px ${SANS}`; const parts = [['板是一根', COL.ink], ['弹簧', COL.green]], ws = parts.map(q => g.measureText(q[0]).width);
+    let x = cx - ws.reduce((s, v) => s + v, 0) / 2; parts.forEach((q, i) => { label(q[0], x + ws[i] / 2, y2, size * .62, q[1], 900); x += ws[i]; });
+    label('蓄力 · 起跳 · 收膝 · 落地', cx, subY, subSize, COL.sub, 700);
+  };
+  if (key === '9x16') { title(CX, h * .24, h * .315, 116, h * .37, 40, h * .15, 42); art(w * .55, h * .84, 150); }
+  else if (key === '3x4') { title(CX, h * .17, h * .265, 108, h * .325, 38, h * .07, 40); art(w * .55, h * .9, 120); }
+  else {
+    art(key === '16x9' ? w * .74 : w * .72, h * .88, key === '16x9' ? 150 : 115);
+    const fade = g.createLinearGradient(0, 0, w * .62, 0); fade.addColorStop(0, 'rgba(240,246,251,.96)'); fade.addColorStop(1, 'rgba(240,246,251,0)'); g.fillStyle = fade; g.fillRect(0, 0, w * .56, h);
+    const size = key === '16x9' ? 108 : 86;
+    title(w * .28, h * .43, h * .58, size, h * .7, key === '16x9' ? 36 : 30, h * .26, key === '16x9' ? 38 : 34);
+  }
+}
+
+/* ───────── 声音 ───────── */
+function sound(K, c, DUR) {
+  K.bed(8.0, DUR, t => t < 27.6 ? 'verse' : t < 61.6 ? 'chorus' : t < 79.6 ? 'verse' : t < 95.6 ? 'chorus' : t < 113.6 ? 'tense' : 'outro');
+  K.wind(DUR, t => t < 8 ? .16 : 0);
+  // 起跳"啪"、落地"咚"：按各场景的相位函数找时刻
+  const pop = t => { K.noise(t, .07, .35, 'bandpass', 2200, null, 1.4); K.tone(190, t, .12, .12, 'triangle'); };
+  const land = t => { K.thud(t, .22); };
+  for (let i = 0; i < S.length; i++) {
+    const f = PHF[i]; if (!f) continue; let prev = f(0);
+    for (let lt = 1 / 120; T[i] + lt < T[i + 1]; lt += 1 / 120) {
+      const ph = f(lt), t = T[i] + lt;
+      if (prev < .43 && ph >= .43 && prev > .3) pop(t);
+      if (prev < A1 && ph >= A1 && prev > .6 && !(i === 6)) land(t);
+      prev = ph;
+    }
+  }
+  [11.6 + 4.2, 19.6 + 1.6, 27.6 + 1.4, 34.4 + 1.6, 41.2 + 1.6, 48 + 2.6, 54.8 + 2.2].forEach(K.ding);
+  K.ding(61.6 + 1.4); K.ding(67.6 + 1); K.wrong(67.6 + 2); K.ding(73.6 + 1.2);
+  // 板平 / 立着刃 的落地
+  for (let t = 73.6 + .3 + .8; t < 79.6; t += 2.9) { K.thud(t, .3); K.wrong(t + .2); }
+  [95.6 + .3, 101.6 + .3, 107.6 + .3].forEach(K.wrong);
+  // 错误二：腿直着硬接
+  for (let t = 101.6 + 2.4; t < 107.6; t += 3.4) K.thud(t, .7);
+  K.thud(107.6 + .4 + .88, .9);
+  for (let i = 0; i < 3; i++) K.tone(880 + i * 110, 113.6 + .8 + i * 1.2, .25, .07, 'triangle');
+  K.riser(94.2, 95.6, .12);
+}
+
+kitRun({
+  T, S, TX, seed: 241,
+  allText: STEPS.join('') + BREAK.join('') + '啪！蓄力释放压板尾头抬起弯了=蓄弹来人被带后脚一膝盖往胸口收两同时平原地只不跳边上、缓↓往下滑的雪道中间板稳立着刃：卡住慢速·没离窜腿直硬接进里记住几句重心移起跳落再谈多高集第次级先看你的哪步？ollie单弹簧个错误',
+  audio: sound, cover: coverArt
+});
+})();
+</script>
+</body>
+</html>
