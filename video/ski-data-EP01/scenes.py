@@ -293,7 +293,7 @@ def s5(c, t, fi):
             y = y0 + i * 190
             text(c, lab, x0 - 30, y + 70, 34, INK, ba, align="r", bold=True)
             c.rectangle(x0, y, bw * v, bh); c.set_source_rgba(*col, 0.85 * ba); c.fill()
-        text(c, f"−{TRAIN_REDUCTION * 100 * k:.0f}%", x0 + bw * (1 - TRAIN_REDUCTION) + 30, y0 + 190 + 76, 56, ICE, ba, bold=True)
+        text(c, f"−{TRAIN_REDUCTION * 100 * k:.0f}%", x0 + bw * (1 - TRAIN_REDUCTION * k) + 30, y0 + 190 + 76, 56, ICE, ba, bold=True)
         text(c, "前十字韧带受伤（相对值）", x0, y0 - 30, 22, DIM, ba)
     sa = a_in * ramp(t, 11.8, 12.6)
     if sa > 0:
