@@ -81,3 +81,8 @@
 
 - 风格与《滑雪里的物理》相同（Python + cairo，深色横屏），内容以双板技术和安全为主，每集用研究数据说话。
 - EP.01《双板断十字韧带的三种方式》：源码 `video/ski-data-EP01/`，叙事方案 `video/ski-data-EP01-方案.md`。`art.py` 放研究数据常量和画面元素（正面双板小人 `skier_front()` 可设膝外翻、外板滑开、立刃角；侧面自由姿势 `side_pose()` 可做后坐 / 幽灵脚；点阵 `dot_matrix()`）。构建方式同上。
+- EP.02–05 共用 `video/ski-data-lib/`：`render.py EPDIR`、`build.sh EPDIR`（分块并行渲染、自动配乐、降噪编码）、`music.py`（按字幕自动配乐）、`covers.py EPDIR 前缀`（四种尺寸封面，读取 `scenes.COVER`）、`art.py`（`seq()` 按阅读速度自动排字幕时间）。方案与资料：`video/ski-data-EP02-05-方案.md`。
+  - EP.02《外脚到底该压多少？》 `video/ski-data-EP02/`
+  - EP.03《一个弯里，腿要扛几倍体重？》 `video/ski-data-EP03/`
+  - EP.04《搓雪为什么慢？》 `video/ski-data-EP04/`
+  - EP.05《立刃角和弯有多大？》 `video/ski-data-EP05/`
