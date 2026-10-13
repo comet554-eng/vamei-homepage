@@ -203,6 +203,83 @@ function bike(x, y, s, rot, color) {
   g.restore();
 }
 
+/* 五种车型的手绘图：road 公路车 / mtb 山地车 / flat 平把公路 / fold 折叠车 / city 通勤车 */
+function bikeType(x, y, s, type, rot, color) {
+  rot = rot || 0; var fc = color || C.orange;
+  var P = {
+    road: { R: 62, tire: 4, wb: 104, bar: 'drop', frame: 'diamond' },
+    mtb: { R: 60, tire: 11, wb: 108, bar: 'riser', frame: 'diamond', fork: 1 },
+    flat: { R: 62, tire: 6, wb: 104, bar: 'flat', frame: 'diamond' },
+    fold: { R: 38, tire: 6, wb: 82, bar: 'fold', frame: 'fold' },
+    city: { R: 60, tire: 7, wb: 108, bar: 'city', frame: 'step', basket: 1, fender: 1 }
+  }[type];
+  g.save(); g.translate(x, y); g.scale(s, s); g.lineCap = 'round'; g.lineJoin = 'round';
+  var ink = C.ink, R = P.R, rw = [-P.wb, 30], fw = [P.wb, 30], wy = 30;
+  [rw, fw].forEach(function (w) {
+    g.strokeStyle = ink; g.lineWidth = P.tire; g.beginPath(); g.arc(w[0], w[1], R, 0, 6.283); g.stroke();
+    if (type === 'mtb') { g.lineWidth = 2; for (var k = 0; k < 24; k++) { var a = k / 24 * 6.283; g.beginPath(); g.moveTo(w[0] + Math.cos(a) * (R + 5), w[1] + Math.sin(a) * (R + 5)); g.lineTo(w[0] + Math.cos(a) * (R + 9), w[1] + Math.sin(a) * (R + 9)); g.stroke(); } }
+    g.lineWidth = 1.8; for (var i = 0; i < 6; i++) { var an = rot + i * Math.PI / 6; g.beginPath(); g.moveTo(w[0] - Math.cos(an) * (R - P.tire / 2), w[1] - Math.sin(an) * (R - P.tire / 2)); g.lineTo(w[0] + Math.cos(an) * (R - P.tire / 2), w[1] + Math.sin(an) * (R - P.tire / 2)); g.stroke(); }
+    g.fillStyle = ink; g.beginPath(); g.arc(w[0], w[1], 5, 0, 6.283); g.fill();
+    if (P.fender) { g.lineWidth = 4; g.strokeStyle = C.gray; g.beginPath(); g.arc(w[0], w[1], R + 8, Math.PI * 1.05, Math.PI * 1.95); g.stroke(); }
+  });
+  var bb = [-8, wy], st, ht;
+  g.strokeStyle = fc; g.lineWidth = type === 'mtb' ? 9 : 7;
+  if (P.frame === 'diamond') {
+    st = [-38, -50]; ht = [70, -46];
+    g.beginPath(); g.moveTo(rw[0], rw[1]); g.lineTo(bb[0], bb[1]); g.lineTo(ht[0], ht[1]); g.lineTo(st[0], st[1]); g.lineTo(bb[0], bb[1]); g.moveTo(st[0], st[1]); g.lineTo(rw[0], rw[1]); g.stroke();
+  } else if (P.frame === 'step') {
+    st = [-40, -52]; ht = [72, -50];
+    g.beginPath(); g.moveTo(rw[0], rw[1]); g.lineTo(bb[0], bb[1]); g.moveTo(st[0], st[1]); g.lineTo(bb[0], bb[1]); g.quadraticCurveTo(30, 20, ht[0], ht[1]); g.moveTo(st[0] + 4, st[1] + 10); g.lineTo(rw[0], rw[1]); g.stroke();
+  } else {
+    st = [-30, -46]; ht = [58, -40];
+    g.beginPath(); g.moveTo(rw[0], rw[1]); g.lineTo(bb[0], bb[1]); g.lineTo(ht[0] - 6, ht[1] + 40); g.lineTo(ht[0], ht[1]); g.moveTo(-14, -4); g.lineTo(st[0], st[1]); g.moveTo(-10, 6); g.lineTo(rw[0], rw[1]); g.stroke();
+    g.fillStyle = ink; g.beginPath(); g.arc(18, 12, 6, 0, 6.283); g.fill(); // 折叠铰链
+  }
+  // 前叉
+  g.strokeStyle = ink; g.lineWidth = 5;
+  if (P.fork) { g.lineWidth = 11; g.strokeStyle = '#555'; g.beginPath(); g.moveTo(ht[0], ht[1]); g.lineTo(lerp(ht[0], fw[0], .5), lerp(ht[1], fw[1], .5)); g.stroke(); g.lineWidth = 5; g.strokeStyle = ink; }
+  g.beginPath(); g.moveTo(ht[0], ht[1]); g.lineTo(fw[0], fw[1]); g.stroke();
+  // 车把
+  var top = [ht[0] - 6, ht[1] - (type === 'fold' ? 52 : 26)];
+  g.beginPath(); g.moveTo(ht[0], ht[1]); g.lineTo(top[0], top[1]); g.stroke();
+  g.lineWidth = 5;
+  if (P.bar === 'drop') { g.beginPath(); g.moveTo(top[0], top[1]); g.lineTo(top[0] + 26, top[1]); g.quadraticCurveTo(top[0] + 46, top[1] + 4, top[0] + 40, top[1] + 26); g.lineTo(top[0] + 26, top[1] + 30); g.stroke(); }
+  else if (P.bar === 'city') { g.beginPath(); g.moveTo(top[0], top[1]); g.quadraticCurveTo(top[0] - 4, top[1] - 16, top[0] - 26, top[1] - 14); g.stroke(); }
+  else { g.beginPath(); g.moveTo(top[0] - 2, top[1] - (P.bar === 'riser' ? 8 : 0)); g.lineTo(top[0] + 22, top[1] - (P.bar === 'riser' ? 8 : 0)); g.stroke(); }
+  // 坐垫
+  g.beginPath(); g.moveTo(st[0], st[1]); g.lineTo(st[0] - 5, st[1] - (type === 'fold' ? 34 : 20)); g.stroke();
+  var sy = st[1] - (type === 'fold' ? 34 : 20); g.lineWidth = type === 'city' ? 12 : 8; g.beginPath(); g.moveTo(st[0] - 28, sy - 2); g.lineTo(st[0] + 14, sy - 2); g.stroke();
+  // 车筐
+  if (P.basket) { g.lineWidth = 3; g.strokeStyle = C.brown; g.strokeRect(fw[0] - 20, ht[1] - 52, 56, 40); for (var q = 0; q < 4; q++) { g.beginPath(); g.moveTo(fw[0] - 20 + q * 14, ht[1] - 52); g.lineTo(fw[0] - 20 + q * 14, ht[1] - 12); g.stroke(); } }
+  // 牙盘与曲柄
+  g.strokeStyle = ink; g.lineWidth = 4; g.beginPath(); g.arc(bb[0], bb[1], 13, 0, 6.283); g.stroke();
+  var pa = rot * .5; g.beginPath(); g.moveTo(bb[0] + Math.cos(pa) * 24, bb[1] + Math.sin(pa) * 24); g.lineTo(bb[0] - Math.cos(pa) * 24, bb[1] - Math.sin(pa) * 24); g.stroke();
+  g.restore();
+}
+
+/* 通用声音：轻快背景乐 + 常用音效（每集复用） */
+function licaiSound(K, DUR) {
+  var CH = [[261.63, 329.63, 392], [246.94, 293.66, 392], [220, 261.63, 329.63], [220, 261.63, 349.23]], BASS = [130.81, 98, 110, 87.31];
+  for (var t = .2, i = 0; t < DUR - 1; t += 2, i++) {
+    var ch = CH[i % 4];
+    K.tone(BASS[i % 4], t, 1.0, .09, 'sine', K.music, .01); K.tone(BASS[i % 4], t + 1, .9, .07, 'sine', K.music, .01);
+    [0, 1, 2, 1, 0, 2, 1, 2].forEach(function (n, j) { K.tone(ch[n] * 2, t + j * .25, .3, j % 2 ? .02 : .03, 'triangle', K.music, .004); });
+    if (i % 2 === 1) K.tone(ch[2] * 4, t + 1.75, .5, .012, 'sine', K.music);
+    for (var b = 0; b < 4; b++) K.hat(t + b * .5 + .25, .35);
+  }
+  var mg = K.music.gain; mg.setValueAtTime(.8, 0); mg.setValueAtTime(.8, DUR - 2.5); mg.linearRampToValueAtTime(0, DUR);
+  return {
+    ticks: function (t0, n, cps) { for (var i = 0; i < n; i++) K.tone(1800 + K.ar() * 600, t0 + i / (cps || 18), .025, .018, 'square'); },
+    pop: function (t) { K.tone(520, t, .08, .07, 'sine'); K.tone(880, t + .05, .12, .06, 'sine'); },
+    pen: function (t, d) { K.noise(t, d || .35, .05, 'bandpass', 3200, null, 1.4); },
+    coin: function (t) { K.tone(2637, t, .18, .035); K.tone(3951, t + .02, .22, .025); },
+    bell: function (t) { for (var i = 0; i < 2; i++) { K.tone(2093, t + i * .18, .5, .05); K.tone(2793, t + i * .18, .45, .03); } },
+    grow: function (t, d) { K.riser(t, t + (d || .8), .03); },
+    ding: function (t) { K.ding(t); }, wrong: function (t) { K.wrong(t); }, whoosh: function (t) { K.whoosh(t); },
+    stamp: function (t) { K.thud(t, .5); K.ding(t + .05); }
+  };
+}
+
 /* 李财图片：弹出入场 + 呼吸 */
 function cat(name, x, y, h, lt, opt) {
   opt = opt || {}; var im = IMG[name]; if (!im || lt < 0) return;
@@ -260,7 +337,8 @@ function licaiRun(opt) {
         });
     });
   }
-  var imgs = Object.keys(LICAI_IMG).map(function (k) { return new Promise(function (r) { var im = new Image(); im.onload = function () { IMG[k] = im; r(); }; im.onerror = r; im.src = LICAI_IMG[k]; }); });
+  var SRCS = Object.assign({}, LICAI_IMG, typeof LICAI_EMO === 'undefined' ? {} : LICAI_EMO);
+  var imgs = Object.keys(SRCS).map(function (k) { return new Promise(function (r) { var im = new Image(); im.onload = function () { IMG[k] = im; r(); }; im.onerror = r; im.src = SRCS[k]; }); });
   var all = opt.allText + '0123456789%≈?？!！·，。：、=+';
   Promise.race([
     Promise.all([document.fonts.load('64px "ZCOOL KuaiLe"', all), document.fonts.load('400 64px "Noto Sans SC"', all), document.fonts.load('700 64px "Noto Sans SC"', all)].concat(imgs)),
