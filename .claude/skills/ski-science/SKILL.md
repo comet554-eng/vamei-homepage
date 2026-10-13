@@ -23,7 +23,9 @@ description: 制作专业的滑雪科普短片（《滑雪里的物理》系列�
 ## 本环境的已知情况
 
 - **网络**：bash 里只能访问 pypi / npm 等包仓库，Europe PMC、arXiv、出版社网站都被拦（403），WebFetch 也解析不了这些域名；**只能用 WebSearch 查文献**，拿到的是检索摘要，所以引用以"摘要/检索到的元数据"为限，并在方案里写明。
-- **依赖**：`pip install pycairo` 可用；numpy、PIL、ffmpeg、node 已装。系统没有 Noto Serif CJK，只有文泉驿正黑；衬线中文字体用 npm 包 `noto-serif-sc`（或 `@fontsource/noto-serif-sc`）取 woff2，再用 fonttools 转成 otf 给 cairo / PIL 用。
+- **依赖**：`pip install pycairo` 可用；numpy、PIL、ffmpeg（libx264 + aac）、node 已装。
+- **字体**：系统只有文泉驿正黑。fonts.gstatic.com 可访问：用 `curl "https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Noto+Sans+SC:wght@400;700"` 取 ttf 地址，下载到 `~/.fonts` 后 `fc-cache -f`。注意字体族名是 **`Noto Serif SC`**（不是模板里的 `Noto Serif CJK SC`），模板 `common.py` 的 `SERIF`/`SANS` 要改。
+- **模板代码**：`templates/` 是上一部（侧切转弯）的完整源码：`common.py`（画布、字幕、标签、文献卡、编码器）、`draw.py`（雪面、轨迹、板）、`ski.py`、`s_*.py`（场景）、`render.py`、`music.py`、`optics.py`（只有蓝闪蝶那部需要，`common.py` 用它算两个颜色，可换成常量）。`render.py` 里 still 输出路径写死为 `/sessions/...`，要改。
 - **渲染**：这里不限 3 分钟，但仍按 300 帧一段分块渲染（便于重跑），最后 ffmpeg concat 并核对帧数。
-- **配音**：edge-tts 需要访问微软服务，多半被拦；默认出字幕 + 配乐版，时间轴按每秒 4.4 字、每个逗号 +0.25 s 估算。
+- **配音**：已实测 edge-tts 连不上微软语音服务（被拦），piper 模型在 huggingface 也被拦；默认出字幕 + 配乐版，时间轴按每秒 4.4 字、每个逗号 +0.25 s 估算。
 - 成片太大时注意仓库体积：`-crf 17` 的 1080p 三分钟片约 60–150 MB，超过 100 MB GitHub 会拒收，必要时把 crf 调到 20 左右。
