@@ -115,13 +115,13 @@ def s2(c, t, fi):
     cx, cy, R = W / 2, 470, 220
     k = ease_io((t - T[2]) / 1.4)
     c.set_line_width(70)
-    c.arc(cx, cy, R, 0, 2 * math.pi); c.set_source_rgba(*FAINT, a_in * ramp(t, T[1], T[1] + 0.6)); c.stroke()
+    c.new_path(); c.arc(cx, cy, R, 0, 2 * math.pi); c.set_source_rgba(*FAINT, a_in * ramp(t, T[1], T[1] + 0.6)); c.stroke()
     if k > 0:
-        c.arc(cx, cy, R, -math.pi / 2, -math.pi / 2 + 2 * math.pi * 0.2 * k); c.set_source_rgba(*ICE, a_in); c.stroke()
+        c.new_path(); c.arc(cx, cy, R, -math.pi / 2, -math.pi / 2 + 2 * math.pi * 0.2 * k); c.set_source_rgba(*ICE, a_in); c.stroke()
         text(c, "空气 ≈ 20%", cx + 280, cy - 170, 36, ICE, a_in * k, bold=True)
     k2 = ease_io((t - T[3]) / 1.6)
     if k2 > 0:
-        c.arc(cx, cy, R, -math.pi / 2 + 2 * math.pi * 0.2, -math.pi / 2 + 2 * math.pi * (0.2 + 0.8 * k2)); c.set_source_rgba(*RED, a_in); c.stroke()
+        c.new_path(); c.arc(cx, cy, R, -math.pi / 2 + 2 * math.pi * 0.2, -math.pi / 2 + 2 * math.pi * (0.2 + 0.8 * k2)); c.set_source_rgba(*RED, a_in); c.stroke()
         text(c, "雪对板的阻力", cx - 300, cy + 200, 36, RED, a_in * k2, align="r", bold=True)
         text(c, "最大的一块", cx - 300, cy + 244, 24, DIM, a_in * k2, align="r")
     text(c, "速度损失", cx, cy + 14, 44, INK, a_in * ramp(t, T[1], T[1] + 0.6), align="c", bold=True)
