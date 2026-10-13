@@ -115,7 +115,7 @@ fade = int(2.0 * SR); mix_[-fade:] *= np.linspace(1, 0, fade)[:, None]
 mix_ *= 10 ** (-21 / 20) / max(np.sqrt((mix_ ** 2).mean()), 1e-9)
 if np.abs(mix_).max() > 0.89:
     mix_ = np.tanh(mix_ / 0.89) * 0.89
-out = sys.argv[1] if len(sys.argv) > 1 else "out/music.wav"
+out = sys.argv[2]
 with wave.open(out, "wb") as w:
     w.setnchannels(2); w.setsampwidth(2); w.setframerate(SR)
     w.writeframes((np.clip(mix_, -1, 1) * 32767).astype(np.int16).tobytes())
