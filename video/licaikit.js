@@ -172,6 +172,8 @@ function footnote(text, a) { txt(text, 96, H - 46, 22, C.sub, { font: BODY, a: a
 /* 右上角吉祥物：圆框里的李财笑脸 + 一辆小手绘自行车 */
 function mascot(x, y, s, face) {
   g.save(); g.translate(x, y); g.scale(s, s);
+  var hm = IMG.helmet;
+  if (hm && !face) { var hh = 190, ww = hh * hm.width / hm.height; g.drawImage(hm, -ww / 2, -hh / 2 + 10, ww, hh); g.restore(); return; }
   bike(0, 52, .52, 0, C.ink);
   g.save(); g.beginPath(); g.arc(0, -10, 64, 0, 6.283); g.fillStyle = PAPER; g.fill(); g.clip();
   var im = IMG[face || 'happy']; if (im) g.drawImage(im, -78, -86, 156, 156 * im.height / im.width);
