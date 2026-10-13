@@ -70,3 +70,8 @@
 - EP.08《下坡怎么走，不伤膝盖？》：`video/hike-ep08.html`（刹车受力、冲击柱状图、弹簧缓冲 `spring()`、落脚点）。
 - EP.09《路上怎么歇、怎么吃喝？》：`video/hike-ep09.html`（休息时间轴、补水与体力曲线 `curve()`、尿色示意）。
 - EP.10《路标和轨迹怎么看？走岔了怎么办》：`video/hike-ep10.html`（俯视树林岔路 `forestBG()`、路标种类、手机轨迹偏离、原路退回）。
+
+## 滑雪里的物理（科普系列）
+
+- 制作规范见 `.claude/skills/ski-science/`（技能包、原始提示词、模板源码）。横屏 1920×1080，深色底、字幕 + 配乐，Python + cairo 程序化渲染。
+- 《落在坡上，为什么不疼？》（单板跳台落地 · 等效下落高度）：源码 `video/ski-sci-EP02/`，叙事方案 `video/ski-sci-EP02-方案.md`。`jump.py` 是物理核心（桌面跳台、无阻力飞行、EFH、等 EFH 落地面），`scenes.py` 六个场景，`music.py` 配乐（落在坡上为铃声、砸到平地为闷响，时间由计算出的落地时刻决定）。`bash build.sh` 分块并行渲染并合成，`python3 covers.py 前缀` 出 4 张封面。
