@@ -357,3 +357,78 @@ function licaiRun(opt) {
     if (!RENDER) preview();
   });
 }
+
+/* ───────── 每集通用的页面组件 ───────── */
+function paw(x, y, s, a, col) {
+  g.save(); g.globalAlpha = a == null ? 1 : a; g.translate(x, y); g.scale(s, s); g.fillStyle = col || C.pink;
+  g.beginPath(); g.ellipse(0, 8, 15, 12, 0, 0, 6.283); g.fill();
+  [[-15, -10], [-5, -18], [6, -18], [16, -10]].forEach(function (p) { g.beginPath(); g.ellipse(p[0], p[1], 5.5, 7, 0, 0, 6.283); g.fill(); });
+  g.restore();
+}
+function cross(x, y, s, k) { hline(x - s, y - s, x + s, y + s, 701 + x, C.red, 7, k * 2); hline(x + s, y - s, x - s, y + s, 709 + x, C.red, 7, k * 2 - 1); }
+function coin(x, y, s, a, ch) {
+  g.save(); g.globalAlpha = a == null ? 1 : a; g.translate(x, y); g.scale(s, s);
+  g.beginPath(); g.arc(0, 0, 30, 0, 6.283); g.fillStyle = '#F3C75A'; g.fill(); g.lineWidth = 3; g.strokeStyle = '#a77a1c'; g.stroke();
+  g.beginPath(); g.arc(0, 0, 23, 0, 6.283); g.lineWidth = 1.5; g.stroke();
+  txt(ch || '财', 0, 2, 30, '#7a5410', { align: 'center' });
+  g.restore();
+}
+// 圆点编号
+function numDot(n, x, y, lt, col) {
+  if (lt < 0) return; g.save(); g.translate(x, y); g.scale(pop(lt), pop(lt)); g.fillStyle = col || C.red;
+  g.beginPath(); g.arc(0, 0, 38, 0, 6.283); g.fill(); txt(String(n), 0, 3, 50, '#fff', { align: 'center' }); g.restore();
+}
+// 开场页：左边李财，右边两行标题
+function openScene(lt, emo, l1, l2, ep, l2w) {
+  cat(emo, 520, 560, 820, lt - .15);
+  typeText(l1, 1000, 380, 110, lt - .7, { cps: 10 });
+  var n2 = l2.replace(/\{[^}]*\}/g, '').length, r = typeText(l2, 1000, 540, 150, lt - 1.4, { cps: 8 });
+  if (r.done) hline(1000, 632, 1000 + r.width, 630, 12, C.orange, 9, (lt - 1.4 - n2 / 8) / .4);
+  txt('李财骑行记 · 第 ' + ep + ' 集', 1004, 720, 44, C.sub, { a: clamp((lt - 2.6) / .4, 0, 1) });
+  sparks(1000 + r.width + 60, 470, 30, clamp((lt - 2.4) / .2, 0, 1), 3);
+}
+// 下集预告页
+function nextScene(lt, emo, l1, l2, bk, bc) {
+  cat(emo, 540, 560, 820, lt - .1);
+  txt('下集', 1004, 330, 56, C.sub, { a: clamp(lt / .3, 0, 1) });
+  typeText(l1, 1000, 450, 120, lt - .4, { cps: 10 });
+  typeText(l2, 1000, 600, 120, lt - 1.0, { cps: 10 });
+  bikeType(1250, 830, .9, bk || 'flat', lt * 4, bc || C.green);
+  stamp('下期见', 1640, 830, 70, lt - 2.4);
+  confetti(lt - 2.0, 70, 9);
+}
+// 封面：标题两行 + 卖点一行 + 李财 + 可选插画
+function epCover(key, w, h, o) {
+  paper();
+  var vert = h > w;
+  if (vert) {
+    var s = w / 1080;
+    txt('李财骑行记 · 第 ' + o.ep + ' 集', 80 * s, 140 * s, 46 * s, C.sub);
+    txt(o.l1, 80 * s, 290 * s, 150 * s, C.ink);
+    txt(o.l2, 80 * s, 470 * s, 170 * s, C.orange);
+    hline(90 * s, 580 * s, 90 * s + textW(o.l2, 170 * s), 576 * s, 12, C.orange, 12 * s);
+    txt(o.sub, 86 * s, 670 * s, 52 * s, C.ink);
+    var ch = Math.min(h - 980 * s, 1000 * s);
+    if (o.art) o.art(540 * s, 820 * s, .8 * s, true);
+    cat(o.emo, w * .5, h - ch / 2 - 20 * s, ch, 1, { noPop: true, bob: false });
+  } else {
+    var s2 = h / 1080, q = key === '4x3';
+    cat(o.emo, q ? w * .25 : h * .38, h * .5, h * (q ? .72 : .86), 1, { noPop: true, bob: false });
+    var x = w * (q ? .5 : .44);
+    txt('李财骑行记 · 第 ' + o.ep + ' 集', x, 190 * s2, 44 * s2, C.sub);
+    var avail = w - x - 50 * s2, z1 = Math.min(140 * s2, 140 * s2 * avail / textW(o.l1, 140 * s2)), z2 = Math.min(170 * s2, 170 * s2 * avail / textW(o.l2, 170 * s2));
+    txt(o.l1, x, 340 * s2, z1, C.ink);
+    txt(o.l2, x, 520 * s2, z2, C.orange);
+    hline(x + 10 * s2, 630 * s2, x + textW(o.l2, z2), 626 * s2, 12, C.orange, 12 * s2);
+    txt(o.sub, x, 730 * s2, (q ? 46 : 56) * s2, C.ink);
+    if (o.art) o.art(x + (q ? 300 : 380) * s2, 900 * s2, (q ? .7 : .8) * s2, false);
+  }
+}
+// 简笔小人（灰色线条），关节坐标由调用方给出
+function stickLine(pts, col, lw) { g.save(); g.strokeStyle = col || C.ink; g.lineWidth = lw || 9; g.lineCap = 'round'; g.lineJoin = 'round'; g.beginPath(); g.moveTo(pts[0][0], pts[0][1]); for (var i = 1; i < pts.length; i++) g.lineTo(pts[i][0], pts[i][1]); g.stroke(); g.restore(); }
+// 两段式腿的反解：髋 h、脚 f、大腿 a、小腿 b，返回膝盖位置（膝盖朝 dir 一侧）
+function knee(h, f, a, b, dir) {
+  var dx = f[0] - h[0], dy = f[1] - h[1], d = Math.min(Math.hypot(dx, dy), a + b - .01), an = Math.atan2(dy, dx);
+  var c = Math.acos(clamp((a * a + d * d - b * b) / (2 * a * d), -1, 1));
+  var t = an + (dir || -1) * c; return [h[0] + Math.cos(t) * a, h[1] + Math.sin(t) * a];
+}

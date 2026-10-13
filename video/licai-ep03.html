@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行记 EP.03</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;width:100vw;max-height:100vh;aspect-ratio:16/9;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1920px;height:1080px;max-height:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<script src="licaikit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+/*
+ * 李财骑行记 EP.03《座椅调多高？》（78 秒，横版 16:9，无旁白）
+ * 开场 → 太低/合适/太高 → 脚跟法 → 0.883 公式 → 前后和角度 → 调完试一试 → 三个错误 → 下集
+ */
+const T = [0, 6, 17, 29, 40, 52, 62, 72, 78];
+const S = [];
+const GR = '#6f665d';
+
+// 腿部示意：bb 中轴位置；hipDy 座高偏移（正数 = 更低）；pa 曲柄角；ball 0 脚跟踩 / 1 前脚掌踩
+function legRig(bx, by, s, o) {
+  o = o || {};
+  const r = 80, A = 230, B = 230;
+  const hip = [-150, -377 + (o.hipDy || 0)], pa = o.pa == null ? Math.PI / 2 : o.pa, ball = o.ball == null ? 1 : o.ball;
+  const ped = [Math.cos(pa) * r, Math.sin(pa) * r];
+  const ank = [ped[0] + lerp(0, -40, ball), ped[1] + lerp(-22, -24, ball)];
+  const kn = knee(hip, ank, A, B, -1);
+  const v1 = [hip[0] - kn[0], hip[1] - kn[1]], v2 = [ank[0] - kn[0], ank[1] - kn[1]];
+  const inner = Math.acos(clamp((v1[0] * v2[0] + v1[1] * v2[1]) / (Math.hypot(v1[0], v1[1]) * Math.hypot(v2[0], v2[1])), -1, 1));
+  const flex = Math.max(0, 180 - inner / D2R);
+  g.save(); g.translate(bx, by); g.scale(s, s); g.lineCap = 'round'; g.lineJoin = 'round';
+  // 车架：座管 + 坐垫 + 牙盘
+  g.strokeStyle = C.green; g.lineWidth = 12; g.beginPath(); g.moveTo(0, 0); g.lineTo(hip[0] + 6, hip[1] + 30); g.stroke();
+  g.strokeStyle = C.ink; g.lineWidth = 16; g.beginPath(); g.moveTo(hip[0] - 60, hip[1] + 12); g.lineTo(hip[0] + 50, hip[1] + 12); g.stroke();
+  if (o.level) { g.strokeStyle = C.blue; g.lineWidth = 4; g.strokeRect(hip[0] - 50, hip[1] - 30, 100, 26); g.fillStyle = C.blue; g.beginPath(); g.arc(hip[0], hip[1] - 17, 7, 0, 6.283); g.fill(); }
+  g.strokeStyle = C.ink; g.lineWidth = 5; g.beginPath(); g.arc(0, 0, 44, 0, 6.283); g.stroke();
+  g.lineWidth = 9; g.beginPath(); g.moveTo(-ped[0], -ped[1]); g.lineTo(ped[0], ped[1]); g.stroke();
+  g.fillStyle = C.ink; g.fillRect(ped[0] - 30, ped[1] - 7, 60, 14);
+  // 腿
+  g.strokeStyle = GR; g.lineWidth = 30; g.beginPath(); g.moveTo(hip[0], hip[1]); g.lineTo(kn[0], kn[1]); g.lineTo(ank[0], ank[1]); g.stroke();
+  const heel = ball ? [ped[0] - 62, ped[1] - 12] : [ped[0] - 14, ped[1] - 6], toe = ball ? [ped[0] + 34, ped[1] - 2] : [ped[0] + 82, ped[1] - 4];
+  g.lineWidth = 18; g.beginPath(); g.moveTo(ank[0], ank[1]); g.lineTo(heel[0], heel[1]); g.lineTo(toe[0], toe[1]); g.stroke();
+  if (o.angle !== false) {
+    const a1 = Math.atan2(kn[1] - hip[1], kn[0] - hip[0]), a2 = Math.atan2(ank[1] - kn[1], ank[0] - kn[0]);
+    g.save(); g.setLineDash([10, 8]); g.strokeStyle = o.col || C.red; g.lineWidth = 4; g.beginPath(); g.moveTo(kn[0], kn[1]); g.lineTo(kn[0] + Math.cos(a1) * 150, kn[1] + Math.sin(a1) * 150); g.stroke(); g.restore();
+    g.strokeStyle = o.col || C.red; g.lineWidth = 6; g.beginPath(); g.arc(kn[0], kn[1], 90, Math.min(a1, a2), Math.max(a1, a2)); g.stroke();
+  }
+  if (o.pain) { g.fillStyle = 'rgba(216,70,59,.55)'; g.beginPath(); g.arc(kn[0] + (o.pain > 0 ? 26 : -26), kn[1], 26, 0, 6.283); g.fill(); }
+  if (o.plumb) { g.save(); g.setLineDash([12, 10]); g.strokeStyle = C.blue; g.lineWidth = 4; g.beginPath(); g.moveTo(kn[0] + 20, kn[1]); g.lineTo(kn[0] + 20, ped[1] + 40); g.stroke(); g.restore(); }
+  g.restore();
+  return { flex, kn: [bx + kn[0] * s, by + kn[1] * s], hip: [bx + hip[0] * s, by + hip[1] * s], ped: [bx + ped[0] * s, by + ped[1] * s] };
+}
+
+// A
+S.push(lt => openScene(lt, '托腮疑问', '座椅，', '调多{o}高{/}？', 3));
+
+// B 太低 / 合适 / 太高
+const HG = [['太低', 46, C.red, '膝盖前面疼、骑得累', 1], ['合适', 0, C.green, '最省力', 0], ['太高', -24, C.red, '屁股左右晃、膝盖后面疼', -1]];
+S.push(lt => {
+  header(lt, '坐垫太低、太高，会怎样？', '踏板转到最低点时，看膝盖弯多少', C.orange);
+  HG.forEach((h, i) => {
+    const x = 380 + i * 580, ct = lt - .8 - i * 1.1; if (ct < 0) return;
+    g.save(); g.globalAlpha = clamp(ct / .3, 0, 1);
+    const R = legRig(x + 40, 760, .62, { hipDy: h[1], col: h[2], pain: ct > 1.4 ? h[4] : 0 });
+    g.restore();
+    txt(h[0], x - 150, 330, 60, h[2], { a: clamp(ct / .3, 0, 1) });
+    if (ct > .6) txt('膝盖弯 ≈ ' + Math.round(R.flex) + '°', x - 150, 400, 38, C.ink, { a: clamp((ct - .6) / .3, 0, 1) });
+    if (ct > 1.4) txt(h[3], x - 150, 900, 34, i === 1 ? C.green : C.red, { font: BODY, a: clamp((ct - 1.4) / .3, 0, 1) });
+  });
+  footnote('示意：红点 = 容易疼的位置；角度为示意图里的计算值', clamp((lt - 1) / .3, 0, 1));
+});
+
+// C 脚跟法
+S.push(lt => {
+  header(lt, '最简单的调法：脚跟法', '不用工具，三步搞定', C.green);
+  const ph = lt < 4.6 ? 0 : 1, ball = ph ? sm((lt - 4.6) / .8) : 0;
+  const pa = Math.PI / 2;
+  const R = legRig(560, 820, .92, { ball, pa, col: ph ? C.green : C.blue, angle: lt > 1.6 });
+  if (lt > 1.6) txt(Math.round(R.flex) + '°', R.kn[0] + 90, R.kn[1] - 70, 50, ph ? C.green : C.blue);
+  const st = [['1', '踏板转到最低点', .8], ['2', '{b}脚跟{/}踩上去，腿刚好伸直', 1.8], ['3', '换{g}前脚掌{/}踩，膝盖自然微弯', 4.8]];
+  st.forEach((t, i) => { const ct = lt - t[2]; if (ct < 0) return; numDot(t[0], 1040, 360 + i * 150, ct, i === 2 ? C.green : C.blue); typeText(t[1], 1110, 360 + i * 150, 48, ct - .2, { cps: 14 }); });
+  if (lt > 7.4) typeText('这就是你的{r}起点高度{/}', 1110, 840, 56, lt - 7.4, { cps: 12 });
+  cat('灵光一闪', 1780, 930, 230, lt - 8.4);
+  footnote('提示：穿平时骑车的鞋来调；骑行时膝盖在最低点微弯，约 25°～35°', clamp((lt - 1) / .3, 0, 1));
+});
+
+// D 0.883 公式
+S.push(lt => {
+  header(lt, '想更准？用 0.883 算一算', '坐垫高度 = 从中轴中心量到坐垫顶部', C.blue);
+  const bx = 640, by = 680, s = 2.1;
+  bikeType(bx, by, s, 'flat', 0, C.green);
+  const bb = [bx - 8 * s, by + 30 * s], top = [bx - 43 * s, by - 72 * s];
+  if (lt > 1.2) {
+    const k = clamp((lt - 1.2) / .8, 0, 1), p = [lerp(bb[0], top[0], k), lerp(bb[1], top[1], k)];
+    g.save(); g.strokeStyle = C.red; g.lineWidth = 7; g.lineCap = 'round'; g.beginPath(); g.moveTo(bb[0] - 36, bb[1]); g.lineTo(p[0] - 36, p[1]); g.stroke(); g.restore();
+    g.fillStyle = C.red; g.beginPath(); g.arc(bb[0], bb[1], 10, 0, 6.283); g.fill();
+    if (k >= 1) { txt('坐垫高度', top[0] - 300, top[1] + 40, 44, C.red); harrow(top[0] - 120, top[1] + 50, top[0] - 70, top[1] + 90, (bb[0] + top[0]) / 2 - 40, (bb[1] + top[1]) / 2, C.red, 1); }
+  }
+  if (lt > 2.4) typeText('坐垫高度 ≈ 跨高 × {r}0.883{/}', 1100, 360, 60, lt - 2.4, { cps: 12 });
+  if (lt > 4.4) {
+    txt('例：跨高 80 厘米', 1104, 480, 44, C.ink, { a: clamp((lt - 4.4) / .3, 0, 1) });
+    const v = lt > 5.0 ? Math.min(70.6, (lt - 5.0) * 120) : 0;
+    if (lt > 5.0) txt('→ 坐垫高度约 ' + v.toFixed(1) + ' 厘米', 1104, 550, 50, C.green);
+  }
+  if (lt > 7.0) txt('跨高怎么量？上集讲过：书夹在裆下', 1104, 650, 34, C.sub, { font: BODY, a: clamp((lt - 7) / .3, 0, 1) });
+  cat('仰望星星', 1720, 880, 300, lt - 6.0);
+  footnote('口径：LeMond 经验公式，适合当起点，再按骑行感受微调；鞋底和踏板厚度会有影响', clamp((lt - 1) / .3, 0, 1));
+});
+
+// E 前后和角度
+S.push(lt => {
+  header(lt, '高度对了，再看前后和角度', '', C.purple);
+  const pa = lt < 2 ? Math.PI / 2 - (lt / 2) * Math.PI / 2 : 0;
+  const R = legRig(620, 800, .9, { pa, angle: false, plumb: lt > 2.2, level: lt > 5.6 });
+  if (lt > 2.4) typeText('曲柄转到水平：膝盖大约在{b}踏板轴正上方{/}', 1000, 360, 46, lt - 2.4, { cps: 14 });
+  if (lt > 4.2) txt('太靠后：往前挪一点；太靠前：往后挪一点', 1004, 440, 34, C.sub, { font: BODY, a: clamp((lt - 4.2) / .3, 0, 1) });
+  if (lt > 5.6) typeText('坐垫{b}放平{/}，别前翘、别后仰', 1000, 600, 52, lt - 5.6, { cps: 12 });
+  if (lt > 7.2) txt('往前翘压得疼，往后仰身体会往前滑', 1004, 680, 34, C.sub, { font: BODY, a: clamp((lt - 7.2) / .3, 0, 1) });
+  cat('乖巧端坐', 1700, 880, 280, lt - 7.6);
+  footnote('口径：“膝盖对踏板轴”是常用的起点参考，不是硬性标准', clamp((lt - 1) / .3, 0, 1));
+});
+
+// F 调完试一试
+const CHK = [['每次只调 {r}5 毫米{/}', '一次调太多，膝盖会抗议'], ['骑 {r}10～15 分钟{/}再判断', '刚调完都会有点别扭'], ['屁股不晃、膝盖不疼', '就是对了']];
+S.push(lt => {
+  header(lt, '调完，怎么知道对不对？', '', C.green);
+  CHK.forEach((t, i) => {
+    const y = 360 + i * 190, ct = lt - .8 - i * 1.8; if (ct < 0) return;
+    numDot(i + 1, 170, y, ct, C.green);
+    typeText(t[0], 250, y - 16, 58, ct - .2, { cps: 12 });
+    txt(t[1], 254, y + 50, 36, C.sub, { font: BODY, a: clamp((ct - .9) / .3, 0, 1) });
+  });
+  if (lt > 6.6) tick(990, 740, 34, (lt - 6.6) / .3);
+  cat('星星眼开心', 1480, 640, 560, lt - .6);
+});
+
+// G 三个错误
+const MIS = [['坐着脚能平踩地面', '那是太低了；停车时下坐垫、单脚撑地'], ['一次调好几厘米', '每次 5 毫米，慢慢来'], ['坐垫前翘或后仰', '先放平，再微调']];
+S.push(lt => {
+  header(lt, '调座椅最常见的三个错误', '', C.red);
+  MIS.forEach((p, i) => {
+    const y = 360 + i * 190, ct = lt - .8 - i * 2.2; if (ct < 0) return;
+    numDot(i + 1, 170, y, ct, C.red);
+    const r = typeText(p[0], 250, y - 14, 58, ct - .2, { cps: 12 });
+    if (ct > 1.2) strike(240, y - 10, 250 + r.width + 12, 1111 + i, (ct - 1.2) / .3);
+    if (ct > 1.5) { tick(270, y + 58, 18, (ct - 1.5) / .3); txt(p[1], 310, y + 58, 36, C.green, { a: clamp((ct - 1.6) / .3, 0, 1) }); }
+  });
+  cat('斜眼嫌弃', 1520, 660, 520, lt - .6);
+});
+
+// H
+S.push(lt => nextScene(lt, '眨眼卖萌2', '胎压', '打多{o}少{/}？', 'gravel', C.brown));
+
+function coverArt(key, w, h) {
+  epCover(key, w, h, { ep: 3, l1: '座椅', l2: '调多高？', sub: '脚跟法 · 0.883 公式 · 膝盖角度', emo: '托腮疑问',
+    art: (x, y, s, vert) => bikeType(x + (vert ? 160 : 0) * s, y, (vert ? 1.2 : 1.0) * s, 'flat', 0, C.green) });
+}
+
+function sound(K, c, DUR, T) {
+  const X = licaiSound(K, DUR);
+  for (let i = 1; i < T.length - 1; i++) { X.whoosh(T[i] - .08); X.ticks(T[i], 9); }
+  X.pop(.15); X.ticks(.7, 3, 10); X.ticks(1.4, 4, 8); X.pen(2.0, .4); X.ding(2.4);
+  let s = T[1]; for (let i = 0; i < 3; i++) { X.pop(s + .8 + i * 1.1); X.pen(s + 1.4 + i * 1.1, .3); i === 1 ? X.ding(s + 2.2 + i * 1.1) : X.wrong(s + 2.2 + i * 1.1); }
+  s = T[2]; X.pop(s + .8); X.ticks(s + 1.0, 7, 14); X.pop(s + 1.8); X.ticks(s + 2.0, 12, 14); X.ding(s + 3.2); X.pop(s + 4.8); X.ticks(s + 5.0, 12, 14); X.ding(s + 5.6); X.ticks(s + 7.4, 9, 12); X.pop(s + 8.4);
+  s = T[3]; X.pen(s + 1.2, .8); X.ticks(s + 2.4, 14, 12); X.ticks(s + 4.4, 7, 10); X.grow(s + 5.0, .6); X.ding(s + 5.6); X.pop(s + 6.0);
+  s = T[4]; X.pen(s + 2.2, .4); X.ticks(s + 2.4, 20, 14); X.ticks(s + 5.6, 12, 12); X.ding(s + 5.8); X.pop(s + 7.6);
+  s = T[5]; X.pop(s + .6); for (let i = 0; i < 3; i++) { X.pop(s + .8 + i * 1.8); X.ticks(s + 1.0 + i * 1.8, 8, 12); } X.ding(s + 6.6);
+  s = T[6]; X.pop(s + .6); for (let i = 0; i < 3; i++) { const t = s + .8 + i * 2.2; X.pop(t); X.ticks(t + .2, 8, 12); X.wrong(t + 1.2); X.ding(t + 1.5); }
+  s = T[7]; X.ticks(s + .4, 2, 10); X.ticks(s + 1.0, 4, 10); X.bell(s + 1.4); X.stamp(s + 2.4); for (let i = 0; i < 6; i++) K.noise(s + 2.0 + i * .08, .1, .04, 'highpass', 5000);
+}
+
+licaiRun({ T, S, seed: 523, allText: SRC.replace(/[\x00-\x7f]/g, '') + '–～°≈×→', audio: sound, cover: coverArt, encode: { b: '4M', maxrate: '6M', bufsize: '12M' } });
+
+})();
+</script>
+</body>
+</html>
