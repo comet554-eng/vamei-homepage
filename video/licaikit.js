@@ -203,11 +203,12 @@ function bike(x, y, s, rot, color) {
   g.restore();
 }
 
-/* 五种车型的手绘图：road 公路车 / mtb 山地车 / flat 平把公路 / fold 折叠车 / city 通勤车 */
+/* 车型手绘图：road 公路车 / gravel 瓜车（砾石公路车） / mtb 山地车 / flat 平把公路 / fold 折叠车 / city 通勤车 */
 function bikeType(x, y, s, type, rot, color) {
   rot = rot || 0; var fc = color || C.orange;
   var P = {
     road: { R: 62, tire: 4, wb: 104, bar: 'drop', frame: 'diamond' },
+    gravel: { R: 61, tire: 8, wb: 106, bar: 'drop', frame: 'diamond', knob: 1 },
     mtb: { R: 60, tire: 11, wb: 108, bar: 'riser', frame: 'diamond', fork: 1 },
     flat: { R: 62, tire: 6, wb: 104, bar: 'flat', frame: 'diamond' },
     fold: { R: 38, tire: 6, wb: 82, bar: 'fold', frame: 'fold' },
@@ -217,7 +218,7 @@ function bikeType(x, y, s, type, rot, color) {
   var ink = C.ink, R = P.R, rw = [-P.wb, 30], fw = [P.wb, 30], wy = 30;
   [rw, fw].forEach(function (w) {
     g.strokeStyle = ink; g.lineWidth = P.tire; g.beginPath(); g.arc(w[0], w[1], R, 0, 6.283); g.stroke();
-    if (type === 'mtb') { g.lineWidth = 2; for (var k = 0; k < 24; k++) { var a = k / 24 * 6.283; g.beginPath(); g.moveTo(w[0] + Math.cos(a) * (R + 5), w[1] + Math.sin(a) * (R + 5)); g.lineTo(w[0] + Math.cos(a) * (R + 9), w[1] + Math.sin(a) * (R + 9)); g.stroke(); } }
+    if (type === 'mtb' || P.knob) { var kn = P.knob ? 3 : 5; g.lineWidth = 2; for (var k = 0; k < (P.knob ? 32 : 24); k++) { var a = k / (P.knob ? 32 : 24) * 6.283; g.beginPath(); g.moveTo(w[0] + Math.cos(a) * (R + P.tire / 2), w[1] + Math.sin(a) * (R + P.tire / 2)); g.lineTo(w[0] + Math.cos(a) * (R + P.tire / 2 + kn), w[1] + Math.sin(a) * (R + P.tire / 2 + kn)); g.stroke(); } }
     g.lineWidth = 1.8; for (var i = 0; i < 6; i++) { var an = rot + i * Math.PI / 6; g.beginPath(); g.moveTo(w[0] - Math.cos(an) * (R - P.tire / 2), w[1] - Math.sin(an) * (R - P.tire / 2)); g.lineTo(w[0] + Math.cos(an) * (R - P.tire / 2), w[1] + Math.sin(an) * (R - P.tire / 2)); g.stroke(); }
     g.fillStyle = ink; g.beginPath(); g.arc(w[0], w[1], 5, 0, 6.283); g.fill();
     if (P.fender) { g.lineWidth = 4; g.strokeStyle = C.gray; g.beginPath(); g.arc(w[0], w[1], R + 8, Math.PI * 1.05, Math.PI * 1.95); g.stroke(); }
