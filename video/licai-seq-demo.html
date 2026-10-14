@@ -27,7 +27,7 @@
 (() => {
 'use strict';
 const SRC = document.currentScript.textContent;
-const T = [0, 4, 8, 12.5, 17, 21.5, 26];
+const T = [0, 4, 8, 12.5, 17, 21.5, 25.5, 29.5, 34, 38];
 const S = [];
 const GY = 900;
 
@@ -76,8 +76,29 @@ S.push(lt => {
   hline(0, GY, W, GY + 2, 52, C.ink, 5);
   const i = seqDraw('摔跟头', lt - .3, 8, 760 + clamp((lt - .3) * 8, 0, 7) * 50, GY + 10, 780, { once: true });
   if (lt > 1.4) { sparks(1340, GY - 330, 40, clamp((lt - 1.4) / .2, 0, 1), 4); typeText('{r}哎呀！{/}', 1300, 420, 110, lt - 1.5, { cps: 8 }); }
-  if (lt > 2.6) stamp('逐帧测试', 1560, 760, 64, lt - 2.6);
   header(lt - .2, '⑥ {r}摔个跟头{/}', '翻滚、落地，一气呵成');
+});
+// ⑦ 挥手打招呼
+S.push(lt => {
+  hline(0, GY, W, GY + 2, 53, C.ink, 5);
+  seqDraw('挥手', lt - .3, 6, 760, GY + 6, 640);
+  typeText('大家好，', 1140, 420, 100, lt - .6, { cps: 8 });
+  typeText('我是{o}李财{/}！', 1140, 560, 110, lt - 1.2, { cps: 8 });
+  header(lt - .2, '⑦ {o}挥手打招呼{/}', '开场就用它');
+});
+// ⑧ 侧面走路
+S.push(lt => {
+  scrollGround(GY, lt * 160);
+  seqDraw('走路', lt, 9, lerp(-200, 2100, lt / 4.5), GY + 6, 420);
+  header(lt - .2, '⑧ {g}溜达{/}', '侧面走路循环，慢悠悠的');
+});
+// ⑨ 蹦跳
+S.push(lt => {
+  hline(0, GY, W, GY + 2, 54, C.ink, 5);
+  seqDraw('蹦跳', lt - .2, 10, 960, GY + 6, 700);
+  if (lt > 2.4) stamp('逐帧测试', 1560, 760, 64, lt - 2.4);
+  confetti(lt - 2.2, 60, 5);
+  header(lt - .2, '⑨ {p}蹦蹦跳跳{/}', '开心的时候用');
 });
 
 function sound(K, c, DUR, T) {
@@ -87,7 +108,9 @@ function sound(K, c, DUR, T) {
   for (let k = 0; k < 13; k++) K.tone(300, 8 + k / 3, .05, .03, 'sine');
   s.bell(12.5 + 1);
   s.whoosh(17 + .5); s.grow(17 + 1.6, .4);
-  K.thud(21.5 + 1.2, .5); s.wrong(21.5 + 1.4); s.stamp(21.5 + 2.6);
+  K.thud(21.5 + 1.2, .5); s.wrong(21.5 + 1.4); s.ding(25.5 + 1);
+  for (let k = 0; k < 10; k++) K.tone(260, 29.5 + k * .45, .05, .025, 'sine');
+  for (let k = 0; k < 4; k++) s.pop(34.2 + k * .8); s.stamp(34 + 2.4);
 }
 function coverArt(key, w, h) {
   paper(); const s = Math.min(w, h) / 1080;
