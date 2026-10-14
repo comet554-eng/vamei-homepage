@@ -287,13 +287,35 @@ def dim_line(c, x0, y0, x1, y1, label, alpha, size=24, off=(0, -14), col=DIM):
 
 
 # ------------------------------------------------------------------ timing helper
+_VO = {}
+
+
+def plain(s):
+    for m in ("{b|", "{w|", "{r|", "}", "\n"):
+        s = s.replace(m, "")
+    return s
+
+
+def use_voice(path):
+    """load EPDIR/voice/durations.json (written by tts.py); seq() then times each line to its voice clip."""
+    import os, json
+    d = path if os.path.isdir(path) else os.path.dirname(os.path.abspath(path))
+    f = os.path.join(d, "voice", "durations.json")
+    if os.path.exists(f):
+        _VO.update(json.load(open(f, encoding="utf-8")))
+
+
 def seq(items, t0=0.6, gap=0.3, cps=4.4):
-    """items: list of str or (str, min_dur). returns [(text, start, end)] with reading-speed durations."""
+    """items: list of str or (str, min_dur). returns [(text, start, end)].
+    With a voice loaded, a line lasts as long as its clip (+0.4 s); otherwise reading speed."""
     out, t = [], t0
     for it in items:
         s, md = (it, 0) if isinstance(it, str) else it
-        n = len(s.replace("{b|", "").replace("{w|", "").replace("{r|", "").replace("}", "").replace("\n", ""))
-        d = max(md, n / cps + 0.25 * (s.count("，") + s.count("、")) + 0.6, 2.4)
+        n = len(plain(s))
+        if plain(s) in _VO:
+            d = max(md, _VO[plain(s)] + 0.4)
+        else:
+            d = max(md, n / cps + 0.25 * (s.count("，") + s.count("、")) + 0.6, 2.4)
         out.append((s, t, t + d)); t += d + gap
     return out
 

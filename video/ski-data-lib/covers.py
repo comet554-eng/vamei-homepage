@@ -11,7 +11,7 @@ from common import text, BG, INK, DIM, GOLD
 import scenes
 
 SIZES = {"竖版9x16": (1080, 1920), "竖版3x4": (1080, 1440), "横版16x9": (1920, 1080), "横版4x3": (1440, 1080)}
-SERIES = "双板 · 用数据说话"
+SERIES = getattr(scenes, "SERIES", "双板 · 用数据说话")
 
 
 def cover(w, h, path, C):

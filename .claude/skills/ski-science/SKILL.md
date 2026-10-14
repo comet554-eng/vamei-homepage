@@ -27,5 +27,5 @@ description: 制作专业的滑雪科普短片（《滑雪里的物理》系列�
 - **字体**：系统只有文泉驿正黑。fonts.gstatic.com 可访问：用 `curl "https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Noto+Sans+SC:wght@400;700"` 取 ttf 地址，下载到 `~/.fonts` 后 `fc-cache -f`。注意字体族名是 **`Noto Serif SC`**（不是模板里的 `Noto Serif CJK SC`），模板 `common.py` 的 `SERIF`/`SANS` 要改。
 - **模板代码**：`templates/` 是上一部（侧切转弯）的完整源码：`common.py`（画布、字幕、标签、文献卡、编码器）、`draw.py`（雪面、轨迹、板）、`ski.py`、`s_*.py`（场景）、`render.py`、`music.py`、`optics.py`（只有蓝闪蝶那部需要，`common.py` 用它算两个颜色，可换成常量）。`render.py` 里 still 输出路径写死为 `/sessions/...`，要改。
 - **渲染**：这里不限 3 分钟，但仍按 300 帧一段分块渲染（便于重跑），最后 ffmpeg concat 并核对帧数。
-- **配音**：已实测 edge-tts 连不上微软语音服务（被拦），piper 模型在 huggingface 也被拦；默认出字幕 + 配乐版，时间轴按每秒 4.4 字、每个逗号 +0.25 s 估算。
+- **配音**：edge-tts（微软）和 huggingface 都被拦，但 npm 包 `expo-kokoro` 自带 Kokoro-82M 模型和 8 个中文音色（云希/云健/云扬/云夏/晓晓/晓伊/晓北/晓妮）。`video/ski-data-lib/setup_tts.sh` 装好后用 `voice.py list` → `tts.py` → `build.sh`，字幕时间自动跟配音对齐（见 README「单板 · 用数据说话」）。语速 0.9 比较自然；年份、多音字（如“长杠杆”）用 `scenes.SAY` 改读法。没有配音时，时间轴按每秒 4.4 字、每个逗号 +0.25 s 估算。
 - 成片太大时注意仓库体积：`-crf 17` 的 1080p 三分钟片约 60–150 MB，超过 100 MB GitHub 会拒收，必要时把 crf 调到 20 左右。

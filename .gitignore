@@ -7,3 +7,5 @@ video/ski-data-EP02/out/
 video/ski-data-EP03/out/
 video/ski-data-EP04/out/
 video/ski-data-EP05/out/
+video/*/voice/*.wav
+video/board-data-EP01/out/

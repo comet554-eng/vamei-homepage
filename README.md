@@ -86,3 +86,10 @@
   - EP.03《一个弯里，腿要扛几倍体重？》 `video/ski-data-EP03/`
   - EP.04《搓雪为什么慢？》 `video/ski-data-EP04/`
   - EP.05《立刃角和弯有多大？》 `video/ski-data-EP05/`
+
+## 单板 · 用数据说话（配音）
+
+- 共用 `video/ski-data-lib/`，另加 `board.py`（侧面单板小人 `rider_profile()` 可做往后坐 / 往前扑摔倒，人体热点图 `body_map()`，俯视单板 `board_top()`）。
+- 配音：离线 Kokoro-82M 中文音色（8 种，模型和音色文件来自 npm 包 `expo-kokoro`，用 `ski-data-lib/setup_tts.sh` 一次装好）。流程：`python3 voice.py list EPDIR` → `$TTS_HOME/venv/bin/python tts.py EPDIR`（合成每句并写 `voice/durations.json`，带一/不和三声变调）→ `build.sh EPDIR`（字幕时间按配音长度排，配乐在说话时自动压低 9 dB，响度 −16 LUFS）。`scenes.SAY` 可给某句字幕指定读法（年份、多音字）。
+- 音色对比样本：`video/配音音色对比-8种.mp3`。
+  - EP.01《单板最常伤哪里？》 `video/board-data-EP01/`
