@@ -231,7 +231,7 @@ def s5(c, t, fi):
         text(c, "鞋伸出板边", 640, 330, 36, INK, ba, align="c", bold=True)
         text(c, "（从板头方向看：板的横截面 + 鞋）", W / 2, 260, 28, DIM, ba, align="c")
         if mark > 0:
-            c.arc(760 + 0.18 * 300 * 0.5, gy, 34, 0, 2 * math.pi); c.set_source_rgba(*RED, ba * mark); c.set_line_width(5); c.stroke()
+            c.new_path(); c.arc(760 + 0.18 * 300 * 0.5, gy, 34, 0, 2 * math.pi); c.set_source_rgba(*RED, ba * mark); c.set_line_width(5); c.stroke()
             text(c, "鞋先碰雪 → 拖靴", 640, 390, 34, RED, ba * mark, align="c", bold=True)
         text(c, "更宽的板 / 更大的固定器角度", 1220, 330, 32, GOLD, ba * ramp(t, T[3], T[3] + 0.6), align="c", bold=True)
     chapter_tag(c, "代价", "腿的负担 · 拖靴", ramp(t, 0.5, 1.1) * a_in)
