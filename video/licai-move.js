@@ -162,3 +162,16 @@ function flipbook(names, x, y, h, t, fps, o) {
   catWarp(name, x, y, h, { sx: 2 - b, sy: b, dx: o.sway ? function (u) { return u * Math.sin(t * 6.283 * o.sway) * h * .05; } : null });
   return i;
 }
+
+// 逐帧动作（licai-seq.js）：(x, y) 为底线中心，h 为整组高度；o.once 播一遍后停在最后一帧；o.frame 直接指定帧
+function seqDraw(name, t, fps, x, y, h, o) {
+  o = o || {}; var S = LICAI_SEQ[name], n = S.frames.length;
+  var i = o.frame != null ? o.frame : Math.floor(Math.max(0, t) * fps);
+  i = o.once ? Math.min(i, n - 1) : ((i % n) + n) % n;
+  var f = S.frames[i], im = IMG['seq:' + name + ':' + i]; if (!im) return i;
+  var s = h / S.ref;
+  g.save(); g.translate(x, y); if (o.rot) g.rotate(o.rot); g.scale((o.flip ? -1 : 1) * (o.sx || 1), o.sy || 1);
+  g.globalAlpha = o.a == null ? 1 : o.a;
+  g.drawImage(im, f.x * s, f.y * s, f.w * s, f.h * s);
+  g.restore(); return i;
+}

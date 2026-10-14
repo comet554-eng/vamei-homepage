@@ -339,6 +339,7 @@ function licaiRun(opt) {
     });
   }
   var SRCS = Object.assign({}, LICAI_IMG, typeof LICAI_EMO === 'undefined' ? {} : LICAI_EMO);
+  if (typeof LICAI_SEQ !== 'undefined') Object.keys(LICAI_SEQ).forEach(function (n) { LICAI_SEQ[n].frames.forEach(function (f, j) { SRCS['seq:' + n + ':' + j] = f.src; }); });
   var imgs = Object.keys(SRCS).map(function (k) { return new Promise(function (r) { var im = new Image(); im.onload = function () { IMG[k] = im; r(); }; im.onerror = r; im.src = SRCS[k]; }); });
   var all = opt.allText + '0123456789%≈?？!！·，。：、=+';
   Promise.race([
