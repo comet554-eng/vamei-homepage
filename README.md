@@ -92,4 +92,7 @@
 - 共用 `video/ski-data-lib/`，另加 `board.py`（侧面单板小人 `rider_profile()` 可做往后坐 / 往前扑摔倒，人体热点图 `body_map()`，俯视单板 `board_top()`）。
 - 配音：离线 Kokoro-82M 中文音色（8 种，模型和音色文件来自 npm 包 `expo-kokoro`，用 `ski-data-lib/setup_tts.sh` 一次装好）。流程：`python3 voice.py list EPDIR` → `$TTS_HOME/venv/bin/python tts.py EPDIR`（合成每句并写 `voice/durations.json`，带一/不和三声变调）→ `build.sh EPDIR`（字幕时间按配音长度排，配乐在说话时自动压低 9 dB，响度 −16 LUFS）。`scenes.SAY` 可给某句字幕指定读法（年份、多音字）。
 - 音色对比样本：`video/配音音色对比-8种.mp3`。
-  - EP.01《单板最常伤哪里？》 `video/board-data-EP01/`
+  - EP.01《单板最常伤哪里？》 `video/board-data-EP01/`（配音版）
+  - EP.02–06 不配音（用户自己配音），配音文稿见 `video/单板用数据说话-配音文稿.md`：
+    《护腕到底有没有用？》《第一天，为什么最危险？》《“单板踝”：被当成崴脚的骨折》《跳台，为什么是重伤头号来源？》《刻滑的单板，弯能有多小？》，源码 `video/board-data-EP02/` … `EP06/`
+  - `common.subtitle()` 现在会把超过 30 字的字幕在最靠近中间的标点处自动折成两行。

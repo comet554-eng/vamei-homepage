@@ -158,10 +158,34 @@ def parse_markup(s):
 
 
 # ------------------------------------------------------------------ overlays
+def wrap_sub(s, maxc=30):
+    """break a long subtitle at the punctuation nearest its middle (never inside a {x|...} span)."""
+    if "\n" in s:
+        return s
+    vis, depth, cand, n = [], 0, [], 0
+    i = 0
+    while i < len(s):
+        if s[i] == "{" and i + 2 < len(s) and s[i + 2] == "|":
+            depth += 1; i += 3; continue
+        if s[i] == "}" and depth:
+            depth -= 1; i += 1; continue
+        n += 1
+        if not depth and s[i] in "，；：——、。？":
+            cand.append((n, i))
+        i += 1
+    if n <= maxc or not cand:
+        return s
+    pos, idx = min(cand, key=lambda q: abs(q[0] - n / 2))
+    while idx + 1 < len(s) and s[idx + 1] == "—":
+        idx += 1
+    return s[:idx + 1] + "\n" + s[idx + 1:]
+
+
 def subtitle(c, s, t, t0, t1, y=H - 118, size=46):
     a = window(t, t0, t1, 0.35)
     if a <= 0:
         return
+    s = wrap_sub(s)
     lines = s.split("\n")
     # soft band behind text for legibility on bright frames
     g = cairo.LinearGradient(0, y - 120 - 60 * (len(lines) - 1), 0, H)
