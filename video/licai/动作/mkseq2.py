@@ -3,7 +3,7 @@ import numpy as np, base64, io, json, subprocess, sys
 from PIL import Image, ImageFilter
 from scipy import ndimage
 SP=sys.argv[1]; res={}
-CFG={'走路':(7,1,0),'挥手':(7,1,0),'蹦跳':(7,1,0),'侧面骑车':(14,0,1),'侧面骑车2':(14,0,1),'点头指向':(12,1,0),'转身跑出':(12,1,0),'开心挥手':(12,1,0),'爬坡吃力':(14,0,1),'爬坡吃力2':(14,0,1),'骑车喝水':(14,0,1),'打气':(14,0,1),'戴头盔':(12,1,0),'吓一跳':(12,1,0),'摆爪否定':(12,1,0),'累瘫':(12,1,0),'叉腰得意':(12,1,0)}
+CFG={'走路':(7,1,0),'挥手':(7,1,0),'蹦跳':(7,1,0),'侧面骑车':(14,0,1),'侧面骑车2':(14,0,1),'点头指向':(12,1,0),'转身跑出':(12,1,0),'开心挥手':(12,1,0),'爬坡吃力':(14,0,1),'爬坡吃力2':(14,0,1),'骑车喝水':(14,0,1),'打气':(14,0,1),'戴头盔':(12,1,0),'吓一跳':(12,1,0),'摆爪否定':(12,1,0),'累瘫':(12,1,0),'叉腰得意':(12,1,0),'拍照':(12,1,0),'举手':(12,1,0),'划重点':(12,1,0),'拍手':(12,1,0),'抬头张望':(12,1,0),'思考怀疑':(12,1,0),'背包出发':(12,1,0),'放大镜':(12,1,0),'记笔记':(12,1,0)}
 ONLY=sys.argv[2].split(',') if len(sys.argv)>2 else list(CFG)
 for n in ONLY:
     th,fill,wheel=CFG[n]
@@ -31,9 +31,16 @@ for n in ONLY:
     fl,fn=ndimage.label(m); sz=ndimage.sum(m,fl,range(1,fn+1))
     big=[i+1 for i,s in enumerate(sz) if s>sz.max()*.25]
     cents=sorted(big,key=lambda i: ndimage.center_of_mass(fl==i)[1]); print(n,len(cents),flush=True)
-    if len(cents)!=8: continue
+    fb=len(cents)!=8
+    if fb:
+        cs2=ndimage.uniform_filter1d(m.sum(0).astype(float),9); xs=np.where(cs2>0)[0]; L,R=xs[0],xs[-1]+1; w=(R-L)/8; cuts=[L]
+        for j in range(1,8):
+            c=int(L+j*w); r=int(w*.3); cuts.append(c-r+int(np.argmin(cs2[c-r:c+r])))
+        cuts.append(R); fl=np.zeros_like(fl); 
+        for j in range(8): fl[:,cuts[j]:cuts[j+1]]=np.where(m[:,cuts[j]:cuts[j+1]],j+1,0)
+        cents=list(range(1,9)); cx=[(cuts[j]+cuts[j+1])/2 for j in range(8)]; small=[]
     cx=[ndimage.center_of_mass(fl==i)[1] for i in cents]
-    small=[i+1 for i,s in enumerate(sz) if sz.max()*.002<s<=sz.max()*.25]
+    small=[] if fb else [i+1 for i,s in enumerate(sz) if sz.max()*.002<s<=sz.max()*.25]
     groups={c:[c] for c in cents}
     for i in small:
         x=ndimage.center_of_mass(fl==i)[1]; groups[cents[int(np.argmin([abs(x-c) for c in cx]))]].append(i)
