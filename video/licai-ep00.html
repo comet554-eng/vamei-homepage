@@ -18,7 +18,9 @@
 <canvas id="c" width="1920" height="1080"></canvas>
 <script src="snowkit.js"></script>
 <script src="licai-assets.js"></script>
+<script src="licai-seq.js"></script>
 <script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
 <script>
 /*
  * 李财骑行记 EP.00《我是李财》自我介绍（60 秒，横版 16:9，无旁白，留给后期配音）
@@ -33,7 +35,8 @@ const CPS = 18;
 
 // A 打招呼
 S.push(lt => {
-  cat('wave', 560, 560, 880, lt - .15);
+  if (lt < 1.6) { seqDraw('探头', lt, 6, 540, 1080, 940, { once: true }); }
+  else seqDraw('开心挥手', lt - 1.6, 6, 540, 1000, 860);
   typeText('大家好，', 1010, 360, 110, lt - .7, { cps: 10 });
   const r = typeText('我是{o}李财{/}！', 1010, 520, 160, lt - 1.3, { cps: 8 });
   if (r.done) hline(1010 + 160 * 2.1, 615, 1010 + 160 * 4.15, 612, 12, C.orange, 9, (lt - 2.0) / .4);
@@ -51,7 +54,7 @@ S.push(lt => {
     harrow(560, 760, 430, 720, 380, 600, C.red, (lt - 3.9) / .35);
     typeText('才不是！', 590, 780, 84, lt - 4.1, { color: C.red, cps: 10 });
   }
-  cat('angry', 1460, 640, 760, lt - 3.6);
+  if (lt > 3.6) seqDraw('摆爪否定', lt - 3.6, 6, 1480, 1000, 640);
   footnote('李财声明：本猫对钱没有兴趣，对小鱼干有', clamp((lt - 4.8) / .3, 0, 1));
 });
 
@@ -69,7 +72,7 @@ S.push(lt => {
   // 红圈圈出两个“李”
   hcircle(470 + 65, 520, 78, 74, 51, C.red, 5, (lt - 3.4) / .4);
   hcircle(1330 - 65, 520, 78, 74, 53, C.red, 5, (lt - 3.8) / .4);
-  cat('front', 1730, 500, 320, lt - 2.6);
+  if (lt > 2.6) seqDraw('点头指向', lt - 2.6, 4, 1740, 760, 380, { once: true, flip: true });
   if (lt > 4.9) { tick(820, 750, 34, (lt - 4.9) / .3); typeText('所以我姓{r}李{/}！', 880, 750, 76, lt - 5.1, { cps: 10 }); }
   footnote('注：李财的妈妈 = 铲屎官本人', clamp((lt - 5.6) / .3, 0, 1));
 });
@@ -98,7 +101,7 @@ S.push(lt => {
     harrow(1300, 520, 1330, 640, 1430, 690, C.red, (lt - 6.4) / .4);
     typeText('说的就是我！', 1460, 700, 60, lt - 6.7, { color: C.red, cps: 10 });
   }
-  badge('curious', 1700, 870, 110, lt - 6.4, 71);
+  if (lt > 6.4) seqDraw('叉腰得意', lt - 6.4, 6, 1720, 1030, 300);
   footnote('注：读音近似的谐音梗，较真你就输了', clamp((lt - 7.2) / .3, 0, 1));
 });
 
@@ -125,7 +128,7 @@ S.push(lt => {
     typeText('冷知识：三花猫{r}几乎都是女孩子{/}', 166, 848, 54, lt - 5.0, { cps: 14 });
     txt('大约 3000 只三花里，才有 1 只男孩', 170, 930, 36, C.sub, { font: BODY, a: clamp((lt - 6.5) / .3, 0, 1) });
   }
-  cat('stretch', 1580, 680, 560, lt - .4);
+  if (lt < 5.0) cat('stretch', 1580, 680, 560, lt - .4); else seqDraw('吓一跳', lt - 5.0, 7, 1580, 960, 560, { once: true });
   footnote('口径：毛色占比为目测估算，精度粗，看个大概；三花公猫比例为常见说法', clamp((lt - 1) / .3, 0, 1));
 });
 
@@ -160,7 +163,7 @@ S.push(lt => {
   const ka = lt - 3.4;
   if (ka > 0) { g.save(); g.setLineDash([12, 9]); g.strokeStyle = C.red; g.lineWidth = 3; g.globalAlpha = clamp(ka / .3, 0, 1); g.beginPath(); g.moveTo(fx, Y0 - 60); g.lineTo(fx, Y0 + DY * 4 + 50); g.stroke(); g.restore(); txt('满分线', fx, Y0 - 82, 34, C.red, { align: 'center', a: clamp(ka / .3, 0, 1) }); }
   if (lt > 5.6) { crown(105, Y0 + DY * 4 - 52, .9, 1); harrow(1210, 870, 1090, 860, 1010, 780, C.red, (lt - 5.6) / .4); typeText('财运爆表（自称）', 1230, 880, 58, lt - 5.8, { color: C.red, cps: 10 }); }
-  badge('wink', 1640, 470, 165, lt - .5, 91);
+  if (lt > .5) seqDraw('笑开', lt - .5, 4, 1640, 640, 340, { once: true });
   txt('本猫自评，不接受反驳', 1640, 690, 38, C.sub, { align: 'center', a: clamp((lt - 1.2) / .3, 0, 1) });
   footnote('口径：自评打分，铲屎官尚未审核', clamp((lt - 1) / .3, 0, 1));
 });
@@ -171,13 +174,13 @@ S.push(lt => {
   header(lt, '接下来，我们干什么？', '李财的骑行科普，下期开讲', C.green);
   const k = eout((lt - .6) / 1.6), bx = lerp(-400, 600, k);
   if (lt > .6) {
-    bike(bx, 600, 2.0, (lt - .6) * 6 * (1 - k * .8) + k * 9, C.ink);
+    seqDraw('侧面骑车', lt, 12 * (1 - k * .5), bx, 800, 560);
     if (k < .98) { g.save(); g.globalAlpha = 1 - k; g.strokeStyle = C.faint; g.lineWidth = 5; g.lineCap = 'round'; for (let i = 0; i < 3; i++) { g.beginPath(); g.moveTo(bx - 380 - i * 30, 520 + i * 70); g.lineTo(bx - 520 - i * 30, 520 + i * 70); g.stroke(); } g.restore(); }
     hline(150, 806, 1100, 806, 101, C.ink, 3, (lt - .6) / .6);
   }
   if (lt > 2.4) sparks(800, 380, 30, clamp((lt - 2.4) / .2, 0, 1), 7);
   typeText('带你们去{g}骑车{/}！', 1140, 330, 92, lt - 2.4, { cps: 10, align: 'left' });
-  cat('run', 1490, 640, 520, lt - 1.4, { flip: true });
+  if (lt > 1.4) seqDraw('转身跑出', lt - 1.4, 0, 1490, 830, 400, { frame: 6 });
   let x = 150; const y = 920;
   CHIPS.forEach((c, i) => {
     const ct = lt - 3.8 - i * .35, w = textW(c[0], 44) + 60;
@@ -189,7 +192,8 @@ S.push(lt => {
 
 // H 结尾
 S.push(lt => {
-  cat('wave', 560, 560, 860, lt - .1, { noPop: true });
+  if (lt < 2.6) seqDraw('开心挥手', lt, 6, 560, 1000, 840);
+  else { const q = lt - 2.6; seqDraw('转身跑出', q, 7, 560 + Math.max(0, q - .5) ** 2 * 1400, 1000, 760, { once: true }); }
   typeText('关注{o}李财{/}，', 1010, 400, 110, lt - .3, { cps: 12 });
   typeText('一起去骑车！', 1010, 550, 110, lt - 1.0, { cps: 12 });
   bike(1240, 790, .8, lt * 5, C.ink);
