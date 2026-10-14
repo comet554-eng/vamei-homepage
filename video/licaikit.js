@@ -283,7 +283,15 @@ function licaiSound(K, DUR) {
 
 /* 李财图片：弹出入场 + 呼吸 */
 function cat(name, x, y, h, lt, opt) {
-  opt = opt || {}; var im = IMG[name]; if (!im || lt < 0) return;
+  opt = opt || {};
+  // 有对应逐帧动作的表情（licai-move.js 的 ANIM）自动换成动作；封面（noPop + bob:false）保持静态
+  var an = typeof ANIM !== 'undefined' && !(opt.noPop && opt.bob === false) && !opt.still ? ANIM[name] : null;
+  if (an && lt >= 0 && IMG['seq:' + an[0] + ':0']) {
+    var b0 = opt.noPop ? 1 : pop(lt);
+    seqDraw(an[0], lt, an[1], x, y + h / 2, h * an[3], { once: an[2], flip: opt.flip, sx: b0, sy: b0, a: opt.a });
+    return;
+  }
+  var im = IMG[name]; if (!im || lt < 0) return;
   var b = opt.noPop ? 1 : pop(lt), bob = opt.bob === false ? 0 : Math.sin(lt * 3.2) * 6, w = h * im.width / im.height;
   g.save(); g.translate(x, y + bob); g.scale(b * (opt.flip ? -1 : 1), b); if (opt.rot) g.rotate(opt.rot);
   g.globalAlpha = opt.a == null ? 1 : opt.a;
