@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行记 EP.06</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;width:100vw;max-height:100vh;aspect-ratio:16/9;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1920px;height:1080px;max-height:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<script src="licaikit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+/*
+ * 李财骑行记 EP.06《为什么越骑越累？》（78 秒，横版 16:9，无旁白）
+ * 开场 → 四个对手 → 速度与功率 → 趴低一点 → 爬坡 → 顶风顺风 → 省力三招 → 下集
+ * 数字用简单物理模型估算：P = ½ρ·CdA·v³ + Crr·m·g·v + m·g·v·坡度（人 + 车 80 公斤）
+ */
+const T = [0, 6, 16, 28, 40, 51, 62, 72, 78];
+const S = [];
+const M = 80, Gr = 9.81, RHO = 1.2, CRR = .006;
+const aeroP = (cda, vk, wind) => { const v = vk / 3.6, va = v + (wind || 0) / 3.6; return .5 * RHO * cda * va * Math.abs(va) * v; };
+const rollP = vk => CRR * M * Gr * vk / 3.6;
+const climbP = (vk, gr) => M * Gr * vk / 3.6 * gr;
+
+function foe(kind, x, y, s, lt) {
+  g.save(); g.translate(x, y); g.scale(s, s); g.lineCap = 'round'; g.strokeStyle = C.ink; g.lineWidth = 6;
+  if (kind === 'wind') { g.strokeStyle = C.blue; for (let i = 0; i < 3; i++) { const o = ((lt * 60 + i * 40) % 120) - 60; g.beginPath(); g.moveTo(-80 + o * .3, -40 + i * 40); g.lineTo(40 + o * .3, -40 + i * 40); g.arc(40 + o * .3, -55 + i * 40, 15, Math.PI / 2, -Math.PI * .9, true); g.stroke(); } }
+  else if (kind === 'roll') { g.lineWidth = 12; g.beginPath(); g.arc(0, -10, 60, 0, 6.283); g.stroke(); g.lineWidth = 5; g.strokeStyle = C.orange; for (let i = 0; i < 4; i++) { g.beginPath(); g.moveTo(-70 + i * 12, 58); g.lineTo(-90 + i * 12, 70); g.stroke(); } g.strokeStyle = C.ink; g.beginPath(); g.moveTo(-100, 52); g.lineTo(100, 52); g.stroke(); }
+  else if (kind === 'hill') { g.fillStyle = 'rgba(79,179,134,.25)'; g.beginPath(); g.moveTo(-100, 60); g.lineTo(100, 60); g.lineTo(100, -60); g.closePath(); g.fill(); g.stroke(); txt('↗', 10, 10, 60, C.green, { align: 'center' }); }
+  else if (kind === 'weight') { g.fillStyle = '#5a524b'; g.beginPath(); g.moveTo(-60, 60); g.lineTo(60, 60); g.lineTo(40, -30); g.lineTo(-40, -30); g.closePath(); g.fill(); g.strokeStyle = '#5a524b'; g.lineWidth = 10; g.beginPath(); g.arc(0, -42, 20, Math.PI, 0); g.stroke(); txt('kg', 0, 18, 44, PAPER, { align: 'center' }); }
+  g.restore();
+}
+
+// A
+S.push(lt => openScene(lt, '累瘫灵魂出窍', '为什么', '越骑越{o}累{/}？', 6));
+
+// B 四个对手
+const FOES = [['wind', '风阻', '空气挡着你', C.blue], ['roll', '滚动阻力', '轮胎和地面在较劲', C.orange], ['hill', '爬坡', '把自己往上举', C.green], ['weight', '重量', '车 + 人 + 行李', C.gray]];
+S.push(lt => {
+  header(lt, '骑车时，你有四个对手', '', C.orange);
+  FOES.forEach((f, i) => {
+    const x = 270 + i * 430, ct = lt - .8 - i * .8; if (ct < 0) return;
+    g.save(); g.globalAlpha = clamp(ct / .3, 0, 1); foe(f[0], x, 480, 1.3 * pop(ct), lt); g.restore();
+    txt(f[1], x, 660, 60, f[3] === C.gray ? C.ink : f[3], { align: 'center', a: clamp(ct / .3, 0, 1) });
+    txt(f[2], x, 730, 36, C.sub, { align: 'center', font: BODY, a: clamp((ct - .4) / .3, 0, 1) });
+  });
+  if (lt > 4.8) { hcircle(270, 560, 170, 200, 1601, C.red, 5, (lt - 4.8) / .5); typeText('平路上最大的对手：{r}风{/}', 760, 880, 56, lt - 5.2, { cps: 12 }); }
+  cat('惊呆举爪', 1790, 930, 230, lt - 6.4);
+});
+
+// C 速度与功率（堆叠柱：底 = 滚阻，上 = 风阻）
+const SP_ = [10, 15, 20, 25, 30];
+S.push(lt => {
+  header(lt, '骑快一点，要多花多少力气？', '柱高 = 需要的功率（瓦）· 灰 = 滚动阻力，蓝 = 风阻', C.blue);
+  const Y0 = 880, PY = 2.3, BW = 170, X0 = 200;
+  hline(150, Y0, 1450, Y0, 1611, C.ink, 3.5, (lt - .6) / .4);
+  SP_.forEach((v, i) => {
+    const x = X0 + i * 250, k = eout((lt - 1.0 - i * .45) / .8); if (k <= 0) return;
+    const r = rollP(v), a = aeroP(.5, v), hr = r * PY * k, ha = a * PY * k;
+    hatchBar(x, Y0 - hr, BW, hr, C.gray, 1620 + i * 7);
+    hatchBar(x, Y0 - hr - ha, BW, ha, C.blue, 1630 + i * 7);
+    txt(Math.round((r + a) * k) + ' 瓦', x + BW / 2, Y0 - hr - ha - 32, 40, C.ink, { align: 'center' });
+    txt(v + ' 公里/时', x + BW / 2, Y0 + 40, 34, C.sub, { align: 'center', font: BODY });
+  });
+  if (lt > 4.0) typeText('15 → 30：力气要 {r}5 倍{/}', 200, 300, 52, lt - 4.2, { cps: 12 });
+  if (lt > 5.8) txt('快了以后，八成力气都在和风较劲', 204, 372, 34, C.sub, { font: BODY, a: clamp((lt - 5.8) / .3, 0, 1) });
+  if (lt > 7.2) txt('213 瓦 ≈ 同时点亮 21 个 10 瓦的灯泡', 204, 424, 34, C.red, { font: BODY, a: clamp((lt - 7.2) / .3, 0, 1) });
+  cat('累瘫灵魂出窍', 1700, 820, 300, lt - 8.0);
+  footnote('口径：人 + 车约 80 公斤、坐姿较直、平路无风，用简单物理模型估算，示意', clamp((lt - 1) / .3, 0, 1));
+});
+
+// D 趴低一点
+const POS = [['city', '坐得笔直', .55, C.gray], ['flat', '微微前倾', .45, C.green], ['road', '趴低握下把', .32, C.blue]];
+S.push(lt => {
+  header(lt, '同样骑 25 公里/时，姿势不同', '条长 = 光是对付风阻要用的功率（瓦）', C.purple);
+  const X0 = 560, PX = 6;
+  hline(X0, 300, X0, 300 + 2 * 170 + 70, 1641, C.ink, 3.5, (lt - .6) / .4);
+  POS.forEach((p, i) => {
+    const y = 360 + i * 170, a = clamp((lt - .6 - i * .2) / .3, 0, 1); if (a <= 0) return;
+    g.save(); g.globalAlpha = a; bikeType(170, y - 6, .4, p[0], 0, p[3]); g.restore();
+    txt(p[1], 290, y, 44, C.ink, { a });
+    const P = aeroP(p[2], 25), k = eout((lt - 1.2 - i * .5) / .8), w = P * PX * k; if (k <= 0) return;
+    hatchBar(X0, y - 36, w, 72, p[3], 1650 + i * 7);
+    txt('≈' + Math.round(P * k) + ' 瓦', X0 + w + 18, y, 46, C.ink);
+  });
+  if (lt > 4.4) { crown(X0 + aeroP(.32, 25) * PX + 70, 360 + 2 * 170 - 50, .9, clamp((lt - 4.4) / .3, 0, 1)); typeText('趴低一点，风阻省下 {r}4 成{/}', 560, 880, 56, lt - 4.6, { cps: 12 }); }
+  cat('趴着星星眼', 1700, 620, 300, lt - 6.0);
+  footnote('口径：风阻面积 CdA 按坐直 0.55、前倾 0.45、下把 0.32 估算，示意', clamp((lt - 1) / .3, 0, 1));
+});
+
+// E 爬坡
+const GRD = [[0, '平路'], [.03, '3% 缓坡'], [.06, '6% 坡'], [.1, '10% 陡坡']];
+S.push(lt => {
+  header(lt, '爬坡有多累？', '同样骑 12 公里/时 · 条长 = 需要的功率（瓦）', C.green);
+  const X0 = 520, PX = 2.9;
+  hline(X0, 280, X0, 300 + 3 * 140 + 60, 1661, C.ink, 3.5, (lt - .6) / .4);
+  GRD.forEach((gd, i) => {
+    const y = 340 + i * 140, a = clamp((lt - .6 - i * .2) / .3, 0, 1); if (a <= 0) return;
+    g.save(); g.globalAlpha = a; g.fillStyle = 'rgba(79,179,134,.3)'; g.strokeStyle = C.green; g.lineWidth = 3; g.beginPath(); g.moveTo(110, y + 30); g.lineTo(230, y + 30); g.lineTo(230, y + 30 - Math.max(2, gd[0] * 500)); g.closePath(); g.fill(); g.stroke(); g.restore();
+    txt(gd[1], 260, y, 44, C.ink, { a });
+    const P = rollP(12) + aeroP(.5, 12) + climbP(12, gd[0]), k = eout((lt - 1.2 - i * .45) / .8), w = P * PX * k; if (k <= 0) return;
+    hatchBar(X0, y - 34, w, 68, [C.gray, C.green, C.orange, C.red][i], 1670 + i * 7);
+    txt('≈' + Math.round(P * k) + ' 瓦', X0 + w + 18, y, 46, C.ink);
+  });
+  if (lt > 4.6) { typeText('10% 的坡 ≈ 平路冲到 {r}32 公里/时{/}', 560, 900, 52, lt - 4.6, { cps: 12 }); }
+  cat('冲刺扬尘', 1720, 620, 300, lt - 5.8);
+  footnote('口径：人 + 车约 80 公斤，按物理模型估算，示意；坡度 10% = 走 100 米升高 10 米', clamp((lt - 1) / .3, 0, 1));
+});
+
+// F 顶风顺风
+const WD = [['无风', 0, C.gray], ['顶风 10 公里/时', 10, C.red], ['顺风 10 公里/时', -10, C.green]];
+S.push(lt => {
+  header(lt, '同样 20 公里/时，风一变', '条长 = 需要的功率（瓦）', C.orange);
+  const X0 = 620, PX = 6;
+  hline(X0, 300, X0, 300 + 2 * 170 + 70, 1681, C.ink, 3.5, (lt - .6) / .4);
+  WD.forEach((w, i) => {
+    const y = 360 + i * 170, a = clamp((lt - .6 - i * .2) / .3, 0, 1); if (a <= 0) return;
+    g.save(); g.globalAlpha = a; foe('wind', 170, y - 8, .5 * (w[1] < 0 ? -1 : 1), lt * (w[1] ? 1 : 0)); g.restore();
+    txt(w[0], 260, y, 42, C.ink, { a });
+    const P = rollP(20) + aeroP(.5, 20, w[1]), k = eout((lt - 1.2 - i * .5) / .8), ww = P * PX * k; if (k <= 0) return;
+    hatchBar(X0, y - 36, ww, 72, w[2], 1690 + i * 7);
+    txt('≈' + Math.round(P * k) + ' 瓦', X0 + ww + 18, y, 46, C.ink);
+  });
+  if (lt > 4.4) typeText('顶风骑：同样的速度，力气差不多 {r}翻倍{/}', 560, 880, 52, lt - 4.4, { cps: 12 });
+  if (lt > 6.4) txt('所以骑累了别怪自己，先看看风往哪边吹', 564, 950, 34, C.sub, { font: BODY, a: clamp((lt - 6.4) / .3, 0, 1) });
+  cat('哭着狂奔', 1720, 860, 230, lt - 5.4);
+  footnote('口径：同上，风速按迎面 / 背后 10 公里/时估算，示意', clamp((lt - 1) / .3, 0, 1));
+});
+
+// G 省力三招
+S.push(lt => listPage(lt, '省力三招', '', [['用{g}轻一点的挡{/}，踩得快一点', '下集细讲变速'], ['身体{g}放低一点{/}', '手肘弯一点，就少挡一点风'], ['胎压{g}打足{/}', '第 4 集讲过：气不足，滚动阻力变大']], C.green, '握拳加油'));
+
+// H
+S.push(lt => nextScene(lt, '灵光一闪', '变速', '怎么{o}用{/}？', 'road', C.blue));
+
+function coverArt(key, w, h) {
+  epCover(key, w, h, { ep: 6, l1: '为什么', l2: '越骑越累？', sub: '风阻 · 爬坡 · 顶风，算给你看', emo: '累瘫灵魂出窍',
+    art: (x, y, s, vert) => ['wind', 'hill', 'weight'].forEach((k, i) => foe(k, x + (i - 1) * (vert ? 280 : 220) * s, y, (vert ? 1.0 : .8) * s, .4)) });
+}
+
+function sound(K, c, DUR, T) {
+  const X = licaiSound(K, DUR);
+  for (let i = 1; i < T.length - 1; i++) { X.whoosh(T[i] - .08); X.ticks(T[i], 9); }
+  X.pop(.15); X.ticks(.7, 3, 10); X.ticks(1.4, 5, 8); X.pen(2.0, .4); X.ding(2.4);
+  let s = T[1]; for (let i = 0; i < 4; i++) X.pop(s + .8 + i * .8); K.wind(DUR, t => (t > s && t < s + 10) ? .12 : (t > T[5] && t < T[6]) ? .1 : 0); X.pen(s + 4.8, .5); X.ticks(s + 5.2, 11, 12); X.pop(s + 6.4);
+  s = T[2]; for (let i = 0; i < 5; i++) X.grow(s + 1.0 + i * .45); X.pen(s + 4.0, .3); X.ticks(s + 4.2, 12, 12); X.ding(s + 4.8); X.pop(s + 8.0);
+  s = T[3]; for (let i = 0; i < 3; i++) X.grow(s + 1.2 + i * .5); X.ding(s + 4.4); X.ticks(s + 4.6, 12, 12); X.pop(s + 6.0);
+  s = T[4]; for (let i = 0; i < 4; i++) X.grow(s + 1.2 + i * .45); X.ticks(s + 4.6, 16, 12); X.pop(s + 5.8); X.wrong(s + 5.0);
+  s = T[5]; for (let i = 0; i < 3; i++) X.grow(s + 1.2 + i * .5); X.ticks(s + 4.4, 18, 12); X.pop(s + 5.4);
+  s = T[6]; X.pop(s + .6); for (let i = 0; i < 3; i++) { X.pop(s + .8 + i * 1.8); X.ticks(s + 1.0 + i * 1.8, 10, 12); } X.ding(s + 6.4);
+  s = T[7]; X.ticks(s + .4, 2, 10); X.ticks(s + 1.0, 5, 10); X.bell(s + 1.4); X.stamp(s + 2.4); for (let i = 0; i < 6; i++) K.noise(s + 2.0 + i * .08, .1, .04, 'highpass', 5000);
+}
+
+licaiRun({ T, S, seed: 526, allText: SRC.replace(/[\x00-\x7f]/g, '') + '–～°≈×→↗', audio: sound, cover: coverArt, encode: { b: '4M', maxrate: '6M', bufsize: '12M' } });
+
+})();
+</script>
+</body>
+</html>

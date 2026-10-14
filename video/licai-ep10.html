@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行记 EP.10</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;width:100vw;max-height:100vh;aspect-ratio:16/9;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1920px;height:1080px;max-height:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<script src="licaikit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+/*
+ * 李财骑行记 EP.10《第一次骑 30 公里》（82 秒，横版 16:9，无旁白）· 第一季最终集
+ * 开场 → 路线怎么选 → 时间表 → 体力曲线 → 补给 → 骑完拉伸 → 第一季回顾 → 结尾
+ */
+const T = [0, 6, 17, 29, 40, 51, 62, 74, 82];
+const S = [];
+const GRY = '#6f665d';
+
+function bottle(x, y, s, a, col) {
+  g.save(); g.globalAlpha = a == null ? 1 : a; g.translate(x, y); g.scale(s, s);
+  g.fillStyle = col || C.blue; g.strokeStyle = C.ink; g.lineWidth = 3; g.beginPath(); g.roundRect(-22, -50, 44, 100, 12); g.fill(); g.stroke();
+  g.fillStyle = C.ink; g.fillRect(-10, -64, 20, 14); g.restore();
+}
+function bun(x, y, s, a) {
+  g.save(); g.globalAlpha = a == null ? 1 : a; g.translate(x, y); g.scale(s, s); g.fillStyle = '#fbf3e2'; g.strokeStyle = '#b89a6a'; g.lineWidth = 3;
+  g.beginPath(); g.moveTo(-34, 18); g.quadraticCurveTo(-38, -24, 0, -28); g.quadraticCurveTo(38, -24, 34, 18); g.closePath(); g.fill(); g.stroke();
+  for (let i = -2; i <= 2; i++) { g.beginPath(); g.moveTo(i * 3, -26); g.quadraticCurveTo(i * 9, -10, i * 14, 2); g.stroke(); }
+  g.restore();
+}
+
+// A
+S.push(lt => openScene(lt, '跳起欢呼', '第一次', '骑 {o}30 公里{/}！', 10));
+
+// B 路线
+S.push(lt => listPage(lt, '路线怎么选？', '第一次长一点的骑行，求稳不求远', [['{g}平路{/}为主，红绿灯少', '绿道、滨江路、公园环线都不错'], ['走{g}往返{/}或{g}绕圈{/}', '累了随时能掉头回家'], ['沿途有{g}便利店和厕所{/}', '补水、上厕所都方便'], ['出发前{g}告诉家人{/}路线', '手机充满电']], C.green, '托腮思考', { dy: 150, gap: 1.8, size: 54, y0: 330 }));
+
+// C 时间表
+const SEG = [['骑', 45, C.green], ['歇', 10, C.gold], ['骑', 40, C.green], ['歇', 10, C.gold], ['骑', 35, C.green]];
+S.push(lt => {
+  header(lt, '30 公里，要骑多久？', '按 15 公里/时的轻松速度', C.blue);
+  const X0 = 160, PX = 9.4, Y = 520; let acc = 0;
+  SEG.forEach((sg, i) => {
+    const k = eout((lt - .8 - i * .7) / .6); const x = X0 + acc * PX, w = sg[1] * PX * k; acc += sg[1]; if (k <= 0) return;
+    hatchBar(x, Y - 50, w, 100, sg[2], 2001 + i * 7);
+    if (k > .9) { txt(sg[0] + ' ' + sg[1] + ' 分', x + w / 2, Y, 40, C.ink, { align: 'center' }); if (sg[0] === '歇') { bottle(x + w / 2 - 20, Y - 120, .6, 1); bun(x + w / 2 + 24, Y - 110, .7, 1); } }
+  });
+  if (lt > 4.6) { hline(X0, Y + 90, X0 + 140 * PX, Y + 90, 2041, C.ink, 3, (lt - 4.6) / .5); txt('一共约 2 小时 20 分', X0 + 70 * PX, Y + 140, 48, C.ink, { align: 'center', a: clamp((lt - 5) / .3, 0, 1) }); }
+  if (lt > 6.2) typeText('每骑 {r}40～45 分钟{/}，歇 10 分钟', 160, 820, 54, lt - 6.2, { cps: 12 });
+  if (lt > 8.0) txt('歇的时候：喝水、吃点东西、活动一下手腕和腰', 164, 900, 36, C.sub, { font: BODY, a: clamp((lt - 8) / .3, 0, 1) });
+  cat('揣手手发呆', 1760, 860, 240, lt - 7.4);
+  footnote('口径：新手的常见节奏，因人、因路况而异；骑不动了随时休息，不丢人', clamp((lt - 1) / .3, 0, 1));
+});
+
+// D 体力曲线
+S.push(lt => {
+  header(lt, '为什么要边骑边吃？', '横轴 = 骑了多久，纵轴 = 体力（示意）', C.red);
+  const X0 = 220, Y0 = 860, W = 1100, Hh = 520;
+  hline(X0, Y0, X0 + W, Y0, 2051, C.ink, 3.5, (lt - .4) / .4); hline(X0, Y0, X0, Y0 - Hh, 2053, C.ink, 3.5, (lt - .4) / .4);
+  [0, 30, 60, 90, 120].forEach((m, i) => txt(m + ' 分', X0 + m / 120 * W, Y0 + 36, 30, C.sub, { align: 'center', font: BODY, a: clamp((lt - .8) / .3, 0, 1) }));
+  const A = m => 1 - .0025 * m - (m > 80 ? Math.pow((m - 80) / 40, 2) * .55 : 0), B = m => 1 - .0018 * m + .03 * Math.sin(m / 60 * 6.283);
+  const draw = (f, col, k, w) => { g.save(); g.strokeStyle = col; g.lineWidth = w; g.lineCap = 'round'; g.beginPath(); for (let m = 0; m <= 120 * k; m += 2) { const x = X0 + m / 120 * W, y = Y0 - f(m) * Hh * .9; m ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke(); g.restore(); };
+  const k1 = clamp((lt - 1.0) / 2.4, 0, 1), k2 = clamp((lt - 3.8) / 2.4, 0, 1);
+  draw(A, C.red, k1, 7); draw(B, C.green, k2, 7);
+  if (k1 >= 1) { txt('不吃不喝', X0 + W + 20, Y0 - A(120) * Hh * .9, 40, C.red); hcircle(X0 + 105 / 120 * W, Y0 - A(105) * Hh * .9, 80, 60, 2061, C.red, 4, (lt - 3.4) / .4); }
+  if (lt > 3.6) txt('“撞墙”：突然腿软、发晕', X0 + 560, Y0 - 120, 38, C.red, { a: clamp((lt - 3.6) / .3, 0, 1) });
+  if (k2 >= 1) txt('每小时吃点、喝点', X0 + W + 20, Y0 - B(120) * Hh * .9 - 10, 40, C.green);
+  cat('累瘫灵魂出窍', 1760, 940, 200, lt - 3.6);
+  footnote('示意曲线：身体储存的糖原有限，骑久了不补就会“没电”', clamp((lt - 1) / .3, 0, 1));
+});
+
+// E 补给
+S.push(lt => {
+  header(lt, '30 公里，消耗多少？带多少？', '一个肉包 ≈ 220 千卡', C.orange);
+  txt('消耗 ≈ 700 千卡', 160, 340, 56, C.ink, { a: clamp((lt - .6) / .3, 0, 1) });
+  for (let j = 0; j < 3; j++) { const ct = lt - 1.2 - j * .3; if (ct > 0) bun(640 + j * 110, 340, 1.3 * pop(ct), 1); }
+  if (lt > 2.4) txt('≈ 3 个肉包', 980, 340, 52, C.red, { a: clamp((lt - 2.4) / .3, 0, 1) });
+  txt('带：', 160, 560, 52, C.ink, { a: clamp((lt - 3.2) / .3, 0, 1) });
+  for (let j = 0; j < 2; j++) { const ct = lt - 3.6 - j * .3; if (ct > 0) bottle(320 + j * 90, 560, pop(ct), 1); }
+  if (lt > 4.4) txt('水 2 瓶（约 1 升）', 520, 560, 42, C.ink, { a: clamp((lt - 4.4) / .3, 0, 1) });
+  if (lt > 5.2) txt('零食 2～3 份：香蕉、面包、能量棒', 520, 650, 42, C.ink, { a: clamp((lt - 5.2) / .3, 0, 1) });
+  if (lt > 6.6) typeText('不用全补回来，{g}别饿着、别渴着{/}就行', 160, 820, 54, lt - 6.6, { cps: 12 });
+  cat('啃鲷鱼烧', 1600, 600, 420, lt - 2.0);
+  footnote('口径：按体重约 60 公斤、15 公里/时估算的示意值；天热多带水', clamp((lt - 1) / .3, 0, 1));
+});
+
+// F 骑完拉伸
+function stretchFig(k, x, y) {
+  g.save(); g.lineCap = 'round';
+  const head = (hx, hy) => { g.save(); g.fillStyle = PAPER; g.strokeStyle = GRY; g.lineWidth = 8; g.beginPath(); g.arc(hx, hy, 34, 0, 6.283); g.fill(); g.stroke(); g.restore(); };
+  if (k === 0) { // 大腿前侧：单脚站，手拉脚背
+    stickLine([[x, y + 160], [x, y + 20], [x, y - 120]], GRY); stickLine([[x + 6, y + 20], [x - 30, y + 90], [x - 90, y + 30]], GRY); stickLine([[x, y - 100], [x - 60, y - 20], [x - 90, y + 30]], GRY, 8); head(x, y - 160);
+  } else if (k === 1) { // 大腿后侧：腿伸直，身体前倾
+    stickLine([[x - 80, y + 160], [x - 20, y + 30]], GRY); stickLine([[x + 120, y + 160], [x - 20, y + 30]], GRY); stickLine([[x - 20, y + 30], [x + 70, y - 60]], GRY); stickLine([[x + 60, y - 50], [x + 110, y + 60]], GRY, 8); head(x + 100, y - 90);
+  } else { // 小腿：弓步推墙
+    hline(x + 160, y - 220, x + 160, y + 170, 2071, C.ink, 5); stickLine([[x - 120, y + 160], [x - 20, y + 20]], GRY); stickLine([[x + 60, y + 160], [x + 50, y + 80], [x - 20, y + 20]], GRY); stickLine([[x - 20, y + 20], [x + 60, y - 110]], GRY); stickLine([[x + 50, y - 100], [x + 155, y - 90]], GRY, 8); head(x + 80, y - 150);
+  }
+  g.restore();
+}
+const ST = [['大腿前侧', '单脚站，手拉脚背'], ['大腿后侧', '腿伸直，身体往前倾'], ['小腿', '弓步，双手推墙']];
+S.push(lt => {
+  header(lt, '骑完别马上瘫倒：拉伸三个地方', '每个 30 秒，左右各一次', C.purple);
+  ST.forEach((s, i) => {
+    const x = 330 + i * 520, ct = lt - .8 - i * 1.5; if (ct < 0) return;
+    g.save(); g.globalAlpha = clamp(ct / .3, 0, 1); stretchFig(i, x, 520); g.restore();
+    txt(s[0], x, 760, 50, C.purple, { align: 'center', a: clamp((ct - .2) / .3, 0, 1) });
+    txt(s[1], x, 820, 34, C.sub, { align: 'center', font: BODY, a: clamp((ct - .5) / .3, 0, 1) });
+  });
+  if (lt > 5.6) typeText('拉伸时{r}别弹、别憋气{/}，有点酸就停在那', 330, 930, 46, lt - 5.6, { cps: 12 });
+  cat('晒太阳伸懒腰', 1780, 380, 220, lt - 6.6);
+  footnote('提示：拉伸时如果疼，就别勉强；膝盖、腰有伤痛请咨询医生', clamp((lt - 1) / .3, 0, 1));
+});
+
+// G 第一季回顾
+const EPS = ['第一辆车买哪种', '车架大小怎么选', '座椅调多高', '胎压打多少', '骑 10 公里谁最划算', '为什么越骑越累', '变速怎么用', '骑车要带什么', '怎么骑才安全', '第一次骑 30 公里'];
+S.push(lt => {
+  header(lt, '第一季，我们学会了', '李财骑行记 EP.01～EP.10', C.orange);
+  EPS.forEach((t, i) => {
+    const x = 110 + (i % 2) * 760, y = 300 + Math.floor(i / 2) * 120, ct = lt - .6 - i * .45; if (ct < 0) return;
+    g.save(); g.globalAlpha = clamp(ct / .3, 0, 1); txt('EP.' + String(i + 1).padStart(2, '0'), x, y, 34, C.sub, { font: BODY }); txt(t, x + 120, y, 46, C.ink); g.restore();
+    if (ct > .3) tick(x + 640, y, 20, (ct - .3) / .3);
+  });
+  stamp('第一季完结', 1640, 860, 64, lt - 6.0, -.1);
+  cat('双手比心', 1720, 520, 300, lt - 5.0);
+});
+
+// H 结尾
+S.push(lt => {
+  cat('张开双臂', 540, 560, 820, lt - .1);
+  typeText('谢谢你陪{o}李财{/}', 1000, 380, 100, lt - .3, { cps: 10 });
+  typeText('骑完第一季！', 1000, 520, 100, lt - 1.1, { cps: 10 });
+  if (lt > 2.4) txt('评论区告诉我：下一季想看什么？', 1004, 650, 44, C.sub, { a: clamp((lt - 2.4) / .3, 0, 1) });
+  bikeType(1230, 860, .9, 'gravel', lt * 4, C.brown);
+  stamp('下季见', 1650, 860, 70, lt - 3.4);
+  confetti(lt - 2.8, 90, 21);
+});
+
+function coverArt(key, w, h) {
+  epCover(key, w, h, { ep: 10, l1: '第一次', l2: '骑 30 公里！', sub: '路线 · 时间表 · 补给 · 拉伸', emo: '跳起欢呼',
+    art: (x, y, s, vert) => { bottle(x - 140 * s, y, 1.1 * s, 1); bun(x, y + 10 * s, 1.5 * s, 1); bottle(x + 140 * s, y, 1.1 * s, 1, C.green); } });
+}
+
+function sound(K, c, DUR, T) {
+  const X = licaiSound(K, DUR);
+  for (let i = 1; i < T.length - 1; i++) { X.whoosh(T[i] - .08); X.ticks(T[i], 8); }
+  X.pop(.15); X.ticks(.7, 3, 10); X.ticks(1.4, 6, 8); X.pen(2.0, .4); X.ding(2.4);
+  let s = T[1]; X.pop(s + .6); for (let i = 0; i < 4; i++) { X.pop(s + .8 + i * 1.8); X.ticks(s + 1.0 + i * 1.8, 9, 12); }
+  s = T[2]; for (let i = 0; i < 5; i++) X.grow(s + .8 + i * .7, .6); X.pen(s + 4.6, .5); X.ding(s + 5.0); X.ticks(s + 6.2, 14, 12); X.pop(s + 7.4);
+  s = T[3]; X.pen(s + .4, .4); X.grow(s + 1.0, 2.4); X.wrong(s + 3.4); X.grow(s + 3.8, 2.4); X.ding(s + 6.2); X.pop(s + 3.6);
+  s = T[4]; for (let j = 0; j < 3; j++) X.pop(s + 1.2 + j * .3); X.ding(s + 2.4); X.pop(s + 3.6); X.pop(s + 3.9); X.ticks(s + 6.6, 18, 12); X.pop(s + 2.0);
+  s = T[5]; for (let i = 0; i < 3; i++) X.pop(s + .8 + i * 1.5); X.ticks(s + 5.6, 17, 12); X.pop(s + 6.6);
+  s = T[6]; for (let i = 0; i < 10; i++) { X.pop(s + .6 + i * .45); X.ding(s + .9 + i * .45); } X.stamp(s + 6.0); X.pop(s + 5.0);
+  s = T[7]; X.ticks(s + .3, 7, 10); X.ticks(s + 1.1, 6, 10); X.bell(s + 1.8); X.stamp(s + 3.4); for (let i = 0; i < 10; i++) K.noise(s + 2.8 + i * .08, .1, .04, 'highpass', 5000);
+}
+
+licaiRun({ T, S, seed: 530, allText: SRC.replace(/[\x00-\x7f]/g, '') + '–～°≈×→“”！', audio: sound, cover: coverArt, encode: { b: '4M', maxrate: '6M', bufsize: '12M' } });
+
+})();
+</script>
+</body>
+</html>

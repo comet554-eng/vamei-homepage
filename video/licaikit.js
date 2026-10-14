@@ -382,7 +382,7 @@ function numDot(n, x, y, lt, col) {
 function openScene(lt, emo, l1, l2, ep, l2w) {
   cat(emo, 520, 560, 820, lt - .15);
   typeText(l1, 1000, 380, 110, lt - .7, { cps: 10 });
-  var n2 = l2.replace(/\{[^}]*\}/g, '').length, r = typeText(l2, 1000, 540, 150, lt - 1.4, { cps: 8 });
+  var n2 = l2.replace(/\{[^}]*\}/g, '').length, z2 = Math.min(150, 150 * 860 / textW(l2.replace(/\{[^}]*\}/g, ''), 150)), r = typeText(l2, 1000, 540, z2, lt - 1.4, { cps: 8 });
   if (r.done) hline(1000, 632, 1000 + r.width, 630, 12, C.orange, 9, (lt - 1.4 - n2 / 8) / .4);
   txt('李财骑行记 · 第 ' + ep + ' 集', 1004, 720, 44, C.sub, { a: clamp((lt - 2.6) / .4, 0, 1) });
   sparks(1000 + r.width + 60, 470, 30, clamp((lt - 2.4) / .2, 0, 1), 3);
@@ -404,16 +404,17 @@ function epCover(key, w, h, o) {
   if (vert) {
     var s = w / 1080;
     txt('李财骑行记 · 第 ' + o.ep + ' 集', 80 * s, 140 * s, 46 * s, C.sub);
-    txt(o.l1, 80 * s, 290 * s, 150 * s, C.ink);
-    txt(o.l2, 80 * s, 470 * s, 170 * s, C.orange);
-    hline(90 * s, 580 * s, 90 * s + textW(o.l2, 170 * s), 576 * s, 12, C.orange, 12 * s);
+    var av = w - 140 * s, y1 = Math.min(150 * s, 150 * s * av / textW(o.l1, 150 * s)), y2 = Math.min(170 * s, 170 * s * av / textW(o.l2, 170 * s));
+    txt(o.l1, 80 * s, 290 * s, y1, C.ink);
+    txt(o.l2, 80 * s, 470 * s, y2, C.orange);
+    hline(90 * s, 580 * s, 90 * s + textW(o.l2, y2), 576 * s, 12, C.orange, 12 * s);
     txt(o.sub, 86 * s, 670 * s, 52 * s, C.ink);
     var ch = Math.min(h - 980 * s, 1000 * s);
     if (o.art) o.art(540 * s, 820 * s, .8 * s, true);
     cat(o.emo, w * .5, h - ch / 2 - 20 * s, ch, 1, { noPop: true, bob: false });
   } else {
     var s2 = h / 1080, q = key === '4x3';
-    cat(o.emo, q ? w * .25 : h * .38, h * .5, h * (q ? .72 : .86), 1, { noPop: true, bob: false });
+    var es = o.emoScale || 1; cat(o.emo, q ? w * .25 : h * .38, h * .5, h * (q ? .72 : .86) * es, 1, { noPop: true, bob: false });
     var x = w * (q ? .5 : .44);
     txt('李财骑行记 · 第 ' + o.ep + ' 集', x, 190 * s2, 44 * s2, C.sub);
     var avail = w - x - 50 * s2, z1 = Math.min(140 * s2, 140 * s2 * avail / textW(o.l1, 140 * s2)), z2 = Math.min(170 * s2, 170 * s2 * avail / textW(o.l2, 170 * s2));
@@ -431,4 +432,29 @@ function knee(h, f, a, b, dir) {
   var dx = f[0] - h[0], dy = f[1] - h[1], d = Math.min(Math.hypot(dx, dy), a + b - .01), an = Math.atan2(dy, dx);
   var c = Math.acos(clamp((a * a + d * d - b * b) / (2 * a * d), -1, 1));
   var t = an + (dir || -1) * c; return [h[0] + Math.cos(t) * a, h[1] + Math.sin(t) * a];
+}
+// “三个错误”页：items = [[错误, 正确做法], ...]
+function mistakesPage(lt, title, items, emo, seed) {
+  header(lt, title, '', C.red);
+  items.forEach(function (p, i) {
+    var y = 360 + i * 190, ct = lt - .8 - i * 2.2; if (ct < 0) return;
+    numDot(i + 1, 170, y, ct, C.red);
+    var r = typeText(p[0], 250, y - 14, 58, ct - .2, { cps: 12 });
+    if (ct > 1.2) strike(240, y - 10, 250 + r.width + 12, (seed || 1500) + i, (ct - 1.2) / .3);
+    if (ct > 1.5) { tick(270, y + 58, 18, (ct - 1.5) / .3); txt(p[1], 310, y + 58, 36, C.green, { a: clamp((ct - 1.6) / .3, 0, 1) }); }
+  });
+  cat(emo, 1540, 660, 520, lt - .6);
+}
+// 编号清单页：items = [[主句（可带颜色标记）, 小字], ...]
+function listPage(lt, title, sub, items, col, emo, opt) {
+  opt = opt || {};
+  header(lt, title, sub, col);
+  var dy = opt.dy || 190, gap = opt.gap || 1.8;
+  items.forEach(function (t, i) {
+    var y = (opt.y0 || 360) + i * dy, ct = lt - .8 - i * gap; if (ct < 0) return;
+    numDot(i + 1, 170, y, ct, col);
+    typeText(t[0], 250, y - 16, opt.size || 58, ct - .2, { cps: 12 });
+    if (t[1]) txt(t[1], 254, y + 48, 36, C.sub, { font: BODY, a: clamp((ct - .9) / .3, 0, 1) });
+  });
+  if (emo) cat(emo, opt.cx || 1500, opt.cy || 640, opt.ch || 560, lt - .6);
 }
