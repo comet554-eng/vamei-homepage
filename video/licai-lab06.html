@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行实验室 EP.06</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;width:100vw;max-height:100vh;aspect-ratio:16/9;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1920px;height:1080px;max-height:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<script src="licaikit.js"></script>
+<script src="labkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财骑行实验室 EP.06《同样 1 公里，骑车比跑步省多少？》
+function bunI(x, y, s) { g.save(); g.translate(x, y); g.scale(s, s); g.fillStyle = '#fbf3e2'; g.strokeStyle = '#b89a6a'; g.lineWidth = 3; g.beginPath(); g.moveTo(-34, 18); g.quadraticCurveTo(-38, -24, 0, -28); g.quadraticCurveTo(38, -24, 34, 18); g.closePath(); g.fill(); g.stroke(); for (let i = -2; i <= 2; i++) { g.beginPath(); g.moveTo(i * 3, -26); g.quadraticCurveTo(i * 9, -10, i * 14, 2); g.stroke(); } g.restore(); }
+labRun({ ep: 6, src: SRC, cover: { l1: '同样 1 公里', l2: '骑车省多少？', sub: '跑步 vs 走路 vs 骑车', emo: '趴着星星眼', art: (x, y, s) => bunI(x, y, 1.8 * s) },
+  pages: [
+    { type: 'open', dur: 6, emo: '趴着星星眼', l1: '同样 1 公里，', l2: '骑车省{o}多少{/}？' },
+    { type: 'bars', dur: 11, title: '每公斤体重，走 1 公里要花多少？', sub: '条长 = 千卡 /（公斤 · 公里）· 只算运动多花的部分', col: C.orange, unit: '', x0: 560, wmax: 900, max: 1.0, dp: 1,
+      rows: [{ l: '跑步', v: 1.0, c: C.red }, { l: '走路', v: .5, c: C.gray }, { l: '骑车', v: .2, c: C.green }], dy: 170, y0: 360, crown: 2,
+      notes: [{ t: 4.6, text: '骑车只要跑步的 {g}五分之一{/}', x: 560, y: 880, size: 54 }],
+      emo: { n: '跳起欢呼', x: 1780, y: 880, h: 220, t: 5.4 }, foot: '口径：常见的净消耗估算，跑步约 1、走路约 0.5、轻松骑约 0.2，示意' },
+    { type: 'draw', dur: 12, title: '为什么差这么多？看重心', sub: '侧面看 · 线 = 身体重心走过的路', col: C.blue,
+      fn: lt => { const k = clamp((lt - .6) / 4, 0, 1);
+        g.save(); g.strokeStyle = C.red; g.lineWidth = 6; g.beginPath(); for (let x = 160; x <= 160 + 1100 * k; x += 5) { const y = 430 - Math.abs(Math.sin((x - 160) / 80)) * 70; x === 160 ? g.moveTo(x, y) : g.lineTo(x, y); } g.stroke(); g.restore();
+        g.save(); g.strokeStyle = C.green; g.lineWidth = 6; g.beginPath(); g.moveTo(160, 760); g.lineTo(160 + 1100 * k, 760); g.stroke(); g.restore();
+        txt('跑步', 160, 330, 48, C.red); txt('骑车', 160, 680, 48, C.green);
+        bikeType(160 + 1100 * k, 800, .4, 'flat', lt * 6, C.green); },
+      notes: [{ t: 4.8, text: '每一步重心{r}上下 6～8 厘米{/}，落地还要“刹一下”', x: 400, y: 530, size: 42 }, { t: 6.6, text: '重心几乎{g}不动{/}，轮子一直滚', x: 400, y: 880, size: 42 }],
+      emo: { n: '唱歌跳舞', x: 1720, y: 600, h: 300, t: 7.6 } },
+    { type: 'bars', dur: 11, title: '一个肉包（220 千卡），能走多远？', sub: '体重 60 公斤 · 条长 = 公里', col: C.red, unit: ' 公里', x0: 560, wmax: 900, max: 19, dp: 1,
+      rows: [{ l: '跑步', v: 3.7, c: C.red }, { l: '走路', v: 7.3, c: C.gray }, { l: '骑车', v: 18.3, c: C.green }], dy: 170, y0: 360, crown: 2,
+      extra: lt => { for (let i = 0; i < 1; i++) if (lt > .6) bunI(1700, 300, 1.6); },
+      notes: [{ t: 4.6, text: '一个肉包，骑车能骑{g}十八公里{/}', x: 560, y: 880, size: 52 }],
+      emo: { n: '啃鲷鱼烧', x: 1780, y: 880, h: 220, t: 5.4 }, foot: '估算：220 ÷（系数 × 60 公斤），示意' },
+    { type: 'list', dur: 10, title: '那跑步就不好吗？', sub: '各有各的用处', col: C.purple,
+      items: [['想{r}短时间多消耗{/}：跑步效率高', '30 分钟能烧掉更多'], ['想{g}骑得远、骑得久{/}：骑车', '能玩一整天'], ['膝盖不太好：先骑车', '下集细说']], emo: '托腮思考', opt: { cx: 1640, cy: 680, ch: 440 } },
+    { type: 'end', dur: 10, items: ['同样 1 公里，骑车只花跑步的{g}五分之一{/}', '原因：重心不上下跳，轮子一直滚', '一个肉包，能骑 {g}18 公里{/}'] },
+    { type: 'next', dur: 6, emo: '举拳眨眼', l1: '骑车', l2: '为什么{o}不伤膝盖{/}？', bk: 'city', bc: C.gray }
+  ] });
+
+})();
+</script>
+</body>
+</html>

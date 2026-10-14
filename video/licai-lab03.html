@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行实验室 EP.03</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;width:100vw;max-height:100vh;aspect-ratio:16/9;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1920px;height:1080px;max-height:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<script src="licaikit.js"></script>
+<script src="labkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财骑行实验室 EP.03《下坡谁更快：胖子还是瘦子？》
+const vDown = (m, cda) => Math.sqrt(m * 9.81 * (.06 - .005) / (.6 * cda)) * 3.6;
+const vUp = m => 200 / (m * 9.81 * .065) * 3.6;
+labRun({ ep: 3, src: SRC, cover: { l1: '下坡', l2: '谁更快？', sub: '胖子 vs 瘦子，算给你看', emo: '冲刺扬尘', art: (x, y, s) => bikeType(x, y, 1.0 * s, 'road', 0, C.red) },
+  pages: [
+    { type: 'open', dur: 6, emo: '冲刺扬尘', l1: '下坡，', l2: '谁更{o}快{/}？' },
+    { type: 'draw', dur: 11, title: '下坡时，两股力在拔河', sub: '', col: C.orange,
+      fn: lt => { g.save(); g.fillStyle = 'rgba(79,179,134,.2)'; g.beginPath(); g.moveTo(140, 420); g.lineTo(1300, 860); g.lineTo(140, 860); g.closePath(); g.fill(); g.restore(); hline(140, 420, 1300, 860, 3401, C.ink, 5);
+        const x = lerp(300, 1000, clamp((lt - .6) / 5, 0, 1)), y = 420 + (x - 140) * 440 / 1160; g.save(); g.translate(x, y - 40); g.rotate(.36); bikeType(0, 0, .5, 'road', lt * 8, C.red); g.restore();
+        if (lt > 1.4) { harrow(x, y - 90, x + 120, y - 60, x + 220, y - 10, C.green, (lt - 1.4) / .4, 6); txt('重力往下拉：越重越大', x + 60, y - 160, 38, C.green); }
+        if (lt > 2.8) { harrow(x - 40, y - 140, x - 140, y - 190, x - 240, y - 220, C.blue, (lt - 2.8) / .4, 6); txt('风阻往回推：身体越大越大', x - 420, y - 270, 38, C.blue); } },
+      notes: [{ t: 5.4, text: '体重翻倍，重力翻倍；但身体面积{r}没翻倍{/}', x: 160, y: 960, size: 46 }],
+      emo: { n: '托腮思考', x: 1720, y: 520, h: 280, t: 6.6 }, cues: [['pen', 1.4], ['pen', 2.8]] },
+    { type: 'bars', dur: 11, title: '6% 的坡，不踩踏板能冲多快？', sub: '条长 = 最后稳定下来的速度', col: C.red, unit: ' 公里/时', x0: 520, wmax: 900, max: 50,
+      rows: [{ l: '50 公斤', s: '瘦', v: vDown(58, .40), c: C.green }, { l: '70 公斤', v: vDown(78, .45), c: C.orange }, { l: '90 公斤', s: '胖', v: vDown(98, .50), c: C.red }], dy: 170, y0: 360, crown: 2,
+      notes: [{ t: 4.6, text: '下坡：{r}重的人更快{/}', x: 520, y: 880, size: 56 }],
+      emo: { n: '跳起欢呼', x: 1780, y: 880, h: 220, t: 5.4 }, foot: '估算：车重 8 公斤，风阻面积随体型 0.40～0.50，滚阻 0.005，示意' },
+    { type: 'bars', dur: 11, title: '那上坡呢？同样用 200 瓦踩', sub: '6.5% 的坡 · 条长 = 爬坡速度', col: C.green, unit: ' 公里/时', x0: 520, wmax: 900, max: 25,
+      rows: [{ l: '50 公斤', v: vUp(58), c: C.green }, { l: '70 公斤', v: vUp(78), c: C.orange }, { l: '90 公斤', v: vUp(98), c: C.red }], dy: 170, y0: 360, crown: 0, dp: 1,
+      notes: [{ t: 4.6, text: '上坡：比的是{g}每公斤多少瓦{/}', x: 520, y: 880, size: 54 }],
+      emo: { n: '累瘫灵魂出窍', x: 1780, y: 900, h: 200, t: 5.6 }, foot: '估算：只算爬升，忽略风阻和滚阻；所以爬坡高手大多很瘦' },
+    { type: 'bars', dur: 11, title: '“功率体重比”：爬坡的成绩单', sub: '条长 = 每公斤体重能输出多少瓦（一小时）', col: C.purple, unit: ' 瓦/公斤', x0: 560, wmax: 900, max: 6.5, dp: 1,
+      rows: [{ l: '新手', v: 1.5, c: C.gray }, { l: '经常骑', v: 2.8, c: C.green }, { l: '业余高手', v: 4.0, c: C.orange }, { l: '职业车手', v: 6.0, c: C.red }], dy: 130, y0: 330,
+      notes: [{ t: 4.6, text: '李财 4 公斤：只要 6 瓦就能当“业余高手”', x: 560, y: 900, size: 44, col: C.red }],
+      emo: { n: '坏笑得意', x: 1780, y: 880, h: 220, t: 5.4 }, foot: '口径：常见的经验范围，示意' },
+    { type: 'end', dur: 10, items: ['下坡：{g}重的人更快{/}，重力涨得比风阻快', '上坡：比的是{g}每公斤多少瓦{/}', '爬坡想快：要么多练瓦数，要么少长体重'] },
+    { type: 'next', dur: 6, emo: '星星眼开心', l1: '轮子轻 100 克', l2: '有多{o}值{/}？', bk: 'road', bc: C.blue }
+  ] });
+
+})();
+</script>
+</body>
+</html>

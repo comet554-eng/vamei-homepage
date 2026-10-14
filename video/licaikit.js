@@ -379,12 +379,12 @@ function numDot(n, x, y, lt, col) {
   g.beginPath(); g.arc(0, 0, 38, 0, 6.283); g.fill(); txt(String(n), 0, 3, 50, '#fff', { align: 'center' }); g.restore();
 }
 // 开场页：左边李财，右边两行标题
-function openScene(lt, emo, l1, l2, ep, l2w) {
+function openScene(lt, emo, l1, l2, ep, series) {
   cat(emo, 520, 560, 820, lt - .15);
   typeText(l1, 1000, 380, 110, lt - .7, { cps: 10 });
   var n2 = l2.replace(/\{[^}]*\}/g, '').length, z2 = Math.min(150, 150 * 860 / textW(l2.replace(/\{[^}]*\}/g, ''), 150)), r = typeText(l2, 1000, 540, z2, lt - 1.4, { cps: 8 });
   if (r.done) hline(1000, 632, 1000 + r.width, 630, 12, C.orange, 9, (lt - 1.4 - n2 / 8) / .4);
-  txt('李财骑行记 · 第 ' + ep + ' 集', 1004, 720, 44, C.sub, { a: clamp((lt - 2.6) / .4, 0, 1) });
+  txt((series || '李财骑行记') + ' · 第 ' + ep + ' 集', 1004, 720, 44, C.sub, { a: clamp((lt - 2.6) / .4, 0, 1) });
   sparks(1000 + r.width + 60, 470, 30, clamp((lt - 2.4) / .2, 0, 1), 3);
 }
 // 下集预告页
@@ -403,7 +403,7 @@ function epCover(key, w, h, o) {
   var vert = h > w;
   if (vert) {
     var s = w / 1080;
-    txt('李财骑行记 · 第 ' + o.ep + ' 集', 80 * s, 140 * s, 46 * s, C.sub);
+    txt((o.series || '李财骑行记') + ' · 第 ' + o.ep + ' 集', 80 * s, 140 * s, 46 * s, C.sub);
     var av = w - 140 * s, y1 = Math.min(150 * s, 150 * s * av / textW(o.l1, 150 * s)), y2 = Math.min(170 * s, 170 * s * av / textW(o.l2, 170 * s));
     txt(o.l1, 80 * s, 290 * s, y1, C.ink);
     txt(o.l2, 80 * s, 470 * s, y2, C.orange);
@@ -416,7 +416,7 @@ function epCover(key, w, h, o) {
     var s2 = h / 1080, q = key === '4x3';
     var es = o.emoScale || 1; cat(o.emo, q ? w * .25 : h * .38, h * .5, h * (q ? .72 : .86) * es, 1, { noPop: true, bob: false });
     var x = w * (q ? .5 : .44);
-    txt('李财骑行记 · 第 ' + o.ep + ' 集', x, 190 * s2, 44 * s2, C.sub);
+    txt((o.series || '李财骑行记') + ' · 第 ' + o.ep + ' 集', x, 190 * s2, 44 * s2, C.sub);
     var avail = w - x - 50 * s2, z1 = Math.min(140 * s2, 140 * s2 * avail / textW(o.l1, 140 * s2)), z2 = Math.min(170 * s2, 170 * s2 * avail / textW(o.l2, 170 * s2));
     txt(o.l1, x, 340 * s2, z1, C.ink);
     txt(o.l2, x, 520 * s2, z2, C.orange);

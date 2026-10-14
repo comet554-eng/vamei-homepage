@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行实验室 EP.04</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;width:100vw;max-height:100vh;aspect-ratio:16/9;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1920px;height:1080px;max-height:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<script src="licaikit.js"></script>
+<script src="labkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财骑行实验室 EP.04《轮子轻 100 克，等于车架轻多少？》
+labRun({ ep: 4, src: SRC, cover: { l1: '轮子轻 100 克', l2: '有多值？', sub: '转动惯量拆给你看', emo: '星星眼开心', art: (x, y, s) => bikeType(x, y, 1.0 * s, 'road', 0, C.blue) },
+  pages: [
+    { type: 'open', dur: 6, emo: '星星眼开心', l1: '轮子轻 100 克，', l2: '有多{o}值{/}？' },
+    { type: 'draw', dur: 11, title: '车在前进，轮子还在转', sub: '同样 100 克，放在不同地方', col: C.blue,
+      fn: lt => { const rot = lt * 3; g.save(); g.strokeStyle = C.ink; g.lineWidth = 10; g.beginPath(); g.arc(560, 580, 260, 0, 6.283); g.stroke(); g.lineWidth = 3; for (let i = 0; i < 12; i++) { const a = rot + i * Math.PI / 6; g.beginPath(); g.moveTo(560, 580); g.lineTo(560 + Math.cos(a) * 260, 580 + Math.sin(a) * 260); g.stroke(); } g.restore();
+        if (lt > 1.2) { g.fillStyle = C.red; g.beginPath(); g.arc(560 + Math.cos(rot) * 260, 580 + Math.sin(rot) * 260, 26, 0, 6.283); g.fill(); txt('轮圈 / 轮胎', 900, 380, 44, C.red); }
+        if (lt > 2.6) { g.fillStyle = C.blue; g.beginPath(); g.arc(560, 580, 26, 0, 6.283); g.fill(); txt('花鼓（轴心）', 900, 480, 44, C.blue); } },
+      notes: [{ t: 4.2, text: '外圈的重量：既要{r}往前走{/}，又要{r}跟着转{/}', x: 900, y: 620, size: 46 }, { t: 6.0, text: '越靠外，转起来越费劲', x: 904, y: 700, plain: 1, size: 34 }],
+      emo: { n: '托腮疑问', x: 1720, y: 880, h: 260, t: 6.6 }, cues: [['pop', 1.2], ['pop', 2.6]] },
+    { type: 'bars', dur: 11, title: '加速时，100 克“相当于”多重？', sub: '条长 = 等效重量（克）', col: C.orange, unit: ' 克', x0: 560, wmax: 900, max: 220,
+      rows: [{ l: '车架 / 骑手', v: 100, c: C.gray }, { l: '花鼓（轴心）', v: 100, c: C.blue }, { l: '轮圈 / 轮胎', v: 200, c: C.red, hl: 1 }], dy: 170, y0: 360,
+      notes: [{ t: 4.6, text: '轮圈上的 100 克，加速时{r}顶 200 克{/}', x: 560, y: 880, size: 52 }],
+      emo: { n: '惊呆举爪', x: 1780, y: 880, h: 220, t: 5.6 }, foot: '原理：轮圈的转动动能 ≈ 平动动能，所以加速时约算两倍；花鼓几乎不转动惯量' },
+    { type: 'bars', dur: 11, title: '但……到底差多少力气？', sub: '从 0 加速到 25 公里/时 · 人 + 车 80 公斤', col: C.purple, unit: '%', x0: 640, wmax: 860, max: 100, dp: 2,
+      rows: [{ l: '整车加速要的能量', v: 100, c: C.gray, txt: '100%' }, { l: '轮圈多 100 克', v: .25, c: C.red, txt: '+0.25%' }, { l: '骑手多吃一个包子', v: 0, c: C.orange, txt: '差不多就是这个量级' }], dy: 170, y0: 360,
+      notes: [{ t: 4.6, text: '匀速骑的时候：{g}几乎没区别{/}', x: 640, y: 880, size: 52 }],
+      emo: { n: '无语', x: 1780, y: 880, h: 220, t: 5.6 }, foot: '计算：½mv² 与转动动能；爬坡时 100 克就是 100 克，放哪儿都一样' },
+    { type: 'list', dur: 11, title: '什么时候，轮子减重才有用？', sub: '', col: C.green,
+      items: [['{g}频繁起步、冲刺{/}：有一点点用', '红绿灯多的城市通勤'], ['{r}匀速巡航{/}：几乎没用', '轮子转起来以后，就不费劲了'], ['{o}爬坡{/}：和车架减重一样', '100 克就是 100 克']], emo: '托腮思考', opt: { cx: 1640, cy: 680, ch: 440 } },
+    { type: 'end', dur: 10, items: ['加速时，轮圈上的重量{g}约算两倍{/}', '但对普通人，差别只有{g}千分之几{/}', '想骑得轻松：先练腿，再考虑换轮'] },
+    { type: 'next', dur: 6, emo: '灵光一闪', l1: '人这台发动机', l2: '效率{o}多高{/}？', bk: 'flat', bc: C.green }
+  ] });
+
+})();
+</script>
+</body>
+</html>
