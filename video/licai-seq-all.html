@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财动作库一览</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;width:100vw;max-height:100vh;aspect-ratio:16/9;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1920px;height:1080px;max-height:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<script src="licai-seq.js"></script>
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script>
+/* 李财动作库一览（16 秒）：全部逐帧动作同时播放，方便挑选 */
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+const T = [0, 16];
+const L = ['探头','笑开','跑步','摔跟头','正面骑车','滑雪板','走路','挥手','蹦跳','侧面骑车','侧面骑车2','爬坡吃力','爬坡吃力2','骑车喝水','打气','点头指向','转身跑出','开心挥手','戴头盔','吓一跳','摆爪否定','累瘫','叉腰得意'];
+const S = [lt => {
+  txt('李财动作库 · ' + L.length + ' 组', 96, 70, 56, C.ink);
+  const cols = 6, cw = (W - 80) / cols, ch = 228;
+  L.forEach((n, k) => {
+    const c = k % cols, r = Math.floor(k / cols), x = 40 + cw * (c + .5), y = 112 + ch * (r + 1) - 40;
+    const t = (lt + k * .37) % 2.4;
+    seqDraw(n, t, 7, x, y, 165, { once: true });
+    txt(n, x, y + 20, 26, C.sub, { align: 'center', font: BODY });
+  });
+}];
+function sound(K, c, DUR) { licaiSound(K, DUR); }
+function coverArt() { paper(); }
+licaiRun({ T, S, seed: 79, allText: SRC.replace(/[\x00-\x7f]/g, '') + '0123456789', audio: sound, cover: coverArt });
+})();
+</script>
+</body>
+</html>
