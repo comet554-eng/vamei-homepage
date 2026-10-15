@@ -60,7 +60,8 @@ def rider_profile(c, x, y, s, back=0.0, fwd=0.0, wrist_mark=0.0, knee_mark=0.0, 
 # front-facing body map: name -> (x, y) in units of body height s, ground at 0
 SPOTS = dict(head=(0, -1.70), neck=(0, -1.50), shoulder=(-0.25, -1.40), shoulder_r=(0.25, -1.40),
              wrist=(-0.47, -0.86), wrist_r=(0.47, -0.86), knee=(-0.12, -0.48), knee_r=(0.12, -0.48),
-             ankle=(-0.13, -0.09), ankle_r=(0.13, -0.09), spine=(0, -1.0))
+             ankle=(-0.13, -0.09), ankle_r=(0.13, -0.09), spine=(0, -1.0),
+             elbow=(-0.33, -1.14), elbow_r=(0.33, -1.14), upperarm=(-0.27, -1.29), upperarm_r=(0.27, -1.29))
 
 
 def body_map(c, x, y, s, spots=(), alpha=1.0, col=None):
