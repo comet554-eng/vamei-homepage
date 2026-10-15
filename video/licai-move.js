@@ -164,7 +164,7 @@ function flipbook(names, x, y, h, t, fps, o) {
 }
 
 // 逐帧动作（licai-seq.js）：(x, y) 为底线中心，h 为整组高度；o.once 播一遍后停在最后一帧；o.frame 直接指定帧
-var SEQ_FRAMES = {};
+var SEQ_FRAMES = { '打招呼': [2, 3, 4, 5, 4, 3] };
 // 画错的帧（坐着抬爪时底下还画着两只前爪 = 五只脚），播放时跳过；好帧少于 3 张的整组停用，改用静态图
 var SEQ_BAD = {
   '挥手': [1, 2, 3, 4, 5, 6], '点头指向': [3, 4, 5, 6], '开心挥手': [1, 2, 3, 4, 5, 6], '摆爪否定': [0, 2, 4, 6],
@@ -182,7 +182,7 @@ function seqUsable(name) { return !!LICAI_SEQ[name] && seqGood(name).length >= 3
 function seqDraw(name, t, fps, x, y, h, o) {
   o = o || {};
   if (!seqUsable(name)) { var fb = IMG[SEQ_FALLBACK[name] || 'wave']; if (fb) { var fw = h * fb.width / fb.height; g.save(); g.globalAlpha = o.a == null ? 1 : o.a; g.translate(x, y); g.scale(o.flip ? -1 : 1, 1); g.drawImage(fb, -fw / 2, -h, fw, h); g.restore(); } return 0; }
-  if (!o.frames && o.frame == null) o.frames = seqGood(name); if (!o.frames && o.frame == null && !o.once && SEQ_FRAMES[name]) o.frames = SEQ_FRAMES[name]; var S = LICAI_SEQ[name], n = S.frames.length;
+  if (!o.frames && o.frame == null) o.frames = (!o.once && SEQ_FRAMES[name]) || seqGood(name); if (!o.frames && o.frame == null && !o.once && SEQ_FRAMES[name]) o.frames = SEQ_FRAMES[name]; var S = LICAI_SEQ[name], n = S.frames.length;
   var i = o.frame != null ? o.frame : Math.floor(Math.max(0, t) * fps);
   if (o.frames) { var L = o.frames.length; i = o.frames[o.once ? Math.min(i, L - 1) : ((i % L) + L) % L]; }
   else i = o.once ? Math.min(i, n - 1) : ((i % n) + n) % n;
@@ -196,8 +196,8 @@ function seqDraw(name, t, fps, x, y, h, o) {
 
 // 静态表情 → 逐帧动作的对照：[动作名, 帧率, 只播一遍, 高度系数]
 var ANIM_RAW = {
-  '期待星星眼': ['开心挥手', 6, false, 1], '握拳加油': ['开心挥手', 6, false, 1], '张开双臂': ['开心挥手', 6, false, 1],
-  '星星眼开心': ['开心挥手', 6, false, 1], '跳起欢呼': ['蹦跳欢呼', 7, false, 1.1], '举旗欢呼': ['蹦跳欢呼', 7, false, 1.1], '唱歌跳舞': ['开心挥手', 6, false, 1],
+  '期待星星眼': ['打招呼', 6, false, 1], '握拳加油': ['举手欢迎', 6, false, 1], '张开双臂': ['举手欢迎', 6, false, 1],
+  '星星眼开心': ['打招呼', 6, false, 1], '跳起欢呼': ['蹦跳欢呼', 7, false, 1.1], '举旗欢呼': ['蹦跳欢呼', 7, false, 1.1], '唱歌跳舞': ['开心挥手', 6, false, 1],
   '震惊': ['吓一跳', 7, true, 1.1], '被吓一跳': ['吓一跳', 7, true, 1.1], '惊呆举爪': ['吓一跳', 7, true, 1.1],
   '趴地冲刺': ['跑步', 12, false, .9], '冲刺扬尘': ['跑步', 12, false, .9], '哭着狂奔': ['跑步', 12, false, .9],
   '炸毛生气': ['摆爪否定', 6, false, 1], '斜眼嫌弃': ['摆爪否定', 6, false, 1], '无语': ['摆爪否定', 6, false, 1],
