@@ -26,7 +26,6 @@
 <script src="licai-seq/打气.js"></script>
 <script src="licai-seq/摆爪否定.js"></script>
 <script src="licai-seq/放大镜.js"></script>
-<script src="licai-seq/检查车轮.js"></script>
 <script src="licai-seq/背包出发.js"></script>
 <!-- seq:end -->
 <script src="licaikit.js"></script>
@@ -147,7 +146,7 @@ S.push(lt => {
   });
   if (lt > 3.4) { const y = Y0 - 85 * PY; g.save(); g.setLineDash([12, 9]); g.strokeStyle = C.red; g.lineWidth = 3; g.beginPath(); g.moveTo(220, y); g.lineTo(1400, y); g.stroke(); g.restore(); txt('该打气了', 1420, y, 36, C.red); }
   if (lt > 4.6) typeText('建议：{g}每周打一次{/}', 1300, 300, 56, lt - 4.6, { cps: 10 });
-  cat('检查车轮', 1700, 560, 280, lt - 5.6);
+  cat('打气', 1740, 620, 300, lt - 5.6);
   footnote('示意：普通丁基内胎的大致漏气速度，因胎、因气温而异', clamp((lt - 1) / .3, 0, 1));
 });
 

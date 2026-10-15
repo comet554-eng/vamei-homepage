@@ -24,7 +24,7 @@
 <script src="licai-seq/戴头盔.js"></script>
 <script src="licai-seq/按车铃.js"></script>
 <script src="licai-seq/摆爪否定.js"></script>
-<script src="licai-seq/检查车轮.js"></script>
+<script src="licai-seq/看书.js"></script>
 <script src="licai-seq/看地图.js"></script>
 <script src="licai-seq/背包出发.js"></script>
 <script src="licai-seq/骑车喝水.js"></script>
@@ -147,7 +147,7 @@ S.push(lt => {
   });
   if (lt > 4.4) typeText('扎胎了不慌：{g}换内胎{/}比补胎快', 220, 820, 54, lt - 4.4, { cps: 12 });
   if (lt > 6.4) txt('出发前在家练一次换胎，路上就不手忙脚乱', 224, 900, 36, C.sub, { font: BODY, a: clamp((lt - 6.4) / .3, 0, 1) });
-  cat('检查车轮', 1700, 820, 300, lt - 5.4);
+  cat('看书', 1700, 820, 300, lt - 5.4);
 });
 
 // G
