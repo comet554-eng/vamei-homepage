@@ -164,9 +164,25 @@ function flipbook(names, x, y, h, t, fps, o) {
 }
 
 // 逐帧动作（licai-seq.js）：(x, y) 为底线中心，h 为整组高度；o.once 播一遍后停在最后一帧；o.frame 直接指定帧
-var SEQ_FRAMES = { '开心挥手': [2, 3, 4, 5, 4, 3] };
+var SEQ_FRAMES = {};
+// 画错的帧（坐着抬爪时底下还画着两只前爪 = 五只脚），播放时跳过；好帧少于 3 张的整组停用，改用静态图
+var SEQ_BAD = {
+  '挥手': [1, 2, 3, 4, 5, 6], '点头指向': [3, 4, 5, 6], '开心挥手': [1, 2, 3, 4, 5, 6], '摆爪否定': [0, 2, 4, 6],
+  '举手': [2, 3, 4, 5, 6], '思考怀疑': [4], '放大镜': [1, 2, 3, 5, 6, 7], '抬头张望': [1, 2, 4, 5],
+  '眺望': [0, 1, 2, 3, 4, 5, 6, 7], '偷笑': [3, 4, 6], '望远镜': [1], '拍照2': [0]
+};
+var SEQ_FALLBACK = { '开心挥手': 'wave', '挥手': 'wave', '眺望': '期待星星眼' };
+function seqGood(name) {
+  var n = LICAI_SEQ[name].frames.length, bad = SEQ_BAD[name] || [], g = [];
+  for (var i = 0; i < n; i++) if (bad.indexOf(i) < 0) g.push(i);
+  return g;
+}
+function seqUsable(name) { return !!LICAI_SEQ[name] && seqGood(name).length >= 3; }
+
 function seqDraw(name, t, fps, x, y, h, o) {
-  o = o || {}; if (!o.frames && o.frame == null && !o.once && SEQ_FRAMES[name]) o.frames = SEQ_FRAMES[name]; var S = LICAI_SEQ[name], n = S.frames.length;
+  o = o || {};
+  if (!seqUsable(name)) { var fb = IMG[SEQ_FALLBACK[name] || 'wave']; if (fb) { var fw = h * fb.width / fb.height; g.save(); g.globalAlpha = o.a == null ? 1 : o.a; g.translate(x, y); g.scale(o.flip ? -1 : 1, 1); g.drawImage(fb, -fw / 2, -h, fw, h); g.restore(); } return 0; }
+  if (!o.frames && o.frame == null) o.frames = seqGood(name); if (!o.frames && o.frame == null && !o.once && SEQ_FRAMES[name]) o.frames = SEQ_FRAMES[name]; var S = LICAI_SEQ[name], n = S.frames.length;
   var i = o.frame != null ? o.frame : Math.floor(Math.max(0, t) * fps);
   if (o.frames) { var L = o.frames.length; i = o.frames[o.once ? Math.min(i, L - 1) : ((i % L) + L) % L]; }
   else i = o.once ? Math.min(i, n - 1) : ((i % n) + n) % n;
@@ -179,7 +195,7 @@ function seqDraw(name, t, fps, x, y, h, o) {
 }
 
 // 静态表情 → 逐帧动作的对照：[动作名, 帧率, 只播一遍, 高度系数]
-var ANIM = {
+var ANIM_RAW = {
   '期待星星眼': ['开心挥手', 6, false, 1], '握拳加油': ['开心挥手', 6, false, 1], '张开双臂': ['开心挥手', 6, false, 1],
   '星星眼开心': ['开心挥手', 6, false, 1], '跳起欢呼': ['蹦跳欢呼', 7, false, 1.1], '举旗欢呼': ['蹦跳欢呼', 7, false, 1.1], '唱歌跳舞': ['开心挥手', 6, false, 1],
   '震惊': ['吓一跳', 7, true, 1.1], '被吓一跳': ['吓一跳', 7, true, 1.1], '惊呆举爪': ['吓一跳', 7, true, 1.1],
@@ -194,3 +210,5 @@ var ANIM = {
 
 // 只播一遍、停在最后一帧的动作（其余循环播放）
 var SEQ_ONCE = ['探头','笑开','摔跟头','转身跑出','戴头盔','摘头盔','搭帐篷','吓一跳','累瘫','点头指向','画饼图','下车推车','摔倒爬起','发现脚印','捡树叶','撑伞','背包出发','背包出发2'];
+
+var ANIM = {}; Object.keys(ANIM_RAW).forEach(function (k) { if (typeof LICAI_SEQ === 'undefined' || seqUsable(ANIM_RAW[k][0])) ANIM[k] = ANIM_RAW[k]; });
