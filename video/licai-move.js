@@ -164,10 +164,12 @@ function flipbook(names, x, y, h, t, fps, o) {
 }
 
 // 逐帧动作（licai-seq.js）：(x, y) 为底线中心，h 为整组高度；o.once 播一遍后停在最后一帧；o.frame 直接指定帧
+var SEQ_FRAMES = { '开心挥手': [2, 3, 4, 5, 4, 3] };
 function seqDraw(name, t, fps, x, y, h, o) {
-  o = o || {}; var S = LICAI_SEQ[name], n = S.frames.length;
+  o = o || {}; if (!o.frames && o.frame == null && !o.once && SEQ_FRAMES[name]) o.frames = SEQ_FRAMES[name]; var S = LICAI_SEQ[name], n = S.frames.length;
   var i = o.frame != null ? o.frame : Math.floor(Math.max(0, t) * fps);
-  i = o.once ? Math.min(i, n - 1) : ((i % n) + n) % n;
+  if (o.frames) { var L = o.frames.length; i = o.frames[o.once ? Math.min(i, L - 1) : ((i % L) + L) % L]; }
+  else i = o.once ? Math.min(i, n - 1) : ((i % n) + n) % n;
   var f = S.frames[i], im = IMG['seq:' + name + ':' + i]; if (!im) return i;
   var s = h / S.ref;
   g.save(); g.translate(x, y); if (o.rot) g.rotate(o.rot); g.scale((o.flip ? -1 : 1) * (o.sx || 1), o.sy || 1);
