@@ -1,12 +1,9 @@
-# 把 licai-seq.js 拆成 licai-seq/<动作>.js，并给每个页面只插入它用到的动作文件
+# 给每个页面只插入它用到的 licai-seq/<动作>.js
 # 用法（在 video/ 下）：python3 licai/动作/splitseq.py
 import json, os, re, glob
-s = open('licai-seq.js').read()
-data = json.loads(s[s.index('= ') + 2:s.rindex(';')])
-os.makedirs('licai-seq', exist_ok=True)
-for f in glob.glob('licai-seq/*.js'): os.remove(f)
-for n, v in data.items():
-    open(f'licai-seq/{n}.js', 'w').write('LICAI_SEQ[%s] = %s;\n' % (json.dumps(n, ensure_ascii=False), json.dumps(v, ensure_ascii=False)))
+data = {}
+for f in glob.glob('licai-seq/*.js'):
+    data[os.path.basename(f)[:-3]] = 1
 mv = open('licai-move.js').read()
 anim = dict(re.findall(r"'([^']+)': \['([^']+)'", mv[mv.index('var ANIM_RAW'):]))
 fb = dict(re.findall(r"'([^']+)': '([^']+)'", mv[mv.index('var SEQ_FALLBACK'):mv.index('\n', mv.index('var SEQ_FALLBACK'))]))
