@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行实验室 EP.10</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;width:100vw;max-height:100vh;aspect-ratio:16/9;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1920px;height:1080px;max-height:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<script src="licaikit.js"></script>
+<script src="labkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财骑行实验室 EP.10《匀速骑和忽快忽慢，哪个更累？》
+const P = v => .27 * (v / 3.6) ** 3 + 4.71 * v / 3.6;
+labRun({ ep: 10, src: SRC, cover: { l1: '匀速骑', l2: '还是忽快忽慢？', sub: '平均速度一样，谁更累', emo: '托腮思考', art: (x, y, s) => bikeType(x, y, 1.0 * s, 'flat', 0, C.green) },
+  pages: [
+    { type: 'open', dur: 6, emo: '托腮思考', l1: '匀速骑，', l2: '还是{o}忽快忽慢{/}？' },
+    { type: 'draw', dur: 10, title: '两个人，平均速度都是 25', sub: '横轴 = 时间，纵轴 = 速度', col: C.blue,
+      fn: lt => { const X0 = 200, Y0 = 820, W = 1100, k = clamp((lt - .6) / 3, 0, 1); hline(X0, Y0, X0 + W, Y0, 3601, C.ink, 3.5, (lt - .4) / .4); hline(X0, Y0, X0, 300, 3603, C.ink, 3.5, (lt - .4) / .4);
+        const yv = v => Y0 - v * 15;
+        g.save(); g.strokeStyle = C.green; g.lineWidth = 7; g.beginPath(); g.moveTo(X0, yv(25)); g.lineTo(X0 + W * k, yv(25)); g.stroke();
+        g.strokeStyle = C.red; g.beginPath(); for (let x = 0; x <= W * k; x += 4) { const v = Math.floor(x / 137.5) % 2 ? 30 : 20; x ? g.lineTo(X0 + x, yv(v)) : g.moveTo(X0, yv(v)); } g.stroke(); g.restore();
+        if (k > .9) { txt('匀速 25', X0 + W + 20, yv(25), 40, C.green); txt('20 ↔ 30', X0 + W + 20, yv(30), 40, C.red); } },
+      notes: [{ t: 4.6, text: '看起来一样，力气可不一样', x: 200, y: 930, size: 50 }], emo: { n: '歪头', x: 1720, y: 520, h: 260, t: 5.6 }, cues: [['grow', .6], ['grow', 1.6]] },
+    { type: 'bars', dur: 11, title: '平均要出的力（瓦）', sub: '同样平均 25 公里/时', col: C.red, unit: ' 瓦', x0: 560, wmax: 900, max: 140,
+      rows: [{ l: '匀速 25', v: P(25), c: C.green }, { l: '20 和 30 来回换', v: (P(20) + P(30)) / 2, c: C.red }], dy: 200, y0: 400, crown: 0,
+      notes: [{ t: 3.8, text: '忽快忽慢：多花 {r}约 9%{/}', x: 560, y: 820, size: 54 }, { t: 5.4, text: '因为风阻随速度的三次方涨：快的那段“亏”得多，慢的那段“赚”不回来', x: 564, y: 900, plain: 1, size: 32 }],
+      emo: { n: '斜眼嫌弃', x: 1780, y: 880, h: 220, t: 6.4 }, foot: '估算：人 + 车 80 公斤，风阻面积约 0.45，示意' },
+    { type: 'bars', dur: 11, title: '再加上红绿灯：每刹停一次', sub: '骑 10 公里 · 条长 = 总共花的力气（匀速不停 = 100）', col: C.orange, unit: '', x0: 600, wmax: 860, max: 125,
+      rows: [{ l: '匀速、不停', v: 100, c: C.green }, { l: '忽快忽慢', v: 109, c: C.orange }, { l: '再加 10 次刹停', v: 120, c: C.red, hl: 1 }], dy: 170, y0: 360,
+      notes: [{ t: 4.6, text: '每刹一次车，都把速度{r}白白变成了热{/}', x: 600, y: 880, size: 48 }],
+      emo: { n: '捂脸头大', x: 1780, y: 880, h: 220, t: 5.4 }, foot: '估算：每次从 25 公里/时刹停约损失 1.9 千焦，示意' },
+    { type: 'list', dur: 10, title: '省力骑法：像开车一样“看远”', sub: '', col: C.green,
+      items: [['看到红灯，{g}提前松踏板{/}滑过去', '能不刹就不刹'], ['上坡{g}别冲{/}，稳稳踩上去', '换轻一点的挡'], ['顺风别猛冲、顶风别硬扛', '尽量让力气平稳']], emo: '眯眼开心', opt: { cx: 1640, cy: 680, ch: 440 } },
+    { type: 'end', dur: 10, items: ['平均速度一样，{g}匀速最省力{/}', '忽快忽慢多花约 9%，刹停更亏', '提前松踏板，少刹车'] },
+    { type: 'next', dur: 6, emo: '灵光一闪', l1: '宽胎', l2: '为什么{o}更快{/}？', bk: 'gravel', bc: C.brown }
+  ] });
+
+})();
+</script>
+</body>
+</html>

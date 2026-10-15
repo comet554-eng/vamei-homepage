@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行记 EP.07</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;width:100vw;max-height:100vh;aspect-ratio:16/9;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1920px;height:1080px;max-height:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/侧面骑车.js"></script>
+<script src="licai-seq/思考怀疑.js"></script>
+<script src="licai-seq/摆爪否定.js"></script>
+<script src="licai-seq/爬坡吃力.js"></script>
+<script src="licai-seq/背包出发.js"></script>
+<script src="licai-seq/跑步.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+/*
+ * 李财骑行记 EP.07《变速怎么用？》（78 秒，横版 16:9，无旁白）
+ * 开场 → 大盘小盘、大飞小飞 → 踩一圈走几米 → 踏频 → 什么时候换 → 别交叉链条 → 三个错误 → 下集
+ */
+const T = [0, 6, 17, 29, 40, 51, 62, 72, 78];
+const S = [];
+const WHEEL = 2.1;   // 700×28C 轮周长约 2.1 米
+
+function gear(x, y, r, col, rot, hi) {
+  const n = Math.max(10, Math.round(r / 4));
+  g.save(); g.translate(x, y); g.rotate(rot || 0);
+  g.fillStyle = hi ? col : 'rgba(140,132,120,.25)'; g.strokeStyle = hi ? C.ink : C.faint; g.lineWidth = 3;
+  g.beginPath();
+  for (let i = 0; i < n * 2; i++) { const a = i / (n * 2) * 6.283, rr = i % 2 ? r : r - 7; g.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); }
+  g.closePath(); g.fill(); g.stroke();
+  g.fillStyle = PAPER; g.beginPath(); g.arc(0, 0, r * .35, 0, 6.283); g.fill(); g.stroke();
+  g.restore();
+}
+
+// A
+S.push(lt => openScene(lt, '托腮思考', '变速，', '怎么{o}用{/}？', 7));
+
+// B 大盘小盘 / 大飞小飞
+S.push(lt => {
+  header(lt, '先认识：牙盘和飞轮', '前面的叫牙盘，后面的叫飞轮', C.orange);
+  const ph = lt < 5 ? 0 : 1, rot = lt * 1.2;
+  const fr = [[150, 0], [104, 1]], cg = [30, 42, 56, 70, 84];
+  const fx = 520, fy = 560, cx = 1160, cy = 560;
+  const fSel = ph ? 1 : 0, cSel = ph ? 4 : 0;
+  fr.forEach((f, i) => gear(fx, fy, f[0], C.orange, rot, i === fSel));
+  cg.forEach((r, i) => gear(cx, cy, r, C.blue, rot * 150 / r, i === cSel));
+  const R1 = fr[fSel][0], R2 = cg[cSel];
+  g.save(); g.strokeStyle = C.ink; g.lineWidth = 6; g.setLineDash([10, 6]); g.lineDashOffset = -lt * 60;
+  g.beginPath(); g.moveTo(fx, fy - R1); g.lineTo(cx, cy - R2); g.moveTo(fx, fy + R1); g.lineTo(cx, cy + R2); g.stroke(); g.restore();
+  txt('牙盘', fx, 330, 48, C.orange, { align: 'center' }); txt('飞轮', cx, 400, 48, C.blue, { align: 'center' });
+  const msg = ph ? ['前{g}小{/}后{g}大{/}：最轻', '上坡用，踩着不费劲'] : ['前{r}大{/}后{r}小{/}：最重', '下坡、顺风用，踩一圈走得远'];
+  typeText(msg[0], 1360, 480, 56, lt - (ph ? 5.2 : 1.0), { cps: 12 });
+  txt(msg[1], 1364, 560, 34, C.sub, { font: BODY, a: clamp((lt - (ph ? 6.0 : 1.8)) / .3, 0, 1) });
+  if (lt > 8.4) typeText('口诀：前大后小重，前小后大轻', 1360, 760, 40, lt - 8.4, { color: C.red, cps: 12 });
+  footnote('注：有的车前面只有一个牙盘，只用后面换挡就行', clamp((lt - 1) / .3, 0, 1));
+});
+
+// C 踩一圈走几米
+const GR = [[50, 11, '最重'], [50, 17, ''], [34, 17, ''], [34, 28, ''], [34, 34, '最轻']];
+S.push(lt => {
+  header(lt, '踩一圈，能走几米？', '条长 = 脚踩一整圈，车往前走的距离（米）', C.blue);
+  const X0 = 560, PX = 100;
+  hline(X0, 280, X0, 300 + 4 * 120 + 60, 1701, C.ink, 3.5, (lt - .6) / .4);
+  GR.forEach((r, i) => {
+    const y = 340 + i * 120, a = clamp((lt - .6 - i * .15) / .3, 0, 1); if (a <= 0) return;
+    gear(140, y, 34, C.orange, 0, true); gear(210, y, 34 * r[1] / r[0] * 1.6, C.blue, 0, true);
+    txt('前 ' + r[0] + ' · 后 ' + r[1], 270, y - 12, 40, C.ink, { a }); if (r[2]) txt(r[2], 272, y + 28, 28, r[2] === '最重' ? C.red : C.green, { font: BODY, a });
+    const m = r[0] / r[1] * WHEEL, k = eout((lt - 1.2 - i * .4) / .8), w = m * PX * k; if (k <= 0) return;
+    hatchBar(X0, y - 32, w, 64, [C.red, C.orange, C.purple, C.blue, C.green][i], 1710 + i * 7);
+    txt('≈' + (m * k).toFixed(1) + ' 米', X0 + w + 18, y, 44, C.ink);
+  });
+  if (lt > 4.4) { for (let j = 0; j < 7; j++) { const ct = lt - 4.6 - j * .1; if (ct > 0) cat('趴地冲刺', 1150 + j * 90, 880, 70, ct, { bob: false }); } typeText('最重的挡：踩一圈 ≈ {r}21 只李财{/}排成一排', 300, 960, 44, lt - 5.4, { cps: 12 }); }
+  footnote('口径：按 700×28C 轮胎周长约 2.1 米计算；李财身长按约 45 厘米算（示意）', clamp((lt - 1) / .3, 0, 1));
+});
+
+// D 踏频
+const CAD = [['新手常见', [50, 60], C.red], ['推荐', [80, 90], C.green], ['职业车手', [90, 100], C.blue]];
+S.push(lt => {
+  header(lt, '踩多快才对？', '踏频 = 每分钟踩多少圈', C.green);
+  const X0 = 400, PX = 8;
+  hline(X0, 300, X0, 300 + 2 * 170 + 70, 1721, C.ink, 3.5, (lt - .6) / .4);
+  CAD.forEach((c, i) => {
+    const y = 360 + i * 170, a = clamp((lt - .6 - i * .2) / .3, 0, 1); if (a <= 0) return;
+    txt(c[0], 110, y, 50, c[2], { a });
+    const k = eout((lt - 1.2 - i * .5) / .8), x1 = X0 + c[1][0] * PX, w = (c[1][1] - c[1][0]) * PX * k; if (k <= 0) return;
+    g.save(); g.setLineDash([6, 8]); g.strokeStyle = C.faint; g.lineWidth = 2.5; g.beginPath(); g.moveTo(X0, y); g.lineTo(x1, y); g.stroke(); g.restore();
+    hatchBar(x1, y - 36, w, 72, c[2], 1730 + i * 7);
+    if (k > .9) txt(c[1][0] + '–' + c[1][1] + ' 圈', x1 + w + 18, y, 46, C.ink);
+  });
+  if (lt > 4.4) typeText('踩得{r}慢{/}又{r}用力{/} → 膝盖累', 200, 860, 50, lt - 4.4, { cps: 12 });
+  if (lt > 6.0) typeText('换{g}轻一点{/}、踩{g}快一点{/} → 骑得更久', 200, 940, 50, lt - 6.0, { cps: 12 });
+  cat('侧面骑车', 1720, 700, 360, lt - 3.0);
+  footnote('口径：常见的经验范围；一开始踩不到 80 圈也没关系，慢慢练', clamp((lt - 1) / .3, 0, 1));
+});
+
+// E 什么时候换
+S.push(lt => {
+  header(lt, '什么时候换挡？', '记住一句话：换挡要{r}提前{/}'.replace(/\{[^}]*\}/g, ''), C.purple);
+  const pts = [[120, 760], [520, 760], [860, 520], [1180, 520], [1520, 780], [1800, 780]];
+  g.save(); g.strokeStyle = C.ink; g.lineWidth = 5; g.lineJoin = 'round'; g.beginPath(); pts.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.stroke(); g.restore();
+  g.save(); g.fillStyle = C.red; g.fillRect(1700, 640, 16, 140); g.beginPath(); g.arc(1708, 630, 26, 0, 6.283); g.fill(); g.restore();
+  const k = clamp((lt - .6) / 8.4, 0, 1), L = [0]; for (let i = 1; i < pts.length; i++) L.push(L[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+  let d = k * L[L.length - 1], j = 1; while (j < pts.length - 1 && L[j] < d) j++;
+  const f = (d - L[j - 1]) / (L[j] - L[j - 1]), p = [lerp(pts[j - 1][0], pts[j][0], f), lerp(pts[j - 1][1], pts[j][1], f)];
+  bikeType(p[0], p[1] - 46, .4, 'road', lt * 6, C.blue);
+  const TAG = [[440, 740, '上坡{g}之前{/}：先换轻', 1.4, 240, 600], [1000, 500, '坡顶、下坡：换重', 4.0, 800, 360], [1640, 760, '停车{g}之前{/}：换轻，起步不费劲', 6.4, 1200, 920]];
+  TAG.forEach(t => { if (lt > t[3]) { typeText(t[2], t[4], t[5], 42, lt - t[3], { cps: 14 }); harrow(t[4] + 120, t[5] + (t[5] > t[1] ? -30 : 30), t[0] - 40, (t[5] + t[1]) / 2, t[0], t[1] + (t[5] > t[1] ? 10 : -10), C.red, (lt - t[3]) / .4, 3); } });
+  cat('爬坡吃力', 1760, 330, 240, lt - 8.4);
+});
+
+// F 别交叉链条
+function chainView(x, y, mode, lt) {
+  const fr = [-14, 14], cg = [-60, -30, 0, 30, 60];
+  const f = mode === 'ok' ? 0 : mode === 'a' ? 1 : 0, c = mode === 'ok' ? 2 : mode === 'a' ? 4 : 0;
+  fr.forEach((o, i) => { g.fillStyle = i === f ? C.orange : C.faint; g.fillRect(x - 6, y + o - 4 + (i ? 4 : -4), 120, 8); });
+  cg.forEach((o, i) => { g.fillStyle = i === c ? C.blue : C.faint; g.fillRect(x + 420, y + o - 3, 60, 6); });
+  const ok = mode === 'ok';
+  g.save(); g.strokeStyle = ok ? C.green : C.red; g.lineWidth = 6; g.setLineDash([12, 6]); g.lineDashOffset = -lt * 40; g.beginPath(); g.moveTo(x + 114, y + fr[f] + (f ? 4 : -4)); g.lineTo(x + 420, y + cg[c]); g.stroke(); g.restore();
+}
+S.push(lt => {
+  header(lt, '别让链条“拧麻花”', '从上往下看：左边牙盘，右边飞轮', C.red);
+  const rows = [['ok', '链条比较直', C.green], ['a', '小盘 + 最小飞', C.red], ['b', '大盘 + 最大飞', C.red]];
+  rows.forEach((r, i) => {
+    const y = 360 + i * 170, ct = lt - .8 - i * 1.4; if (ct < 0) return;
+    g.save(); g.globalAlpha = clamp(ct / .3, 0, 1); chainView(160, y, r[0] === 'b' ? 'x' : r[0], lt); g.restore();
+    txt(r[1], 760, y, 50, r[2], { a: clamp(ct / .3, 0, 1) });
+    if (ct > .6) { if (i === 0) tick(1160, y, 28, (ct - .6) / .3); else cross(1160, y, 22, (ct - .6) / .3); }
+  });
+  if (lt > 5.4) typeText('链条歪着：{r}响、磨得快、容易掉链{/}', 160, 900, 50, lt - 5.4, { cps: 12 });
+  cat('斜眼嫌弃', 1620, 620, 380, lt - 4.6);
+  footnote('示意：用小盘就别挂最小的几片，用大盘就别挂最大的几片', clamp((lt - 1) / .3, 0, 1));
+});
+
+// G
+S.push(lt => mistakesPage(lt, '换挡最常见的三个错误', [['上坡踩不动了才换', '坡前就换好'], ['换挡时还在使劲猛踩', '换挡那一下，脚上松点劲'], ['一个挡骑到底', '路况变了，挡位跟着变']], '捂脸头大', 1751));
+
+// H
+S.push(lt => nextScene(lt, '背包出发', '骑车', '要带{o}什么{/}？', 'flat', C.green));
+
+function coverArt(key, w, h) {
+  epCover(key, w, h, { ep: 7, l1: '变速', l2: '怎么用？', sub: '前大后小重 · 踩一圈走几米', emo: '托腮思考',
+    art: (x, y, s, vert) => { gear(x - 120 * s, y, 110 * s, C.orange, 0, true); [30, 45, 60].forEach((r, i) => gear(x + 150 * s, y, r * s, C.blue, 0, i === 0)); } });
+}
+
+function sound(K, c, DUR, T) {
+  const X = licaiSound(K, DUR);
+  const click = t => { K.tone(3200, t, .03, .05, 'square'); K.noise(t, .06, .08, 'highpass', 4000); };
+  for (let i = 1; i < T.length - 1; i++) { X.whoosh(T[i] - .08); X.ticks(T[i], 8); }
+  X.pop(.15); X.ticks(.7, 3, 10); X.ticks(1.4, 4, 8); X.pen(2.0, .4); X.ding(2.4);
+  let s = T[1]; X.ticks(s + 1.0, 9, 12); click(s + 5.0); click(s + 5.15); X.ticks(s + 5.2, 9, 12); X.ticks(s + 8.4, 14, 12); X.ding(s + 9.4);
+  s = T[2]; for (let i = 0; i < 5; i++) X.grow(s + 1.2 + i * .4); for (let j = 0; j < 7; j++) X.pop(s + 4.6 + j * .1); X.ticks(s + 5.4, 20, 12);
+  s = T[3]; for (let i = 0; i < 3; i++) X.grow(s + 1.2 + i * .5); X.wrong(s + 4.4); X.ticks(s + 4.4, 12, 12); X.ding(s + 6.0); X.ticks(s + 6.0, 15, 12);
+  s = T[4]; [1.4, 4.0, 6.4].forEach(t => { click(s + t); X.ticks(s + t, 12, 14); }); X.pop(s + 8.4);
+  s = T[5]; X.ding(s + 1.4); X.wrong(s + 2.8); X.wrong(s + 4.2); X.ticks(s + 5.4, 15, 12); X.pop(s + 4.6);
+  s = T[6]; X.pop(s + .6); for (let i = 0; i < 3; i++) { const t = s + .8 + i * 2.2; X.pop(t); X.ticks(t + .2, 8, 12); X.wrong(t + 1.2); X.ding(t + 1.5); }
+  s = T[7]; X.ticks(s + .4, 2, 10); X.ticks(s + 1.0, 5, 10); X.bell(s + 1.4); X.stamp(s + 2.4); for (let i = 0; i < 6; i++) K.noise(s + 2.0 + i * .08, .1, .04, 'highpass', 5000);
+}
+
+licaiRun({ T, S, seed: 527, allText: SRC.replace(/[\x00-\x7f]/g, '') + '–～°≈×→“”', audio: sound, cover: coverArt, encode: { b: '4M', maxrate: '6M', bufsize: '12M' } });
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行实验室 EP.05</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;width:100vw;max-height:100vh;aspect-ratio:16/9;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1920px;height:1080px;max-height:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<script src="licaikit.js"></script>
+<script src="labkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财骑行实验室 EP.05《人这台发动机，效率多高？》
+labRun({ ep: 5, src: SRC, cover: { l1: '人这台发动机', l2: '效率多高？', sub: '吃进去的饭，去哪了', emo: '灵光一闪', art: (x, y, s) => bikeType(x, y, 1.0 * s, 'flat', 0, C.green) },
+  pages: [
+    { type: 'open', dur: 6, emo: '灵光一闪', l1: '人这台发动机，', l2: '效率{o}多高{/}？' },
+    { type: 'bars', dur: 12, title: '吃进去 100 千卡，去哪了？', sub: '骑车时的能量去向 · 条长 = 千卡', col: C.orange, unit: ' 千卡', x0: 640, wmax: 900, max: 100,
+      rows: [{ l: '吃进去的能量', v: 100, c: C.gray }, { l: '变成踩踏板的力', v: 22, c: C.green }, { l: '最后推着车走', v: 21, c: C.blue }, { l: '变成了热量', v: 78, c: C.red, hl: 1 }], dy: 130, y0: 330,
+      notes: [{ t: 5.4, text: '所以骑车会{r}出汗、发热{/}：四分之三的能量都变成了热', x: 200, y: 900, size: 46 }],
+      emo: { n: '尴尬流汗', x: 1780, y: 880, h: 220, t: 6.4 }, foot: '口径：人体骑车时的机械效率常见约 20%～25%；链条传动损失约 2%～3%' },
+    { type: 'bars', dur: 11, title: '谁把能量用得更好？', sub: '条 = 能量转换效率的常见范围', col: C.blue, unit: '%', x0: 560, wmax: 900, max: 100,
+      rows: [{ l: '人体肌肉', r: [20, 25], c: C.green }, { l: '汽油发动机', r: [20, 35], c: C.orange }, { l: '电动机', r: [85, 95], c: C.blue }], dy: 170, y0: 360,
+      notes: [{ t: 4.6, text: '论效率：人和汽油车{r}半斤八两{/}', x: 560, y: 880, size: 52 }],
+      emo: { n: '斜眼嫌弃', x: 1780, y: 880, h: 220, t: 5.6 }, foot: '口径：常见的经验范围；汽油车在城市路况下往往更低' },
+    { type: 'bars', dur: 11, title: '可每走 1 公里，谁用的能量最少？', sub: '条长 = 每公里消耗的能量（千卡）', col: C.green, unit: ' 千卡', x0: 560, wmax: 1000, max: 600,
+      rows: [{ l: '骑车', v: 20, c: C.green }, { l: '走路', v: 35, c: C.gray }, { l: '电动汽车', v: 130, c: C.blue }, { l: '汽油车', v: 600, c: C.orange, hl: 1 }], dy: 130, y0: 330, crown: 0,
+      notes: [{ t: 5.4, text: '汽油车每公里用的能量 ≈ 骑车的 {r}30 倍{/}', x: 560, y: 900, size: 48 }],
+      emo: { n: '星星眼开心', x: 1790, y: 880, h: 200, t: 6.0 }, foot: '估算：骑车按 15 公里/时、60 公斤；汽油车按百公里 7 升；电动汽车按百公里 15 度电，示意' },
+    { type: 'list', dur: 11, title: '效率差不多，为什么骑车这么省？', sub: '', col: C.purple,
+      items: [['车{g}轻{/}：10 公斤 vs 1.5 吨', '一辆汽车大部分能量都在搬它自己'], ['速度{g}慢{/}：风阻小得多', '风阻随速度增长得特别快（第一季 EP.06）'], ['轮子{g}滚动阻力小{/}', '细细的车轮，几乎不变形']], emo: '托腮思考', opt: { cx: 1640, cy: 680, ch: 440 } },
+    { type: 'end', dur: 10, items: ['人骑车的效率约 {g}20%～25%{/}，其余变成热', '论效率，人和汽油车差不多', '但论每公里耗能，骑车{g}省 30 倍{/}'] },
+    { type: 'next', dur: 6, emo: '趴着星星眼', l1: '同样 1 公里，', l2: '骑车省{o}多少{/}？', bk: 'flat', bc: C.green }
+  ] });
+
+})();
+</script>
+</body>
+</html>

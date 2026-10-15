@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行记 EP.01</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;width:100vw;max-height:100vh;aspect-ratio:16/9;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1920px;height:1080px;max-height:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/侧面骑车.js"></script>
+<script src="licai-seq/划重点.js"></script>
+<script src="licai-seq/吓一跳.js"></script>
+<script src="licai-seq/思考怀疑.js"></script>
+<script src="licai-seq/打招呼.js"></script>
+<script src="licai-seq/生气跺脚.js"></script>
+<script src="licai-seq/看地图.js"></script>
+<script src="licai-seq/背包出发.js"></script>
+<script src="licai-seq/骑车挥手.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script>
+/*
+ * 李财骑行记 EP.01《第一辆车，买哪种？》（90 秒，横版 16:9，无旁白）
+ * 开场 → 六种车 → 入门价 → 平路速度 → 舒适度 → 能走什么路 → 先问自己骑去哪 → 成绩单 → 三个坑 → 下集
+ */
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+const T = [0, 6, 14, 24, 33, 42, 52, 64, 76, 84, 90];
+const S = [];
+
+// 六种车（价格、速度为经验值）
+const BK = [
+  { k: 'road', n: '公路车', c: C.blue, tag: '弯把 · 细胎', p: [2000, 6000], v: 25, cf: 2, rd: [2, 0, 0], who: '想骑快、骑远' },
+  { k: 'gravel', n: '瓜车', c: C.brown, tag: '弯把 · 胎带纹路', p: [3000, 8000], v: 23, cf: 3, rd: [2, 2, 0], who: '柏油碎石都想骑', mom: 1 },
+  { k: 'flat', n: '平把公路车', c: C.green, tag: '直把 · 细胎', p: [1200, 3500], v: 22, cf: 3, rd: [2, 1, 0], who: '通勤 + 周末' },
+  { k: 'mtb', n: '山地车', c: C.orange, tag: '粗胎 · 避震', p: [1000, 4000], v: 18, cf: 4, rd: [2, 2, 0], who: '上山、走土路' },
+  { k: 'fold', n: '折叠车', c: C.purple, tag: '小轮 · 能折', p: [800, 3000], v: 17, cf: 2, rd: [2, 0, 2], who: '要上地铁' },
+  { k: 'city', n: '通勤车', c: C.gray, tag: '车筐 · 坐得直', p: [500, 1500], v: 15, cf: 5, rd: [2, 0, 0], who: '买菜、短途' }
+];
+const RY = i => 300 + i * 104;          // 每行 y
+function rowLabels(lt, opt) {
+  opt = opt || {};
+  BK.forEach((b, i) => {
+    const a = clamp((lt - .5 - i * .12) / .3, 0, 1); if (a <= 0) return;
+    g.save(); g.globalAlpha = a; bikeType(150, RY(i) - 6, .3, b.k, 0, b.c); g.restore();
+    txt(b.n, 240, RY(i), 44, opt.hi === i ? C.red : C.ink, { a });
+  });
+}
+function paw(x, y, s, a, col) {
+  g.save(); g.globalAlpha = a; g.translate(x, y); g.scale(s, s); g.fillStyle = col || C.pink;
+  g.beginPath(); g.ellipse(0, 8, 15, 12, 0, 0, 6.283); g.fill();
+  [[-15, -10], [-5, -18], [6, -18], [16, -10]].forEach(p => { g.beginPath(); g.ellipse(p[0], p[1], 5.5, 7, 0, 0, 6.283); g.fill(); });
+  g.restore();
+}
+function cross(x, y, s, k) { hline(x - s, y - s, x + s, y + s, 701 + x, C.red, 7, k * 2); hline(x + s, y - s, x - s, y + s, 709 + x, C.red, 7, k * 2 - 1); }
+
+// A 开场
+S.push(lt => {
+  cat('期待星星眼', 520, 560, 820, lt - .15);
+  typeText('第一辆车，', 1000, 380, 110, lt - .7, { cps: 10 });
+  const r = typeText('买{o}哪种{/}？', 1000, 540, 160, lt - 1.4, { cps: 7 });
+  if (r.done) hline(1000 + 160 * 1.05, 635, 1000 + 160 * 3.1, 632, 12, C.orange, 9, (lt - 2.0) / .4);
+  txt('李财骑行记 · 第 1 集', 1004, 720, 44, C.sub, { a: clamp((lt - 2.6) / .4, 0, 1) });
+  sparks(1000 + 160 * 3.8, 470, 30, clamp((lt - 2.2) / .2, 0, 1), 3);
+});
+
+// B 六种车
+S.push(lt => {
+  header(lt, '先认识六种车', '长得像，用处差很多', C.orange);
+  BK.forEach((b, i) => {
+    const ct = lt - .8 - i * .55, x = 175 + i * 314; if (ct < 0) return;
+    const sc = pop(ct);
+    g.save(); g.translate(x, 520); g.scale(sc, sc); bikeType(0, 0, .72, b.k, ct * 2, b.c); g.restore();
+    txt(b.n, x, 690, 44, b.c === C.gray ? C.ink : b.c, { align: 'center', a: clamp(ct / .3, 0, 1) });
+    if (b.mom) { g.save(); g.translate(x, 810); g.rotate(-.06); g.globalAlpha = clamp((ct - 3.2) / .2, 0, 1); txt('我妈妈同款！', 0, 0, 38, C.red, { align: 'center' }); g.restore(); }
+    txt(b.tag, x, 752, 30, C.sub, { align: 'center', font: BODY, a: clamp((ct - .3) / .3, 0, 1) });
+  });
+  cat('思考怀疑', 1780, 945, 250, lt - 4.2);
+  if (lt > 5.2) typeText('哪个适合我？', 1240, 950, 56, lt - 5.2, { color: C.red, cps: 10 });
+  footnote('注：车型叫法各地略有不同；这里只说最常见的六种；瓜车 = 砾石公路车（Gravel）', clamp((lt - 1) / .3, 0, 1));
+});
+
+// C 入门价
+S.push(lt => {
+  header(lt, '入门款要多少钱？', '条 = 常见入门价位区间（元）', C.blue);
+  rowLabels(lt);
+  const X0 = 560, PX = .12;
+  hline(X0, 250, X0, RY(5) + 60, 811, C.ink, 3.5, (lt - .6) / .4);
+  BK.forEach((b, i) => {
+    const k = eout((lt - 1.2 - i * .4) / .8), x1 = X0 + b.p[0] * PX, w = (b.p[1] - b.p[0]) * PX * k;
+    if (k <= 0) return;
+    g.save(); g.setLineDash([6, 8]); g.strokeStyle = C.faint; g.lineWidth = 2.5; g.beginPath(); g.moveTo(X0, RY(i)); g.lineTo(x1, RY(i)); g.stroke(); g.restore();
+    hatchBar(x1, RY(i) - 32, w, 64, b.c, 820 + i * 7);
+    if (k > .9) txt('¥' + b.p[0] + '–' + b.p[1], x1 + w + 18, RY(i), 40, C.ink);
+  });
+  if (lt > 4.0) { crown(X0 + 500 * PX - 4, RY(5) - 46, .9, clamp((lt - 4) / .3, 0, 1)); txt('最便宜', X0 + 1500 * PX + 250, RY(5), 34, C.red, { a: clamp((lt - 4.2) / .3, 0, 1) }); }
+  if (lt > 5.0) { harrow(1700, 268, 1700, 330, 1640, RY(1) - 30, C.red, (lt - 5) / .4); typeText('最贵 ≠ 最适合你', 1490, 240, 46, lt - 5.2, { color: C.red, cps: 10 }); }
+  cat('震惊', 1700, 820, 400, lt - 3.4);
+  footnote('口径：国内常见入门款价位，经验值；不含头盔、车灯等装备', clamp((lt - 1) / .3, 0, 1));
+});
+
+// D 平路速度
+S.push(lt => {
+  header(lt, '平路能骑多快？', '条长 = 普通人平路轻松骑的速度（公里/小时）', C.green);
+  rowLabels(lt);
+  const X0 = 560, PX = 30;
+  hline(X0, 250, X0, RY(5) + 60, 831, C.ink, 3.5, (lt - .6) / .4);
+  BK.forEach((b, i) => {
+    const k = eout((lt - 1.2 - i * .35) / .8), w = b.v * PX * k; if (k <= 0) return;
+    hatchBar(X0, RY(i) - 32, w, 64, b.c, 840 + i * 7);
+    txt('≈' + Math.round(b.v * k), X0 + w + 18, RY(i), 46, C.ink);
+  });
+  if (lt > 3.6) { crown(X0 + 25 * PX + 60, RY(0) - 48, .9, clamp((lt - 3.6) / .3, 0, 1)); }
+  if (lt > 4.4) {
+    harrow(1520, 600, 1560, 420, 1420, RY(0) + 20, C.red, (lt - 4.4) / .4);
+    typeText('趴得低 + 胎细 = 快', 1300, 650, 50, lt - 4.6, { color: C.red, cps: 10 });
+  }
+  if (lt > 6.0) txt('差 10 公里/小时：骑 20 公里，大约差 30 分钟', 1300, 720, 30, C.sub, { font: BODY, a: clamp((lt - 6) / .3, 0, 1) });
+  cat('侧面骑车', 1660, 900, 280, lt - 2.4);
+  footnote('口径：普通人平路巡航速度的经验值，因人、因风、因路况而异', clamp((lt - 1) / .3, 0, 1));
+});
+
+// E 舒适度
+S.push(lt => {
+  header(lt, '骑着舒服吗？', '一个猫爪 = 1 分　满分 5 分', C.purple);
+  rowLabels(lt, { hi: lt > 4.6 ? 0 : -1 });
+  let idx = 0;
+  BK.forEach((b, i) => {
+    for (let j = 0; j < 5; j++) {
+      const on = j < b.cf, ct = lt - 1.0 - idx * .07; idx++;
+      if (ct < 0) continue;
+      paw(600 + j * 80, RY(i), pop(ct), on ? 1 : .18, on ? C.pink : C.faint);
+    }
+  });
+  if (lt > 3.6) { crown(560, RY(5) - 46, .9, clamp((lt - 3.6) / .3, 0, 1)); txt('坐得直，最舒服', 1040, RY(5), 36, C.green, { a: clamp((lt - 3.8) / .3, 0, 1) }); }
+  if (lt > 4.6) { hcircle(640, RY(0), 80, 40, 851, C.red, 4, (lt - 4.6) / .4); typeText('趴着骑：新手的腰和屁股在抗议', 790, RY(0), 40, lt - 4.9, { color: C.red, cps: 12 }); }
+  if (lt > 6.2) txt('山地车有避震、胎粗，颠的路更舒服', 1040, RY(3), 32, C.sub, { font: BODY, a: clamp((lt - 6.2) / .3, 0, 1) });
+  cat('委屈含泪', 1700, 760, 420, lt - 4.8);
+  footnote('口径：新手主观感受打分，坐垫、胎压、车架尺寸调好后都会改善', clamp((lt - 1) / .3, 0, 1));
+});
+
+// F 能走什么路
+const COLS = [['柏油路', 820], ['土路 · 山路', 1110], ['带上地铁', 1400]];
+S.push(lt => {
+  header(lt, '能走什么路？', '✓ 能　~ 凑合　✗ 不行', C.orange);
+  rowLabels(lt);
+  COLS.forEach((c, ci) => {
+    const a = clamp((lt - .8 - ci * .3) / .3, 0, 1);
+    txt(c[0], c[1], 238, 40, C.ink, { align: 'center', a });
+    if (a > 0) hline(c[1] - 110, 270, c[1] + 110, 270, 861 + ci, C.ink, 2.5, a);
+  });
+  BK.forEach((b, i) => COLS.forEach((c, ci) => {
+    const ct = lt - 1.6 - ci * 1.1 - i * .15; if (ct < 0) return;
+    const v = b.rd[ci], k = clamp(ct / .3, 0, 1);
+    if (v === 2) tick(c[1], RY(i), 26, k); else if (v === 1) txt('凑合', c[1], RY(i), 40, C.orange, { align: 'center', a: k }); else cross(c[1], RY(i), 18, k);
+  }));
+  if (lt > 6.0) { hcircle(1400, RY(4), 70, 44, 871, C.red, 4, (lt - 6) / .4); typeText('折好了能带走', 1480, RY(4) + 76, 40, lt - 6.3, { color: C.red, cps: 10 }); }
+  cat('看地图', 1730, 470, 320, lt - 3.0);
+  footnote('注：能否带上地铁以当地规定为准；折叠车多数要求折好、套好袋子', clamp((lt - 1) / .3, 0, 1));
+});
+
+// G 先问自己骑去哪
+const Q = [['上下班、买菜，几公里', [5, 2]], ['周末刷街，想越骑越快', [0]], ['柏油路、碎石路都想骑', [1]], ['上山、走土路', [3]], ['要上地铁、塞进后备箱', [4]]];
+S.push(lt => {
+  header(lt, '先问自己：骑去哪？', '用途决定车型，别先看价格', C.green);
+  Q.forEach((q, i) => {
+    const y = 320 + i * 132, ct = lt - .8 - i * 1.4; if (ct < 0) return;
+    hrect(110, y - 48, 640, 96, 881 + i, C.ink, 3, ct / .4);
+    if (ct > .3) typeText(q[0], 140, y, 44, ct - .3, { cps: 14 });
+    if (ct > 1.0) harrow(770, y, 820, y - 20, 870, y, C.ink, (ct - 1) / .3, 4);
+    q[1].forEach((bi, j) => {
+      const b = BK[bi], x = 940 + j * 330, bt = ct - 1.2 - j * .2; if (bt < 0) return;
+      g.save(); g.translate(x, y - 4); g.scale(pop(bt), pop(bt)); bikeType(0, 0, .34, b.k, 0, b.c); g.restore();
+      txt(b.n, x + 76, y, 44, b.c === C.gray ? C.ink : b.c, { a: clamp(bt / .3, 0, 1) });
+    });
+  });
+  cat('背包出发', 1730, 760, 480, lt - 7.4);
+  footnote('经验之谈：大多数人的第一辆车，主要用来通勤和周末骑一骑', clamp((lt - 1) / .3, 0, 1));
+});
+
+// H 成绩单
+const TC = [['车型', 110], ['入门价', 520], ['平路速度', 800], ['舒适', 1040], ['适合谁', 1270]];
+S.push(lt => {
+  header(lt, '新手买车成绩单', '黄底 = 该项最好', C.blue);
+  TC.forEach((c, ci) => txt(c[0], c[1], 262, 32, C.sub, { font: BODY, a: clamp((lt - .6) / .3, 0, 1) }));
+  if (lt > .6) hline(100, 292, 1780, 294, 891, C.ink, 2.5, (lt - .6) / .6);
+  const hl = (x, y, w) => { g.save(); g.globalAlpha = .55; g.fillStyle = '#F8DE7E'; g.fillRect(x - 10, y - 30, w, 60); g.restore(); };
+  BK.forEach((b, i) => {
+    const y = 340 + i * 84, a = clamp((lt - 1.0 - i * .4) / .3, 0, 1); if (a <= 0) return;
+    if (lt > 3.6) { if (i === 5) { hl(TC[1][1], y, 200); hl(TC[3][1], y, 190); } if (i === 0) hl(TC[2][1], y, 150); }
+    if (i === 2 && lt > 4.6) { g.save(); g.strokeStyle = C.red; g.lineWidth = 4; hrect(96, y - 40, 1700, 80, 901, C.red, 4, (lt - 4.6) / .5); g.restore(); }
+    g.save(); g.globalAlpha = a;
+    bikeType(150, y - 4, .26, b.k, 0, b.c); txt(b.n, 230, y, 38, C.ink);
+    txt('¥' + b.p[0] + '起', TC[1][1], y, 38, C.ink); txt('≈' + b.v, TC[2][1], y, 38, C.ink);
+    for (let j = 0; j < b.cf; j++) paw(TC[3][1] + 16 + j * 34, y, .55, 1);
+    txt(b.who, TC[4][1], y, 38, C.ink); if (b.mom) txt('← 我妈妈同款', TC[4][1] + 300, y, 32, C.red);
+    g.restore();
+  });
+  if (lt > 5.4) { typeText('结论：不知道选啥，先买{g}平把公路车{/}——通勤、刷街都能干', 110, 870, 46, lt - 5.4, { cps: 14 }); }
+  stamp('李财推荐', 1560, 960, 56, lt - 7.6, -.1);
+  cat('划重点', 1830, 940, 220, lt - 7.4);
+  footnote('口径：价格、速度为经验值；最终以试骑感受为准', clamp((lt - 1) / .3, 0, 1));
+});
+
+// I 三个坑
+const PIT = [['一上来就买最贵的', '先骑明白，再升级不迟'], ['只看颜值，不去试骑', '尺码不合适，再好看也难受'], ['预算全花在车上', '留 300 元左右买头盔和车灯']];
+S.push(lt => {
+  header(lt, '买第一辆车，别踩这三个坑', '', C.red);
+  PIT.forEach((p, i) => {
+    const y = 330 + i * 200, ct = lt - .8 - i * 2.2; if (ct < 0) return;
+    g.save(); g.translate(170, y); g.scale(pop(ct), pop(ct)); g.fillStyle = C.red; g.beginPath(); g.arc(0, 0, 40, 0, 6.283); g.fill(); txt(String(i + 1), 0, 3, 52, '#fff', { align: 'center' }); g.restore();
+    const r = typeText(p[0], 250, y - 14, 58, ct - .2, { cps: 12 });
+    if (ct > 1.3) strike(240, y - 10, 250 + r.width + 12, 911 + i, (ct - 1.3) / .3);
+    if (ct > 1.6) { tick(270, y + 62, 18, (ct - 1.6) / .3); txt(p[1], 310, y + 62, 38, C.green, { a: clamp((ct - 1.7) / .3, 0, 1) }); }
+  });
+  cat('生气跺脚', 1560, 640, 560, lt - .6);
+});
+
+// J 下集
+S.push(lt => {
+  cat('骑车挥手', 540, 560, 820, lt - .1);
+  txt('下集', 1004, 330, 56, C.sub, { a: clamp(lt / .3, 0, 1) });
+  typeText('车架大小', 1000, 450, 120, lt - .4, { cps: 10 });
+  typeText('怎么{o}选{/}？', 1000, 600, 120, lt - 1.0, { cps: 10 });
+  bikeType(1250, 830, .9, 'flat', lt * 4, C.green);
+  stamp('下期见', 1640, 830, 70, lt - 2.4);
+  confetti(lt - 2.0, 70, 9);
+});
+
+/* ───────── 封面 ───────── */
+function coverArt(key, w, h) {
+  paper();
+  const vert = h > w;
+  if (vert) {
+    const s = w / 1080;
+    txt('李财骑行记 · 第 1 集', 80 * s, 140 * s, 46 * s, C.sub);
+    txt('第一辆车', 80 * s, 290 * s, 150 * s, C.ink);
+    txt('买哪种？', 80 * s, 470 * s, 170 * s, C.orange);
+    hline(90 * s, 580 * s, 700 * s, 576 * s, 12, C.orange, 12 * s);
+    txt('6 种车 · 价格 · 速度 · 舒适', 86 * s, 670 * s, 52 * s, C.ink);
+    const ch = Math.min(h - 980 * s, 1000 * s);
+    BK.slice(0, 3).forEach((b, i) => bikeType((200 + i * 340) * s, 820 * s, .7 * s, b.k, 0, b.c));
+    cat('期待星星眼', w * .5, h - ch / 2 - 20 * s, ch, 1, { noPop: true, bob: false });
+  } else {
+    const s = h / 1080, q = key === '4x3';
+    cat('期待星星眼', q ? w * .25 : h * .38, h * .5, h * (q ? .72 : .86), 1, { noPop: true, bob: false });
+    const x = w * (q ? .5 : .44);
+    txt('李财骑行记 · 第 1 集', x, 190 * s, 44 * s, C.sub);
+    txt('第一辆车', x, 340 * s, 140 * s, C.ink);
+    txt('买哪种？', x, 520 * s, 170 * s, C.orange);
+    hline(x + 10 * s, 630 * s, x + 640 * s, 626 * s, 12, C.orange, 12 * s);
+    txt('6 种车 · 价格 · 速度 · 舒适', x, 730 * s, (q ? 48 : 56) * s, C.ink);
+    const n = q ? 3 : 4;
+    BK.slice(0, n).forEach((b, i) => bikeType(x + (110 + i * (q ? 230 : 240)) * s, 900 * s, (q ? .52 : .55) * s, b.k, 0, b.c));
+  }
+}
+
+/* ───────── 声音 ───────── */
+function sound(K, c, DUR, T) {
+  const X = licaiSound(K, DUR);
+  for (let i = 1; i < T.length - 1; i++) { X.whoosh(T[i] - .08); X.ticks(T[i], 8); }
+  // A
+  X.pop(.15); X.ticks(.7, 5, 10); X.ticks(1.4, 5, 7); X.pen(2.0, .4); X.ding(2.3);
+  // B
+  let s = T[1]; for (let i = 0; i < BK.length; i++) X.pop(s + .8 + i * .55); X.bell(s + 3.4); X.pop(s + 4.2); X.ticks(s + 5.2, 6, 10);
+  // C
+  s = T[2]; for (let i = 0; i < BK.length; i++) X.grow(s + 1.2 + i * .4); X.pop(s + 3.4); X.ding(s + 4.0); X.pen(s + 5.0); X.ticks(s + 5.2, 9, 10);
+  // D
+  s = T[3]; for (let i = 0; i < BK.length; i++) X.grow(s + 1.2 + i * .35); X.pop(s + 2.4); X.ding(s + 3.6); X.pen(s + 4.4); X.ticks(s + 4.6, 10, 10);
+  // E
+  s = T[4]; for (let i = 0; i < BK.length * 5; i++) X.coin(s + 1.0 + i * .07); X.ding(s + 3.6); X.pen(s + 4.6); X.ticks(s + 4.9, 14, 12); X.pop(s + 4.8);
+  // F
+  s = T[5]; for (let ci = 0; ci < 3; ci++) for (let i = 0; i < BK.length; i++) { const v = BK[i].rd[ci], t = s + 1.6 + ci * 1.1 + i * .15; v === 0 ? K.tone(220, t, .1, .04, 'square') : X.pen(t, .15); } X.pop(s + 3.0); X.pen(s + 6); X.ticks(s + 6.3, 6, 10);
+  // G
+  s = T[6]; for (let i = 0; i < Q.length; i++) { X.pen(s + .8 + i * 1.4, .4); X.ticks(s + 1.1 + i * 1.4, 9, 14); X.pop(s + 2.0 + i * 1.4); } X.pop(s + 7.4); X.ding(s + 7.6);
+  // H
+  s = T[7]; for (let i = 0; i < BK.length; i++) X.pen(s + 1.0 + i * .4, .2); X.ding(s + 3.6); X.pen(s + 4.6, .5); X.ticks(s + 5.4, 26, 14); X.pop(s + 7.4); X.stamp(s + 7.6);
+  // I
+  s = T[8]; X.pop(s + .6); for (let i = 0; i < 3; i++) { const t = s + .8 + i * 2.2; X.pop(t); X.ticks(t + .2, 8, 12); X.wrong(t + 1.3); X.ding(t + 1.6); }
+  // J
+  s = T[9]; X.ticks(s + .4, 4, 10); X.ticks(s + 1.0, 4, 10); X.bell(s + 1.4); X.stamp(s + 2.4); for (let i = 0; i < 6; i++) K.noise(s + 2.0 + i * .08, .1, .04, 'highpass', 5000);
+}
+
+licaiRun({ T, S, seed: 521, allText: SRC.replace(/[\x00-\x7f]/g, '') + '¥≈–✓✗~', audio: sound, cover: coverArt, encode: { b: '4M', maxrate: '6M', bufsize: '12M' } });
+})();
+</script>
+</body>
+</html>

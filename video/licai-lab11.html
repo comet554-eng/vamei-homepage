@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行实验室 EP.11</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;width:100vw;max-height:100vh;aspect-ratio:16/9;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1920px;height:1080px;max-height:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<script src="licaikit.js"></script>
+<script src="labkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财骑行实验室 EP.11《宽胎为什么反而更快？》
+labRun({ ep: 11, src: SRC, cover: { l1: '宽胎', l2: '为什么更快？', sub: '接地面积、滚阻、颠簸', emo: '灵光一闪', art: (x, y, s) => bikeType(x, y, 1.0 * s, 'gravel', 0, C.brown) },
+  pages: [
+    { type: 'open', dur: 6, emo: '灵光一闪', l1: '宽胎，', l2: '为什么{o}更快{/}？' },
+    { type: 'draw', dur: 12, title: '同样胎压，接地面积一样大', sub: '从下往上看轮胎踩在地上的那一块', col: C.blue,
+      fn: lt => { const a = clamp((lt - .6) / .4, 0, 1);
+        g.save(); g.globalAlpha = a; g.fillStyle = 'rgba(91,141,214,.35)'; g.strokeStyle = C.blue; g.lineWidth = 4; g.beginPath(); g.ellipse(480, 560, 70, 190, 0, 0, 6.283); g.fill(); g.stroke(); g.restore();
+        const b = clamp((lt - 1.6) / .4, 0, 1); g.save(); g.globalAlpha = b; g.fillStyle = 'rgba(79,179,134,.35)'; g.strokeStyle = C.green; g.lineWidth = 4; g.beginPath(); g.ellipse(980, 560, 86, 155, 0, 0, 6.283); g.fill(); g.stroke(); g.restore();
+        txt('23 毫米：又长又窄', 480, 800, 40, C.blue, { align: 'center', a }); txt('28 毫米：又短又宽', 980, 800, 40, C.green, { align: 'center', a: b }); },
+      notes: [{ t: 3.4, text: '接地面积 ≈ {b}载重 ÷ 胎压{/}', x: 1250, y: 420, size: 52 }, { t: 5.0, text: '例：400 牛 ÷ 80 psi ≈ 7 平方厘米', x: 1254, y: 500, plain: 1, size: 34 }, { t: 6.6, text: '一样大，但{g}形状不同{/}', x: 1250, y: 620, size: 52 }],
+      emo: { n: '托腮思考', x: 1720, y: 860, h: 260, t: 7.6 }, cues: [['pop', .6], ['pop', 1.6]] },
+    { type: 'bars', dur: 11, title: '同样胎压，谁滚得更顺？', sub: '条长 = 滚动阻力（23 毫米 = 100）', col: C.green, unit: '', x0: 560, wmax: 900, max: 100,
+      rows: [{ l: '23 毫米', v: 100, c: C.gray }, { l: '25 毫米', v: 94, c: C.blue }, { l: '28 毫米', v: 88, c: C.green }, { l: '32 毫米', v: 83, c: C.green }], dy: 130, y0: 330, crown: 3,
+      notes: [{ t: 5.0, text: '短而宽的接地面：轮胎{g}变形少{/}，浪费的力气少', x: 560, y: 900, size: 46 }],
+      emo: { n: '星星眼开心', x: 1790, y: 880, h: 200, t: 6.0 }, foot: '口径：滚筒测试的常见趋势（同一款轮胎、同一胎压），具体数值因胎而异，示意' },
+    { type: 'list', dur: 11, title: '宽胎的好处，还不止这些', sub: '', col: C.purple,
+      items: [['可以打{g}低一点{/}的气', '更舒服、更抓地（第一季 EP.04）'], ['粗糙路面上{g}颠得少{/}', '颠簸也在偷你的力气'], ['代价：{r}重一点、风阻大一点{/}', '所以也不是越宽越好']], emo: '乖巧端坐', opt: { cx: 1640, cy: 680, ch: 440 } },
+    { type: 'bars', dur: 11, title: '职业公路赛，轮胎越换越宽', sub: '条长 = 常见胎宽（毫米）', col: C.orange, unit: ' 毫米', x0: 560, wmax: 900, max: 32,
+      rows: [{ l: '2010 年前后', v: 23, c: C.gray }, { l: '2015 年前后', v: 25, c: C.blue }, { l: '2020 年以后', v: 28, c: C.green }], dy: 170, y0: 360,
+      notes: [{ t: 4.6, text: '我妈妈的瓜车：{g}40 毫米{/}，柏油碎石都能骑', x: 560, y: 880, size: 48 }],
+      emo: { n: '回眸眨眼2', x: 1780, y: 880, h: 220, t: 5.4 }, foot: '口径：职业公路赛常见胎宽的大致趋势，示意' },
+    { type: 'end', dur: 10, items: ['同样胎压，接地面积一样，{g}宽胎形状更“短”{/}', '变形少，滚动阻力更小', '还能打低气压：更舒服、颠得少'] },
+    { type: 'next', dur: 6, emo: '冲刺扬尘', l1: '爬坡', l2: '站着还是{o}坐着{/}？', bk: 'road', bc: C.red }
+  ] });
+
+})();
+</script>
+</body>
+</html>
