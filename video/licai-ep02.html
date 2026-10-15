@@ -35,7 +35,7 @@ const S = [];
 const GR = '#6f665d';   // 小人颜色
 
 // A
-S.push(lt => openScene(lt, '歪头', '车架大小，', '怎么{o}选{/}？', 2));
+S.push(lt => openScene(lt, '卷尺', '车架大小，', '怎么{o}选{/}？', 2));
 
 // B 太小 / 合适 / 太大
 const SZ = [['太小', .55, C.red, ['膝盖快顶到车把', '腰背憋得慌']], ['合适', .8, C.green, ['跨上去有空隙', '伸手刚刚好']], ['太大', 1.08, C.red, ['跨不上去', '够车把够得肩膀酸']]];
@@ -48,7 +48,7 @@ S.push(lt => {
     z[3].forEach((t, j) => txt(t, x, 730 + j * 52, 34, C.ink, { align: 'center', font: BODY, a: clamp((ct - .5 - j * .3) / .3, 0, 1) }));
     if (ct > 1.4) { if (i === 1) tick(x + 110, 650, 26, (ct - 1.4) / .3); else cross(x + 110, 650, 20, (ct - 1.4) / .3); }
   });
-  cat('尴尬流汗', 1790, 960, 220, lt - 4.6);
+  cat('摔倒爬起', 1790, 960, 220, lt - 4.6);
   if (lt > 5.4) typeText('骑着难受，多半是尺码不对', 960, 950, 50, lt - 5.4, { color: C.red, cps: 12, align: 'center' });
 });
 
@@ -104,7 +104,7 @@ S.push(lt => {
   if (lt > 2.2) typeText('留 {r}2～5 厘米{/} 空隙', 1180, 380, 64, lt - 2.2, { cps: 10 });
   if (lt > 3.8) txt('一拳都塞不进？车太大了', 1186, 480, 40, C.ink, { font: BODY, a: clamp((lt - 3.8) / .3, 0, 1) });
   if (lt > 5.2) { bikeType(1260, 640, .45, 'mtb', 0, C.orange); typeText('山地车多留：{o}5～10 厘米{/}', 1350, 630, 42, lt - 5.4, { cps: 12 }); }
-  cat('托腮疑问', 1760, 920, 260, lt - 6.6);
+  cat('卷尺', 1760, 920, 260, lt - 6.6);
   footnote('口径：常见的经验做法；不同车型上管倾斜不同，以试骑感受为准', clamp((lt - 1) / .3, 0, 1));
 });
 
@@ -154,7 +154,7 @@ S.push(lt => {
     g.save(); g.strokeStyle = C.red; g.lineWidth = 4; g.beginPath(); g.moveTo(1290, ground); g.lineTo(1290, y1); g.moveTo(1276, ground); g.lineTo(1304, ground); g.stroke(); g.restore();
     if (k >= 1) txt('跨高', 1200, (ground + cr[1]) / 2, 44, C.red);
   }
-  cat('灵光一闪', 1760, 640, 300, lt - 6.4);
+  cat('记笔记', 1760, 640, 300, lt - 6.4);
   footnote('提示：两个尺码都能骑时，先试骑；没法试骑就把身高和跨高一起报给客服', clamp((lt - 1) / .3, 0, 1));
 });
 
@@ -169,7 +169,7 @@ S.push(lt => {
     txt(t[1], 254, y + 50, 38, C.sub, { font: BODY, a: clamp((ct - .9) / .3, 0, 1) });
     if (ct > 1.2) tick(900, y, 30, (ct - 1.2) / .3);
   });
-  cat('托腮思考', 1500, 640, 560, lt - .6);
+  cat('骑车开心', 1500, 640, 560, lt - .6);
   stamp('李财提醒', 1560, 960, 56, lt - 7.0, -.08);
 });
 

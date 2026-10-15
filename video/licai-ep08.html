@@ -42,7 +42,7 @@ function bottle(x, y, s, a, col) {
 }
 
 // A
-S.push(lt => openScene(lt, '纸箱里', '骑车，', '要带{o}什么{/}？', 8));
+S.push(lt => openScene(lt, '背包出发', '骑车，', '要带{o}什么{/}？', 8));
 
 // B 头盔
 const HM = [['头部受伤', 51], ['严重头部受伤', 69], ['致命头部受伤', 65]];
@@ -58,7 +58,7 @@ S.push(lt => {
     if (k2 > 0) { const v = 100 - h[1]; hatchBar(X0, y + 44, v * PX * k2, 44, C.green, 1820 + i * 7); txt('戴头盔 ≈ ' + Math.round(v * k2), X0 + v * PX * k2 + 16, y + 66, 34, C.green); }
     if (lt > 1.6 + i * .9 + 1) txt('↓ 约 ' + h[1] + '%', 1580, y + 40, 46, C.red, { a: clamp((lt - 2.6 - i * .9) / .3, 0, 1) });
   });
-  cat('戴头盔骑车', 1800, 960, 190, lt - 4.4, { bob: false });
+  cat('戴头盔', 1800, 960, 190, lt - 4.4, { bob: false });
   footnote('数据：Olivier & Creighton 2017 荟萃分析（约 6.4 万名骑车受伤者）；由比值比换算的通俗说法', clamp((lt - 1) / .3, 0, 1));
 });
 
@@ -82,7 +82,7 @@ S.push(lt => {
   if (lt > 4.0) txt('天一暗就开，阴雨天也开', 1384, 450, 38, C.ink, { font: BODY, a: clamp((lt - 4) / .3, 0, 1) });
   if (lt > 5.4) txt('尾灯用闪烁模式，更显眼', 1384, 510, 38, C.ink, { font: BODY, a: clamp((lt - 5.4) / .3, 0, 1) });
   if (lt > 6.8) typeText('司机看见你，才会让你', 1380, 640, 46, lt - 6.8, { color: C.red, cps: 12 });
-  cat('被窝探头', 1660, 880, 240, lt - 7.8);
+  cat('骑车摇摆', 1660, 880, 240, lt - 7.8);
   footnote('提示：前灯别直射对面人的眼睛，稍微往下压一点', clamp((lt - 1) / .3, 0, 1));
 });
 
@@ -98,7 +98,7 @@ S.push(lt => {
     DC.forEach((c, ci) => { const ct = lt - 1.6 - ci * 1.0 - i * .1; if (ct < 0) return; const v = it[1][ci]; if (v === 2) tick(c[1], y, 22, ct / .3); else if (v === 1) txt('~', c[1], y, 50, C.orange, { align: 'center', a: clamp(ct / .3, 0, 1) }); });
   });
   if (lt > 5.4) { hrect(110, 310, 1500, 3 * 86 - 10, 1841, C.red, 4, (lt - 5.4) / .5); txt('这三样，多近都要带', 1640, 400, 38, C.red, { a: clamp((lt - 5.8) / .3, 0, 1) }); }
-  cat('揣手手发呆', 1760, 860, 260, lt - 6.6);
+  cat('看地图', 1760, 860, 260, lt - 6.6);
 });
 
 // E 喝多少水
@@ -113,7 +113,7 @@ S.push(lt => {
   });
   if (lt > 4.2) txt('天热：再加半瓶到一瓶', 900, 720, 38, C.orange, { a: clamp((lt - 4.4) / .3, 0, 1) });
   if (lt > 5.4) typeText('{b}小口多次{/}，别等渴了再喝', 140, 900, 56, lt - 5.4, { cps: 12 });
-  cat('舔爪洗脸', 1640, 620, 380, lt - 2.0);
+  cat('骑车喝水', 1640, 620, 380, lt - 2.0);
   footnote('口径：常见经验值，约每小时 500 毫升，因人、因天气而异；骑 2 小时以上可以加电解质', clamp((lt - 1) / .3, 0, 1));
 });
 
@@ -137,14 +137,14 @@ S.push(lt => {
   });
   if (lt > 4.4) typeText('扎胎了不慌：{g}换内胎{/}比补胎快', 220, 820, 54, lt - 4.4, { cps: 12 });
   if (lt > 6.4) txt('出发前在家练一次换胎，路上就不手忙脚乱', 224, 900, 36, C.sub, { font: BODY, a: clamp((lt - 6.4) / .3, 0, 1) });
-  cat('灵光一闪', 1700, 820, 300, lt - 5.4);
+  cat('检查车轮', 1700, 820, 300, lt - 5.4);
 });
 
 // G
 S.push(lt => mistakesPage(lt, '出门最常见的三个错误', [['就骑一会儿，不戴头盔', '意外不挑距离，短途也要戴'], ['天黑了还不开灯', '车灯是让别人看见你'], ['骑远了不带补胎工具', '扎胎了只能推着走']], '无语', 1851));
 
 // H
-S.push(lt => nextScene(lt, '戴头盔骑车', '路上', '怎么骑才{o}安全{/}？', 'city', C.gray));
+S.push(lt => nextScene(lt, '按车铃', '路上', '怎么骑才{o}安全{/}？', 'city', C.gray));
 
 function coverArt(key, w, h) {
   epCover(key, w, h, { ep: 8, l1: '骑车', l2: '要带什么？', sub: '头盔 · 车灯 · 水 · 补胎小包', emo: '纸箱里', emoScale: .72,

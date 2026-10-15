@@ -286,6 +286,7 @@ function cat(name, x, y, h, lt, opt) {
   opt = opt || {};
   // 有对应逐帧动作的表情（licai-move.js 的 ANIM）自动换成动作；封面（noPop + bob:false）保持静态
   var an = typeof ANIM !== 'undefined' && !(opt.noPop && opt.bob === false) && !opt.still ? ANIM[name] : null;
+  if (!an && typeof LICAI_SEQ !== 'undefined' && LICAI_SEQ[name] && !(opt.noPop && opt.bob === false)) an = [name, 7, typeof SEQ_ONCE !== 'undefined' && SEQ_ONCE.indexOf(name) >= 0, 1];
   if (an && lt >= 0 && IMG['seq:' + an[0] + ':0']) {
     var b0 = opt.noPop ? 1 : pop(lt);
     seqDraw(an[0], lt, an[1], x, y + h / 2, h * an[3], { once: an[2], flip: opt.flip, sx: b0, sy: b0, a: opt.a });

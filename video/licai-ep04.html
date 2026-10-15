@@ -45,7 +45,7 @@ function tireSec(x, y, s, squash, col) {
 }
 
 // A
-S.push(lt => openScene(lt, '被吓一跳', '胎压，', '打多{o}少{/}？', 4));
+S.push(lt => openScene(lt, '打气', '胎压，', '打多{o}少{/}？', 4));
 
 // B 太低 / 刚好 / 太高
 const TP = [['太低', .9, C.red, ['骑着费劲', '容易“蛇咬”扎胎', '过弯发软']], ['刚好', .32, C.green, ['略微有点形变', '又省力又稳']], ['太高', 0, C.red, ['颠得手发麻', '抓地差，湿地易滑', '也快不了多少']]];
@@ -102,7 +102,7 @@ S.push(lt => {
   if (lt > 2.6) hcircle(960, 430, 300, 50, 1231, C.red, 6, (lt - 2.6) / .5);
   if (lt > 3.4) typeText('在这个范围里打，{r}别超过 MAX{/}', 560, 260, 54, lt - 3.4, { cps: 12 });
   if (lt > 5.6) { g.save(); g.globalAlpha = clamp((lt - 5.6) / .3, 0, 1); g.fillStyle = '#fff8e8'; g.fillRect(1380, 230, 420, 150); g.restore(); hrect(1380, 230, 420, 150, 1233, C.ink, 3, (lt - 5.6) / .4); txt('1 bar ≈ 14.5 psi', 1590, 280, 40, C.ink, { align: 'center', a: clamp((lt - 5.8) / .3, 0, 1) }); txt('70 psi ≈ 4.8 bar', 1590, 336, 34, C.sub, { align: 'center', a: clamp((lt - 6.1) / .3, 0, 1) }); }
-  cat('托腮思考', 1790, 520, 230, lt - 7.0);
+  cat('放大镜', 1790, 520, 230, lt - 7.0);
   footnote('示意：不同品牌的写法略有不同，有的只标最大值', clamp((lt - 1) / .3, 0, 1));
 });
 
@@ -138,7 +138,7 @@ S.push(lt => {
   });
   if (lt > 3.4) { const y = Y0 - 85 * PY; g.save(); g.setLineDash([12, 9]); g.strokeStyle = C.red; g.lineWidth = 3; g.beginPath(); g.moveTo(220, y); g.lineTo(1400, y); g.stroke(); g.restore(); txt('该打气了', 1420, y, 36, C.red); }
   if (lt > 4.6) typeText('建议：{g}每周打一次{/}', 1300, 300, 56, lt - 4.6, { cps: 10 });
-  cat('揉眼犯困', 1700, 560, 280, lt - 5.6);
+  cat('检查车轮', 1700, 560, 280, lt - 5.6);
   footnote('示意：普通丁基内胎的大致漏气速度，因胎、因气温而异', clamp((lt - 1) / .3, 0, 1));
 });
 
@@ -157,7 +157,7 @@ S.push(lt => {
 });
 
 // H
-S.push(lt => nextScene(lt, '举旗欢呼', '骑 10 公里，', '谁最{o}划算{/}？', 'city', C.gray));
+S.push(lt => nextScene(lt, '背包出发', '骑 10 公里，', '谁最{o}划算{/}？', 'city', C.gray));
 
 function coverArt(key, w, h) {
   epCover(key, w, h, { ep: 4, l1: '胎压', l2: '打多少？', sub: '6 种车推荐值 · 看懂轮胎侧面', emo: '被吓一跳',

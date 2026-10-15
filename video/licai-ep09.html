@@ -46,7 +46,7 @@ function hz(k, x, y, s) {
 }
 
 // A
-S.push(lt => openScene(lt, '捧脸尖叫', '路上，', '怎么骑才{o}安全{/}？', 9));
+S.push(lt => openScene(lt, '按车铃', '路上，', '怎么骑才{o}安全{/}？', 9));
 
 // B 六个危险
 const HZ = ['大车盲区', '突然开车门', '逆行', '路口抢行', '夜里不开灯', '边骑边看手机'];
@@ -56,7 +56,7 @@ S.push(lt => {
     const x = 330 + (i % 3) * 560, y = 400 + Math.floor(i / 3) * 300, ct = lt - .8 - i * .5; if (ct < 0) return;
     g.save(); g.translate(x, y); g.scale(pop(ct), pop(ct)); g.fillStyle = '#fff8e8'; g.fillRect(-230, -110, 460, 220); hrect(-230, -110, 460, 220, 1901 + i, C.ink, 3); hz(i, -150, 0, .8); txt(n, -60, 0, 40, C.ink); g.restore();
   });
-  cat('惊恐大哭', 1790, 950, 200, lt - 4.4);
+  cat('吓一跳', 1790, 950, 200, lt - 4.4);
 });
 
 // C 大车盲区（俯视）
@@ -95,7 +95,7 @@ S.push(lt => {
   if (lt > 4.4) typeText('离停着的车 {g}1 米以上{/}', 1380, 420, 52, lt - 4.4, { cps: 10 });
   if (lt > 6.0) txt('车里有人、车灯刚亮：更要小心', 1384, 500, 32, C.sub, { font: BODY, a: clamp((lt - 6) / .3, 0, 1) });
   if (lt > 7.4) txt('自己开车：用远侧的手开门', 1384, 560, 30, C.blue, { font: BODY, a: clamp((lt - 7.4) / .3, 0, 1) });
-  cat('惊呆举爪', 1720, 860, 260, lt - 8.2);
+  cat('摔倒爬起', 1720, 860, 260, lt - 8.2);
 });
 
 // E 四条规矩
@@ -122,7 +122,7 @@ S.push(lt => {
     txt(p[1], x, 830, 40, C.ink, { align: 'center', a: clamp((ct - .3) / .3, 0, 1) });
   });
   if (lt > 6.0) typeText('提前 {r}3 秒{/}打手势，别等到路口再打', 360, 930, 46, lt - 6.0, { cps: 12 });
-  cat('举拳眨眼', 1780, 640, 240, lt - 7.0);
+  cat('骑车挥手', 1780, 640, 240, lt - 7.0);
   footnote('提示：打完手势，双手握好车把再转弯；手势写法各地略有不同，以当地交规为准', clamp((lt - 1) / .3, 0, 1));
 });
 
@@ -130,7 +130,7 @@ S.push(lt => {
 S.push(lt => mistakesPage(lt, '骑车最危险的三个习惯', [['戴着耳机听歌', '最好不戴；至少留一只耳朵听路况'], ['边骑边看手机', '要看，先靠边停下'], ['和汽车抢道', '慢一点、让一让，安全到家最重要']], '斜眼嫌弃', 1951));
 
 // H
-S.push(lt => nextScene(lt, '跳起欢呼', '第一次', '骑 {o}30 公里{/}！', 'gravel', C.brown));
+S.push(lt => nextScene(lt, '背包出发2', '第一次', '骑 {o}30 公里{/}！', 'gravel', C.brown));
 
 function coverArt(key, w, h) {
   epCover(key, w, h, { ep: 9, l1: '路上', l2: '怎么骑才安全？', sub: '大车盲区 · 开门杀 · 手势', emo: '捧脸尖叫',
