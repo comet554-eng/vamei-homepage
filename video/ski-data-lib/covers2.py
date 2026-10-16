@@ -10,6 +10,7 @@ import cairo
 from PIL import Image, ImageFilter
 from common import font, text_w, SERIF, SANS
 import scenes
+import board as B
 
 SIZES = {"竖版9x16": (1080, 1920), "竖版3x4": (1080, 1440), "横版16x9": (1920, 1080), "横版4x3": (1440, 1080)}
 INKC = (0.95, 0.93, 0.88)
@@ -147,6 +148,53 @@ def motif(c, kind, w, h, portrait, seed):
         c.curve_to(x0 + 20 * k, gy - 30 * k, x0 + 40 * k, gy - 30 * k, x0 + 52 * k, gy + 12 * k); c.stroke(); c.set_dash([])
 
 
+def _place(c, w, h, portrait, box_w, box_h, fx=0.5, fy=0.70, lfx=0.74, lfy=0.55, fill=0.62):
+    """map a box_w x box_h drawing into the free area; returns scale and leaves ctx translated."""
+    if portrait:
+        cx, cy, avail = fx * w, fy * h, fill * w
+    else:
+        cx, cy, avail = lfx * w, lfy * h, 0.42 * w
+    k = min(avail / box_w, (0.55 * h) / box_h)
+    c.translate(cx - box_w * k / 2, cy - box_h * k / 2); c.scale(k, k)
+    return k
+
+
+def motif_scene(c, kind, w, h, portrait):
+    c.save()
+    if kind == "body":
+        _place(c, w, h, portrait, 600, 700)
+        B.body_map(c, 300, 690, 380, [("wrist", 1.0, REDC), ("wrist_r", 0.85, REDC)], 0.95, col=(0.30, 0.34, 0.44))
+    elif kind == "spine":
+        _place(c, w, h, portrait, 600, 700)
+        B.body_map(c, 300, 690, 380, [("spine", 1.0, REDC), ("neck", 0.7, REDC), ("head", 0.5, REDC)], 0.95, col=(0.30, 0.34, 0.44))
+    elif kind == "guard":
+        _place(c, w, h, portrait, 700, 500)
+        c.rectangle(-200, 400, 1100, 300); c.set_source_rgba(0.12, 0.14, 0.19, 0.95); c.fill()
+        B.forearm(c, 360, 400, 360, 0.95, guard=1.0, spread=1.0)
+    elif kind == "calendar":
+        _place(c, w, h, portrait, 700, 760)
+        for i in range(28):
+            x = (i % 7) * 100; y = (i // 7) * 120 + 140
+            B.rounded_rect(c, x, y, 86, 100, 10)
+            col = REDC if i == 0 else (0.30, 0.34, 0.44)
+            c.set_source_rgba(*col, 0.95 if i == 0 else 0.55 - 0.012 * i); c.fill()
+        c.new_path(); c.arc(43, 190, 80, 0, 2 * math.pi); c.set_source_rgba(*REDC, 0.6); c.set_line_width(3); c.stroke()
+    elif kind == "ankle":
+        _place(c, w, h, portrait, 600, 800)
+        B.ankle_bones(c, 300, 430, 230, 0.9, lp_mark=1.0, crack=1.0, label=False)
+        c.new_path(); c.arc(300 + 0.18 * 230, 430 + 0.40 * 230, 60, 0, 2 * math.pi); c.set_source_rgba(*REDC, 0.8); c.set_line_width(3); c.stroke()
+    elif kind == "falls":
+        _place(c, w, h, portrait, 900, 520)
+        c.rectangle(-300, 450, 1500, 300); c.set_source_rgba(0.12, 0.14, 0.19, 0.95); c.fill()
+        B.rider_profile(c, 280, 450, 300, back=1.0, wrist_mark=1.0, alpha=0.95)
+        B.rider_profile(c, 640, 450, 300, fwd=1.0, alpha=0.6)
+    elif kind == "stance":
+        _place(c, w, h, portrait, 800, 600)
+        B.board_top(c, 400, 160, 500, 0.95, angles=(15, -15))
+        B.board_top(c, 400, 440, 500, 0.95, angles=(50, 40))
+    c.restore()
+
+
 def _pipe(d, cx, base, R, flat):
     d.move_to(cx - flat / 2 - R - 40, base - R)
     d.arc_negative(cx - flat / 2, base - R, R, math.pi, math.pi / 2)
@@ -175,7 +223,10 @@ def cover(w, h, path, C):
     portrait = h > w
     img = background(w, h, C.get("seed", 3))
     s, buf = to_surface(img); c = cairo.Context(s)
-    motif(c, C.get("motif", "track"), w, h, portrait, C.get("seed", 3))
+    if C.get("motif") in ("body", "spine", "guard", "calendar", "ankle", "falls", "stance"):
+        motif_scene(c, C["motif"], w, h, portrait)
+    else:
+        motif(c, C.get("motif", "track"), w, h, portrait, C.get("seed", 3))
     lines = C["lines"]
     n = max(len(t) for t, _ in lines)
     if portrait:

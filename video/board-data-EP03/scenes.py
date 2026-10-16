@@ -219,4 +219,4 @@ def _cover_fig(c):
 
 
 COVER = dict(lines=["第一天", "为什么最危险？"], stat="3.5%", caption="单板初学者第一个半天的受伤概率", color=RED, figure=_cover_fig)
-COVER2 = dict(kicker="单板 · 用数据说话", lines=[("第一天", "ink"), ("为什么最危险", "gold")], sub="第一个半天，受伤概率就有 3.5%", motif="track", seed=3)
+COVER2 = dict(kicker="单板 · 用数据说话", lines=[("第一天", "ink"), ("为什么最危险", "gold")], sub="第一个半天，受伤概率就有 3.5%", motif="calendar", seed=3)

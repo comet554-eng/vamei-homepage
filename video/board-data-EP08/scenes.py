@@ -177,4 +177,4 @@ def _cover_fig(c):
 
 
 COVER = dict(lines=["鸭子站", "还是前倾站？"], stat="21.9 cm", caption="31 cm 的鞋转到 45° 时在板宽方向只占这么多（计算值）", color=GOLD, figure=_cover_fig)
-COVER2 = dict(kicker="单板 · 用数据说话", lines=[("鸭子站", "ice"), ("还是前倾站", "gold")], sub="一个角度，决定鞋会不会伸出板边", motif="track", seed=8)
+COVER2 = dict(kicker="单板 · 用数据说话", lines=[("鸭子站", "ice"), ("还是前倾站", "gold")], sub="一个角度，决定鞋会不会伸出板边", motif="stance", seed=8)

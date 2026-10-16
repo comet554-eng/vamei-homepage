@@ -188,4 +188,4 @@ def _cover_fig(c):
 
 
 COVER = dict(lines=["“单板踝”", "被当成崴脚的骨折"], stat="34%", caption="单板脚踝骨折中，距骨外侧突骨折的占比", color=RED, figure=_cover_fig)
-COVER2 = dict(kicker="单板 · 用数据说话", lines=[("单板踝", "ink"), ("被当成崴脚的骨折", "gold")], sub="单板脚踝骨折，三个里就有一个", motif="track", seed=4)
+COVER2 = dict(kicker="单板 · 用数据说话", lines=[("单板踝", "ink"), ("被当成崴脚的骨折", "gold")], sub="单板脚踝骨折，三个里就有一个", motif="ankle", seed=4)
