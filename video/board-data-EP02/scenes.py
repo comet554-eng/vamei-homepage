@@ -215,3 +215,4 @@ def _cover_fig(c):
 
 
 COVER = dict(lines=["护腕", "到底有没有用？"], stat="↓77%", caption="戴护腕后手腕受伤风险（系统综述，RR 0.23）", color=GOLD, figure=_cover_fig)
+COVER2 = dict(kicker="单板 · 用数据说话", lines=[("护腕", "ink"), ("到底有没有用", "gold")], sub="随机试验：手腕伤 29 例 vs 8 例", motif="track", seed=2)

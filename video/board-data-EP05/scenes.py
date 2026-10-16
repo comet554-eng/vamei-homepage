@@ -306,3 +306,4 @@ def _cover_fig(c):
 
 
 COVER = dict(lines=["跳台为什么", "是重伤头号来源？"], stat="66%", caption="新潟 11 年单板脊柱损伤中与跳台有关的比例", color=RED, figure=_cover_fig)
+COVER2 = dict(kicker="单板 · 用数据说话", lines=[("跳台", "ink"), ("重伤头号来源", "gold")], sub="脊柱损伤 66% 和跳台有关", motif="jump", seed=5)

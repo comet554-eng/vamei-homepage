@@ -273,3 +273,4 @@ def _cover_fig(c):
 
 
 COVER = dict(lines=["刻滑的单板", "弯能有多小？"], stat="2.4 m", caption="侧切 7 m 的板立刃 70° 时的弯半径（计算值）", color=RED, figure=_cover_fig)
+COVER2 = dict(kicker="单板 · 用数据说话", lines=[("刻滑的弯", "ink"), ("能有多小", "ice")], sub="立 70°，弯半径只剩 2.4 米", motif="arcs", seed=6)

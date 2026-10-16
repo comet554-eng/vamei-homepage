@@ -374,3 +374,4 @@ def _cover_fig(c):
 
 
 COVER = dict(lines=["单板", "最常伤哪里？"], stat="27.6%", caption="手腕占单板伤病的比例（双板仅 2.8%）", color=RED, figure=_cover_fig)
+COVER2 = dict(kicker="单板 · 用数据说话", lines=[("单板", "ink"), ("最常伤哪里", "gold")], sub="手腕占 27.6% · 双板只有 2.8%", motif="track", seed=1)
