@@ -232,3 +232,4 @@ def _cover_fig(c):
 
 
 COVER = dict(lines=["U 型池", "选手到底飞多高？"], stat="14 m+", caption="6.7 m 池墙 + 池沿以上 7.72 m（吉尼斯纪录）", color=RED, figure=_cover_fig)
+COVER2 = dict(kicker="单板 · 用数据说话", lines=[("U 型池", "ink"), ("到底飞多高", "gold")], sub="池沿以上 7.72 米 · 从池底算超过 14 米", motif="pipe", seed=9)

@@ -218,3 +218,4 @@ def _cover_fig(c):
 
 
 COVER = dict(lines=["转 2340°", "要转多快？"], stat="936°/s", caption="假设 2.5 秒转完六圈半的平均转速（示意计算）", color=RED, figure=_cover_fig)
+COVER2 = dict(kicker="单板 · 用数据说话", lines=[("转 2340°", "ink"), ("要转多快", "gold")], sub="六圈半 · 抱着一块板 · 斜轴转体", motif="spin", seed=10)

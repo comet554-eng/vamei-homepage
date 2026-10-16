@@ -221,3 +221,4 @@ def _cover_fig(c):
 
 
 COVER = dict(lines=["往后摔", "还是往前摔？"], stat="68%", caption="38 例单板严重颅脑损伤中，往后摔的比例", color=RED, figure=_cover_fig)
+COVER2 = dict(kicker="单板 · 用数据说话", lines=[("往后摔", "ink"), ("还是往前摔", "gold")], sub="严重颅脑损伤 68% 是后摔 · 头撞雪 28 km/h", motif="track", seed=7)

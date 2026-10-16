@@ -259,3 +259,4 @@ def _cover_fig(c):
 
 
 COVER = dict(lines=["大跳台", "从起跳到落地"], stat=f"≥{V_MIN:.0f} km/h", caption="飞过 22 m 平台需要的起跳速度（示意计算）", color=GOLD, figure=_cover_fig)
+COVER2 = dict(kicker="单板 · 用数据说话", lines=[("大跳台", "ink"), ("起跳到落地", "gold")], sub="飞过 22 米平台，至少 57 公里每小时", motif="jump", seed=11)
