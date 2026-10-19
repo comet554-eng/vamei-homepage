@@ -19,7 +19,19 @@
 <script src="snowkit.js"></script>
 <script src="licai-assets.js"></script>
 <script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/吓一跳.js"></script>
+<script src="licai-seq/思考怀疑.js"></script>
+<script src="licai-seq/摔倒爬起.js"></script>
+<script src="licai-seq/绕锥桶.js"></script>
+<script src="licai-seq/跑步.js"></script>
+<script src="licai-seq/转圈.js"></script>
+<script src="licai-seq/骑车开心2.js"></script>
+<!-- seq:end -->
 <script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
 <script src="labkit.js"></script>
 <script>
 (() => {
@@ -30,7 +42,7 @@ const lean = (vk, r) => Math.atan((vk / 3.6) ** 2 / (9.81 * r)) / D2R;
 function leanBike(x, y, deg, col) { g.save(); g.translate(x, y); g.rotate(deg * D2R); g.strokeStyle = C.ink; g.lineWidth = 16; g.lineCap = 'round'; g.beginPath(); g.moveTo(0, 0); g.lineTo(0, -300); g.stroke(); g.fillStyle = PAPER; g.strokeStyle = col || C.green; g.lineWidth = 8; g.beginPath(); g.arc(0, -340, 40, 0, 6.283); g.fill(); g.stroke(); g.restore(); hline(x - 260, y, x + 260, y, 3301 + x, C.ink, 4); g.save(); g.setLineDash([8, 6]); g.strokeStyle = C.faint; g.lineWidth = 3; g.beginPath(); g.moveTo(x, y); g.lineTo(x, y - 360); g.stroke(); g.restore(); g.strokeStyle = C.red; g.lineWidth = 4; g.beginPath(); g.arc(x, y, 140, -Math.PI / 2, -Math.PI / 2 + deg * D2R, deg < 0); g.stroke(); }
 labRun({ ep: 2, src: SRC, cover: { l1: '过弯', l2: '为什么要压车？', sub: '倾角公式 · 反打 · 抓地极限', emo: '冲刺扬尘', art: (x, y, s) => { g.save(); g.translate(x, y + 60 * s); g.scale(s * .5, s * .5); leanBike(0, 0, 25, C.orange); g.restore(); } },
   pages: [
-    { type: 'open', dur: 6, emo: '冲刺扬尘', l1: '过弯，', l2: '为什么要{o}压车{/}？' },
+    { type: 'open', dur: 6, emo: '绕锥桶', l1: '过弯，', l2: '为什么要{o}压车{/}？' },
     { type: 'draw', dur: 12, title: '不压车，会被“甩”出去', sub: '正面看，车往弯道内侧倒', col: C.orange,
       fn: lt => { const d = -lerp(0, 18, sm((lt - 1) / 2)); leanBike(560, 860, d, C.orange); txt(Math.round(-d) + '°', 420, 640, 50, C.red);
         if (lt > 3.4) { harrow(560 + Math.sin(d * D2R) * 300, 860 - 300, 700, 520, 860, 540, C.blue, (lt - 3.4) / .4, 5); txt('离心力：往外甩', 880, 540, 38, C.blue); }
@@ -49,13 +61,13 @@ labRun({ ep: 2, src: SRC, cover: { l1: '过弯', l2: '为什么要压车？', su
         if (lt > 3.0) txt('② 车身往左倒', 700, 760, 40, C.orange, { a: clamp((lt - 3) / .3, 0, 1) });
         if (lt > 4.4) txt('③ 顺势左转', 1100, 380, 40, C.green, { a: clamp((lt - 4.4) / .3, 0, 1) }); },
       notes: [{ t: 7.0, text: '你骑车时其实一直在反打，只是{g}动作很小{/}', x: 200, y: 900, size: 46 }],
-      emo: { n: '转圈晕', x: 1720, y: 840, h: 280, t: 7.6 }, cues: [['pop', 1.6], ['pop', 3.0], ['pop', 4.4]] },
+      emo: { n: '转圈', x: 1720, y: 840, h: 280, t: 7.6 }, cues: [['pop', 1.6], ['pop', 3.0], ['pop', 4.4]] },
     { type: 'bars', dur: 11, title: '最多能压多少度？', sub: '超过这个角度，轮胎就抓不住地 · 条长 = 极限倾角', col: C.red, unit: '°', x0: 560, wmax: 900, max: 45,
       rows: [{ l: '干燥柏油路', v: Math.atan(.8) / D2R, c: C.green }, { l: '湿滑路面', v: Math.atan(.5) / D2R, c: C.orange }, { l: '落叶、井盖、油渍', v: Math.atan(.3) / D2R, c: C.red, hl: 1 }], dy: 170, y0: 360,
       notes: [{ t: 4.6, text: '下雨天，弯前{r}先减速{/}，别压太狠', x: 560, y: 880, size: 50 }],
-      emo: { n: '捂脸头大', x: 1780, y: 880, h: 220, t: 5.6 }, foot: '估算：按摩擦系数 0.8 / 0.5 / 0.3 计算，实际受轮胎和路面影响' },
+      emo: { n: '摔倒爬起', x: 1780, y: 880, h: 220, t: 5.6 }, foot: '估算：按摩擦系数 0.8 / 0.5 / 0.3 计算，实际受轮胎和路面影响' },
     { type: 'end', dur: 10, items: ['压车，是让{g}离心力和重力{/}平衡', '速度翻倍，倾斜程度（tan）变 {g}4 倍{/}', '湿地极限倾角只有干地的{g}七成{/}'] },
-    { type: 'next', dur: 6, emo: '冲刺扬尘', l1: '下坡', l2: '谁更{o}快{/}？', bk: 'road', bc: C.blue }
+    { type: 'next', dur: 6, emo: '骑车开心2', l1: '下坡', l2: '谁更{o}快{/}？', bk: 'road', bc: C.blue }
   ] });
 
 })();

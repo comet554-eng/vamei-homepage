@@ -19,7 +19,20 @@
 <script src="snowkit.js"></script>
 <script src="licai-assets.js"></script>
 <script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/伸展运动.js"></script>
+<script src="licai-seq/侧面骑车.js"></script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/吃鲷鱼烧.js"></script>
+<script src="licai-seq/思考怀疑.js"></script>
+<script src="licai-seq/走路.js"></script>
+<script src="licai-seq/跑步.js"></script>
+<script src="licai-seq/蹦跳.js"></script>
+<script src="licai-seq/蹦跳欢呼.js"></script>
+<!-- seq:end -->
 <script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
 <script src="labkit.js"></script>
 <script>
 (() => {
@@ -29,7 +42,7 @@ const SRC = document.currentScript.textContent;
 function bunI(x, y, s) { g.save(); g.translate(x, y); g.scale(s, s); g.fillStyle = '#fbf3e2'; g.strokeStyle = '#b89a6a'; g.lineWidth = 3; g.beginPath(); g.moveTo(-34, 18); g.quadraticCurveTo(-38, -24, 0, -28); g.quadraticCurveTo(38, -24, 34, 18); g.closePath(); g.fill(); g.stroke(); for (let i = -2; i <= 2; i++) { g.beginPath(); g.moveTo(i * 3, -26); g.quadraticCurveTo(i * 9, -10, i * 14, 2); g.stroke(); } g.restore(); }
 labRun({ ep: 6, src: SRC, cover: { l1: '同样 1 公里', l2: '骑车省多少？', sub: '跑步 vs 走路 vs 骑车', emo: '趴着星星眼', art: (x, y, s) => bunI(x, y, 1.8 * s) },
   pages: [
-    { type: 'open', dur: 6, emo: '趴着星星眼', l1: '同样 1 公里，', l2: '骑车省{o}多少{/}？' },
+    { type: 'open', dur: 6, emo: '侧面骑车', l1: '同样 1 公里，', l2: '骑车省{o}多少{/}？' },
     { type: 'bars', dur: 11, title: '每公斤体重，走 1 公里要花多少？', sub: '条长 = 千卡 /（公斤 · 公里）· 只算运动多花的部分', col: C.orange, unit: '', x0: 560, wmax: 900, max: 1.0, dp: 1,
       rows: [{ l: '跑步', v: 1.0, c: C.red }, { l: '走路', v: .5, c: C.gray }, { l: '骑车', v: .2, c: C.green }], dy: 170, y0: 360, crown: 2,
       notes: [{ t: 4.6, text: '骑车只要跑步的 {g}五分之一{/}', x: 560, y: 880, size: 54 }],
@@ -41,16 +54,16 @@ labRun({ ep: 6, src: SRC, cover: { l1: '同样 1 公里', l2: '骑车省多少�
         txt('跑步', 160, 330, 48, C.red); txt('骑车', 160, 680, 48, C.green);
         bikeType(160 + 1100 * k, 800, .4, 'flat', lt * 6, C.green); },
       notes: [{ t: 4.8, text: '每一步重心{r}上下 6～8 厘米{/}，落地还要“刹一下”', x: 400, y: 530, size: 42 }, { t: 6.6, text: '重心几乎{g}不动{/}，轮子一直滚', x: 400, y: 880, size: 42 }],
-      emo: { n: '唱歌跳舞', x: 1720, y: 600, h: 300, t: 7.6 } },
+      emo: { n: '蹦跳', x: 1720, y: 600, h: 300, t: 7.6 } },
     { type: 'bars', dur: 11, title: '一个肉包（220 千卡），能走多远？', sub: '体重 60 公斤 · 条长 = 公里', col: C.red, unit: ' 公里', x0: 560, wmax: 900, max: 19, dp: 1,
       rows: [{ l: '跑步', v: 3.7, c: C.red }, { l: '走路', v: 7.3, c: C.gray }, { l: '骑车', v: 18.3, c: C.green }], dy: 170, y0: 360, crown: 2,
       extra: lt => { for (let i = 0; i < 1; i++) if (lt > .6) bunI(1700, 300, 1.6); },
       notes: [{ t: 4.6, text: '一个肉包，骑车能骑{g}十八公里{/}', x: 560, y: 880, size: 52 }],
-      emo: { n: '啃鲷鱼烧', x: 1780, y: 880, h: 220, t: 5.4 }, foot: '估算：220 ÷（系数 × 60 公斤），示意' },
+      emo: { n: '吃鲷鱼烧', x: 1780, y: 880, h: 220, t: 5.4 }, foot: '估算：220 ÷（系数 × 60 公斤），示意' },
     { type: 'list', dur: 10, title: '那跑步就不好吗？', sub: '各有各的用处', col: C.purple,
       items: [['想{r}短时间多消耗{/}：跑步效率高', '30 分钟能烧掉更多'], ['想{g}骑得远、骑得久{/}：骑车', '能玩一整天'], ['膝盖不太好：先骑车', '下集细说']], emo: '托腮思考', opt: { cx: 1640, cy: 680, ch: 440 } },
     { type: 'end', dur: 10, items: ['同样 1 公里，骑车只花跑步的{g}五分之一{/}', '原因：重心不上下跳，轮子一直滚', '一个肉包，能骑 {g}18 公里{/}'] },
-    { type: 'next', dur: 6, emo: '举拳眨眼', l1: '骑车', l2: '为什么{o}不伤膝盖{/}？', bk: 'city', bc: C.gray }
+    { type: 'next', dur: 6, emo: '伸展运动', l1: '骑车', l2: '为什么{o}不伤膝盖{/}？', bk: 'city', bc: C.gray }
   ] });
 
 })();

@@ -19,7 +19,20 @@
 <script src="snowkit.js"></script>
 <script src="licai-assets.js"></script>
 <script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/吓一跳.js"></script>
+<script src="licai-seq/委屈难过.js"></script>
+<script src="licai-seq/弓背伸懒腰.js"></script>
+<script src="licai-seq/看手表.js"></script>
+<script src="licai-seq/记笔记.js"></script>
+<script src="licai-seq/走路.js"></script>
+<script src="licai-seq/跑步.js"></script>
+<script src="licai-seq/骑车开心.js"></script>
+<!-- seq:end -->
 <script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
 <script src="labkit.js"></script>
 <script>
 (() => {
@@ -28,23 +41,23 @@ const SRC = document.currentScript.textContent;
 // 李财骑行实验室 EP.07《为什么骑车比跑步不伤膝盖？》
 labRun({ ep: 7, src: SRC, cover: { l1: '骑车', l2: '不伤膝盖？', sub: '冲击力和关节压力，算给你看', emo: '举拳眨眼', art: (x, y, s) => bikeType(x, y, 1.0 * s, 'city', 0, C.gray) },
   pages: [
-    { type: 'open', dur: 6, emo: '举拳眨眼', l1: '骑车，', l2: '为什么{o}不伤膝盖{/}？' },
+    { type: 'open', dur: 6, emo: '弓背伸懒腰', l1: '骑车，', l2: '为什么{o}不伤膝盖{/}？' },
     { type: 'bars', dur: 11, title: '脚上要扛多大的力？', sub: '条长 = 体重的几倍', col: C.orange, unit: ' 倍', x0: 600, wmax: 900, max: 2.6, dp: 1,
       rows: [{ l: '走路落地', v: 1.2, c: C.gray }, { l: '跑步落地', v: 2.5, c: C.red, hl: 1 }, { l: '骑车踩踏板', v: .5, c: C.green }], dy: 170, y0: 360,
       notes: [{ t: 4.6, text: '跑步每一步：{r}两倍多体重{/}砸在腿上', x: 600, y: 880, size: 50 }],
-      emo: { n: '惊恐大哭', x: 1780, y: 880, h: 220, t: 5.4 }, foot: '口径：地面反作用力与常见踏板力的经验范围，示意' },
+      emo: { n: '吓一跳', x: 1780, y: 880, h: 220, t: 5.4 }, foot: '口径：地面反作用力与常见踏板力的经验范围，示意' },
     { type: 'bars', dur: 11, title: '膝盖里面，压力有多大？', sub: '条 = 膝关节内的力（体重的几倍）', col: C.red, unit: ' 倍', x0: 600, wmax: 900, max: 8,
       rows: [{ l: '骑车', r: [1, 1.3], c: C.green, txt: '约 1～1.3 倍' }, { l: '走路', r: [2.3, 2.8], c: C.gray, txt: '约 2.3～2.8 倍' }, { l: '跑步', r: [4, 8], c: C.red, txt: '约 4～8 倍' }], dy: 170, y0: 360, crown: 0,
       notes: [{ t: 4.6, text: '骑车时，膝盖受力和{g}站着差不多{/}', x: 600, y: 880, size: 50 }],
-      emo: { n: '眯眼开心', x: 1780, y: 880, h: 220, t: 5.4 }, foot: '口径：带传感器的人工膝关节等研究的常见范围（如 D’Lima 2008、Kutzner 2010），个体差异大' },
+      emo: { n: '骑车开心', x: 1780, y: 880, h: 220, t: 5.4 }, foot: '口径：带传感器的人工膝关节等研究的常见范围（如 D’Lima 2008、Kutzner 2010），个体差异大' },
     { type: 'bars', dur: 11, title: '1 公里，膝盖要挨多少下？', sub: '条长 = 落地冲击次数', col: C.purple, unit: ' 次', x0: 560, wmax: 900, max: 800,
       rows: [{ l: '跑步', v: 800, c: C.red }, { l: '骑车', v: 0, c: C.green, txt: '0 次（踩约 300 圈，没有冲击）' }], dy: 200, y0: 400,
       notes: [{ t: 4.0, text: '不是骑车不用膝盖，是膝盖{g}不挨“砸”{/}', x: 560, y: 820, size: 50 }],
-      emo: { n: '乖巧端坐', x: 1780, y: 880, h: 220, t: 5.4 }, foot: '估算：跑步每步约 1.2 米；骑车 15 公里/时、踏频 80 圈' },
+      emo: { n: '记笔记', x: 1780, y: 880, h: 220, t: 5.4 }, foot: '估算：跑步每步约 1.2 米；骑车 15 公里/时、踏频 80 圈' },
     { type: 'list', dur: 11, title: '但骑车也可能膝盖疼，原因多半是', sub: '', col: C.red,
-      items: [['{r}坐垫太低{/}', '第一季 EP.03：脚跟法调高度'], ['{r}挡太重、踩太慢{/}', '第一季 EP.07：换轻一点，踩快一点'], ['{r}一下子骑太远{/}', '每周加量别超过一成']], emo: '捂脸头大', opt: { cx: 1640, cy: 680, ch: 440 } },
+      items: [['{r}坐垫太低{/}', '第一季 EP.03：脚跟法调高度'], ['{r}挡太重、踩太慢{/}', '第一季 EP.07：换轻一点，踩快一点'], ['{r}一下子骑太远{/}', '每周加量别超过一成']], emo: '委屈难过', opt: { cx: 1640, cy: 680, ch: 440 } },
     { type: 'end', dur: 10, items: ['骑车没有落地冲击，{g}踏板力只有半个体重{/}', '膝盖里的压力，约是跑步的{g}五分之一{/}', '骑车膝盖疼：先查坐垫和挡位'] },
-    { type: 'next', dur: 6, emo: '被吓一跳', l1: '心率 150，', l2: '身体在{o}烧什么{/}？', bk: 'road', bc: C.red }
+    { type: 'next', dur: 6, emo: '看手表', l1: '心率 150，', l2: '身体在{o}烧什么{/}？', bk: 'road', bc: C.red }
   ] });
 
 })();

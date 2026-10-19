@@ -10,8 +10,9 @@ fb = dict(re.findall(r"'([^']+)': '([^']+)'", mv[mv.index('var SEQ_FALLBACK'):mv
 M0, M1 = '<!-- seq:begin -->', '<!-- seq:end -->'
 for h in glob.glob('licai-*.html'):
     t = open(h).read()
-    if 'licai-seq' not in t: continue
-    names = set(re.findall(r"'([^'{}]+)'", t))
+    if 'licai-seq' not in t and M0 not in t: continue
+    t2 = t + (open('labkit.js').read() if 'labkit.js' in t else '')
+    names = {n for n in list(data) + list(anim) if "'" + n + "'" in t2}
     need = sorted({n for n in names if n in data} | {anim[n] for n in names if n in anim and anim[n] in data})
     if 'seq-all' in h: need = list(data)
     tags = '\n'.join(f'<script src="licai-seq/{n}.js"></script>' for n in need)
