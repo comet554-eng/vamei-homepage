@@ -1,0 +1,228 @@
+<title>小黑板碰一碰</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Long+Cang&family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<style>
+/* 布局：页面是一张浅色/深色的展示台，上面并排摆 5 台手机；手机里是黑板色的小程序，单一深色世界 */
+:root{
+  --bg:#ecebe6; --fg:#22211e; --muted:#6c6a63; --line:#d5d3cb; --frame:#1b1b1d;
+  --board:#1d211f; --board2:#262b28; --chalk:#f2efe6; --chalk-dim:#a9aca5;
+  --pink:#f5a3b7; --yellow:#f7da74; --blue:#97d0f0; --green:#b4e09d;
+  --f-display:'ZCOOL KuaiLe','Noto Sans SC',system-ui,sans-serif;
+  --f-hand:'Long Cang','ZCOOL KuaiLe',cursive;
+  --f-body:'Noto Sans SC',system-ui,-apple-system,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141513;--fg:#ecebe6;--muted:#9a988f;--line:#2d2f2b;--frame:#000;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#141513;--fg:#ecebe6;--muted:#9a988f;--line:#2d2f2b;--frame:#000;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.6}
+.wrap{max-width:1320px;margin:0 auto;padding-inline:20px;padding-block:36px 56px}
+header h1{font-family:var(--f-display);font-weight:400;font-size:clamp(28px,4vw,40px);margin:0;text-wrap:balance}
+header p{color:var(--muted);margin:6px 0 0;max-width:62ch}
+.demo-note{display:inline-block;margin-top:10px;font-size:12px;letter-spacing:.06em;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:2px 10px}
+.flow{display:flex;flex-wrap:wrap;gap:28px 22px;margin-top:30px;justify-content:center}
+.step{display:flex;flex-direction:column;gap:10px;width:268px;min-width:0}
+.step h2{font-size:15px;margin:0;font-weight:700}
+.step h2 span{color:var(--muted);font-weight:400;margin-right:6px;font-variant-numeric:tabular-nums}
+.step p{margin:0;color:var(--muted);font-size:13px;line-height:1.55}
+/* 手机 */
+.phone{width:268px;max-width:100%;aspect-ratio:9/19;background:var(--frame);border-radius:36px;padding:10px;box-shadow:0 18px 40px -18px rgba(0,0,0,.45)}
+.screen{position:relative;height:100%;border-radius:28px;overflow:hidden;background:var(--board);color:var(--chalk);display:flex;flex-direction:column}
+.screen::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.07;
+  background:radial-gradient(60% 40% at 30% 20%,#fff,transparent 70%),radial-gradient(50% 30% at 80% 75%,#fff,transparent 70%)}
+.bar{display:flex;justify-content:space-between;align-items:center;padding:10px 18px 4px;font-size:11px;color:var(--chalk-dim)}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:6px 14px 10px;font-size:13px}
+.nav b{font-weight:500}
+.caps{display:flex;gap:4px}
+.caps i{width:16px;height:16px;border:1px solid #55605a;border-radius:8px}
+.body{flex:1;padding:4px 16px 16px;display:flex;flex-direction:column;gap:12px;min-height:0;position:relative}
+.chalk{font-family:var(--f-hand);}
+.big{font-family:var(--f-display);font-size:26px;line-height:1.2}
+.card{background:var(--board2);border-radius:14px;padding:12px 14px;border:1px dashed #3d4540}
+.row{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--chalk-dim)}
+.row b{color:var(--chalk);font-weight:500;font-variant-numeric:tabular-nums}
+.btn{display:block;width:100%;text-align:center;border:0;border-radius:12px;padding:11px;font:500 14px var(--f-body);cursor:pointer}
+.btn.y{background:var(--yellow);color:#2a2410}
+.btn.g{background:transparent;color:var(--chalk);border:1px solid #4a534d}
+.btn:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.tick{display:flex;align-items:center;gap:8px;font-size:13px}
+.tick svg{flex:none}
+.stat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.stat div{background:var(--board2);border-radius:12px;padding:8px 4px}
+.stat b{display:block;font-family:var(--f-display);font-size:22px;font-weight:400;font-variant-numeric:tabular-nums}
+.stat span{font-size:11px;color:var(--chalk-dim)}
+.badges{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.badge{aspect-ratio:1;border-radius:50%;border:2px dashed #4a534d;display:grid;place-items:center;text-align:center;font-size:11px;color:var(--chalk-dim);padding:6px;line-height:1.25}
+.badge.on{border-style:solid;color:var(--chalk)}
+.badge.on.p{border-color:var(--pink)}.badge.on.b{border-color:var(--blue)}.badge.on.yl{border-color:var(--yellow)}.badge.on.gr{border-color:var(--green)}
+.badge.new{box-shadow:0 0 0 4px rgba(247,218,116,.18)}
+.track{border-radius:14px;background:var(--board2);height:150px;position:relative;overflow:hidden}
+.track svg{position:absolute;inset:0;width:100%;height:100%}
+.live{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--green)}
+.live i{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 1.4s infinite}
+@keyframes pulse{50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.live i{animation:none}}
+.report{background:linear-gradient(160deg,#283029,#1d211f);border-radius:16px;padding:14px;border:1px solid #3d4540}
+.timeline{display:flex;flex-direction:column;gap:8px;font-size:12px}
+.timeline div{display:flex;gap:10px}
+.timeline em{font-style:normal;color:var(--chalk-dim);width:58px;flex:none;font-variant-numeric:tabular-nums}
+.toast{position:absolute;left:16px;right:16px;bottom:16px;background:var(--yellow);color:#2a2410;border-radius:12px;padding:10px 12px;font-size:13px;transform:translateY(140%);transition:transform .35s}
+.toast.show{transform:none}
+.foot{margin-top:40px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;border-top:1px solid var(--line);padding-top:22px}
+.foot h3{font-size:14px;margin:0 0 4px}
+.foot p{margin:0;color:var(--muted);font-size:13px}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>VAMEI 小黑板 · 手机碰一碰</h1>
+    <p>板头那个举着芯片的粉笔小人下面埋着一枚 NFC。手机碰一下，打开 VAMEI 小程序。下面是从第一次碰到雪季结束的五个画面。</p>
+    <span class="demo-note">演示界面 · 数据均为示例</span>
+  </header>
+
+  <div class="flow">
+    <!-- 1 第一次碰：验真 -->
+    <section class="step">
+      <div class="phone"><div class="screen">
+        <div class="bar"><span>9:41</span><span>●●● 5G</span></div>
+        <div class="nav"><b>VAMEI 小黑板</b><span class="caps"><i></i><i></i></span></div>
+        <div class="body">
+          <div class="chalk" style="font-size:20px;color:var(--yellow)">嘿，你碰到我了！</div>
+          <div class="card">
+            <div class="tick"><svg width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="none" stroke="#b4e09d" stroke-width="2"/><path d="M6 10.5l2.7 2.7L14 7.5" fill="none" stroke="#b4e09d" stroke-width="2" stroke-linecap="round"/></svg><b style="font-weight:500">VAMEI 正品 · 已加密验证</b></div>
+          </div>
+          <div class="big">第 00123 块<br>小黑板 154</div>
+          <div class="card" style="display:flex;flex-direction:column;gap:6px">
+            <div class="row"><span>出厂</span><b>宁波茂森 · 2026.11</b></div>
+            <div class="row"><span>板型</span><b>正拱 · 硬度 5</b></div>
+            <div class="row"><span>车主</span><b>还没有主人</b></div>
+          </div>
+          <div style="margin-top:auto;display:flex;flex-direction:column;gap:8px">
+            <button class="btn y" id="b1" type="button">认领这块板 · 保修延长 1 年</button>
+          </div>
+        </div>
+      </div></div>
+      <h2><span>1</span>第一次碰：验真、认领</h2>
+      <p>芯片每碰一次生成新的加密签名，复制不了。认领后直接送一年延保，没有纸质保修卡。</p>
+    </section>
+
+    <!-- 2 每次上雪：一碰开滑 -->
+    <section class="step">
+      <div class="phone"><div class="screen">
+        <div class="bar"><span>8:52</span><span>●●● 5G</span></div>
+        <div class="nav"><b>今天开滑</b><span class="caps"><i></i><i></i></span></div>
+        <div class="body">
+          <div><span class="live"><i></i>正在记录</span></div>
+          <div class="big">万龙滑雪场</div>
+          <div class="row" style="margin-top:-8px"><span>这块板陪你的第 12 天</span><b>-11°C</b></div>
+          <div class="track"><svg viewBox="0 0 236 150" aria-label="今天的滑行轨迹示意">
+            <path d="M190 14 C 150 30 180 52 130 64 S 90 96 120 108 S 70 132 40 138" fill="none" stroke="#97d0f0" stroke-width="3" stroke-linecap="round" stroke-dasharray="1 0"/>
+            <path d="M200 10 C 160 40 200 70 150 84 S 110 120 60 140" fill="none" stroke="#f5a3b7" stroke-width="2" stroke-linecap="round" opacity=".7"/>
+            <circle cx="40" cy="138" r="5" fill="#f7da74"/>
+          </svg></div>
+          <div class="stat">
+            <div><b>9</b><span>趟</span></div>
+            <div><b>14.2</b><span>公里</span></div>
+            <div><b>2,140</b><span>落差 米</span></div>
+          </div>
+          <button class="btn g" type="button" style="margin-top:auto">碰一下结束今天</button>
+        </div>
+      </div></div>
+      <h2><span>2</span>每次上雪：碰一下就开始记</h2>
+      <p>穿板时手机往板头一碰，自动识别雪场、开始记录，不用再想着打开滑呗。轨迹靠手机定位，锁屏太久可能中断，上线前要实测。</p>
+    </section>
+
+    <!-- 3 徽章 -->
+    <section class="step">
+      <div class="phone"><div class="screen">
+        <div class="bar"><span>16:20</span><span>●●● 5G</span></div>
+        <div class="nav"><b>我的雪场徽章</b><span class="caps"><i></i><i></i></span></div>
+        <div class="body">
+          <div class="chalk" style="font-size:19px">点亮 4 / 12 · 再去 1 个雪场送一套贴纸</div>
+          <div class="badges">
+            <div class="badge on b">万龙</div>
+            <div class="badge on p">太舞</div>
+            <div class="badge on gr">融创<br>室内</div>
+            <div class="badge on yl new">第一次<br>连续换刃</div>
+            <div class="badge">松花湖</div>
+            <div class="badge">北大湖</div>
+            <div class="badge">可可<br>托海</div>
+            <div class="badge">第一次<br>刻滑</div>
+            <div class="badge">滑满<br>20 天</div>
+          </div>
+          <div class="card" style="font-size:12px;color:var(--chalk-dim)">每枚徽章都有一张同款实体贴纸，雪场小店或小程序里领。</div>
+          <div class="toast show" id="t3">新徽章：第一次连续换刃！</div>
+        </div>
+      </div></div>
+      <h2><span>3</span>徽章：手机里的贴纸</h2>
+      <p>雪场和成长里程碑各一枚。实体贴纸贴在板上，电子徽章收在手机里，DIY 从板面延伸到线上。</p>
+    </section>
+
+    <!-- 4 雪季报告 -->
+    <section class="step">
+      <div class="phone"><div class="screen">
+        <div class="bar"><span>21:05</span><span>●●● 5G</span></div>
+        <div class="nav"><b>雪季报告</b><span class="caps"><i></i><i></i></span></div>
+        <div class="body">
+          <div class="report">
+            <div class="chalk" style="font-size:18px;color:var(--yellow)">我和小黑板的 26/27 雪季</div>
+            <div class="stat" style="margin-top:10px">
+              <div><b>18</b><span>天</span></div>
+              <div><b>5</b><span>个雪场</span></div>
+              <div><b>212</b><span>公里</span></div>
+            </div>
+            <div class="row" style="margin-top:10px"><span>最长一天</span><b>太舞 · 31 公里</b></div>
+            <div class="row"><span>摔了</span><b>正正正丅 次</b></div>
+            <div class="row"><span>解锁</span><b>第一次连续换刃</b></div>
+          </div>
+          <div class="chalk" style="font-size:17px;text-align:center">明年见，小黑板</div>
+          <div style="margin-top:auto;display:flex;flex-direction:column;gap:8px">
+            <button class="btn y" type="button">生成海报 · 发朋友圈</button>
+            <button class="btn g" type="button">发小红书</button>
+          </div>
+        </div>
+      </div></div>
+      <h2><span>4</span>雪季结束：一张报告</h2>
+      <p>天数、雪场、公里数和摔跤次数做成一张能分享的海报，这是最容易被转发的一屏。</p>
+    </section>
+
+    <!-- 5 履历与过户 -->
+    <section class="step">
+      <div class="phone"><div class="screen">
+        <div class="bar"><span>12:30</span><span>●●● 5G</span></div>
+        <div class="nav"><b>板子履历</b><span class="caps"><i></i><i></i></span></div>
+        <div class="body">
+          <div class="big" style="font-size:22px">第 00123 块 · 已滑 18 天</div>
+          <div class="card timeline">
+            <div><em>2026.11</em><span>宁波茂森出厂</span></div>
+            <div><em>2026.12</em><span>首任车主认领 · 延保至 2028.12</span></div>
+            <div><em>2027.01</em><span>雪具店打蜡、修刃</span></div>
+            <div><em>2027.03</em><span>雪季结束 · 5 个雪场</span></div>
+          </div>
+          <div class="card" style="display:flex;flex-direction:column;gap:6px">
+            <div class="row"><span>状态</span><b style="color:var(--green)">正品 · 未挂失</b></div>
+            <div class="row"><span>官方回收估价</span><b>¥ 520 起</b></div>
+          </div>
+          <div style="margin-top:auto;display:flex;flex-direction:column;gap:8px">
+            <button class="btn y" type="button">转让给新主人</button>
+            <button class="btn g" type="button">以旧换新 · 抵扣新板</button>
+          </div>
+        </div>
+      </div></div>
+      <h2><span>5</span>二手：履历跟着板子走</h2>
+      <p>卖板时一键过户，买家碰一下就能看到真伪、用了多久、保养记录。也可以直接走官方回收、以旧换新。</p>
+    </section>
+  </div>
+
+  <div class="foot">
+    <div><h3>芯片做什么</h3><p>只存一条 VAMEI 自己域名的网址，不存任何个人信息。验真、跳转都在服务器完成，以后换页面不用换芯片。</p></div>
+    <div><h3>手机这边</h3><p>安卓和 iPhone XS 以后的机型碰一下就能打开，不用装 App，直接进微信小程序。</p></div>
+    <div><h3>上线前要测</h3><p>芯片压进板里能不能读；小程序后台定位在不同手机上能稳定记录多久；雪场低温下的耗电。</p></div>
+  </div>
+</div>
+
+<script>
+// 认领按钮：演示状态切换
+document.getElementById('b1').addEventListener('click', function(){
+  this.textContent = '已认领 · 保修至 2028.12';
+  this.disabled = true;
+});
+</script>
