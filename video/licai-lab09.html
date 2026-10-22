@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行实验室 EP.09</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;width:100vw;max-height:100vh;aspect-ratio:16/9;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1920px;height:1080px;max-height:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/举手欢迎.js"></script>
+<script src="licai-seq/侧面骑车2.js"></script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/思考怀疑.js"></script>
+<script src="licai-seq/戴头盔.js"></script>
+<script src="licai-seq/擦汗.js"></script>
+<script src="licai-seq/站立拍手.js"></script>
+<script src="licai-seq/蹦跳欢呼.js"></script>
+<script src="licai-seq/骑车开心.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script src="labkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财骑行实验室 EP.09《跟在别人后面骑，能省多少力？》
+labRun({ ep: 9, src: SRC, cover: { l1: '跟着别人骑', l2: '能省多少？', sub: '尾流、领骑、大集团', emo: '跳起欢呼', art: (x, y, s) => { bikeType(x - 160 * s, y, .8 * s, 'road', 0, C.blue); bikeType(x + 120 * s, y, .8 * s, 'road', 0, C.red); } },
+  pages: [
+    { type: 'open', dur: 6, emo: '侧面骑车2', l1: '跟着别人骑，', l2: '能省{o}多少{/}？' },
+    { type: 'draw', dur: 11, title: '前面的人，帮你挡住了风', sub: '侧面看 · 蓝色 = 被搅乱的空气（尾流）', col: C.blue,
+      fn: lt => { const k = clamp((lt - .6) / 1, 0, 1); g.save(); g.globalAlpha = .25 * k; g.fillStyle = C.blue; g.beginPath(); g.moveTo(760, 420); g.quadraticCurveTo(300, 470, 160, 620); g.lineTo(160, 720); g.quadraticCurveTo(300, 760, 760, 720); g.closePath(); g.fill(); g.restore();
+        for (let i = 0; i < 6; i++) { const o = ((lt * 300 + i * 160) % 900); g.save(); g.strokeStyle = C.blue; g.lineWidth = 4; g.globalAlpha = .6; g.beginPath(); g.moveTo(1700 - o, 380 + i * 50); g.lineTo(1600 - o, 380 + i * 50); g.stroke(); g.restore(); }
+        bikeType(900, 680, 1.0, 'road', lt * 6, C.red); bikeType(560, 680, 1.0, 'road', lt * 6, C.blue);
+        txt('领骑', 900, 830, 40, C.red, { align: 'center' }); txt('跟骑', 560, 830, 40, C.blue, { align: 'center' }); },
+      notes: [{ t: 3.4, text: '跟在后面：风阻{g}少三成左右{/}', x: 1050, y: 300, size: 52 }, { t: 5.4, text: '前面的人也沾光：屁股后面不“吸”他了，约省 3%', x: 1054, y: 380, plain: 1, size: 32 }],
+      emo: { n: '骑车开心', x: 1720, y: 860, h: 260, t: 6.6 }, cues: [['whoosh', .6], ['whoosh', 3.0]] },
+    { type: 'bars', dur: 11, title: '离得越近，省得越多', sub: '条长 = 跟骑时风阻少了多少', col: C.green, unit: '%', x0: 560, wmax: 900, max: 40,
+      rows: [{ l: '前后轮隔 0.5 米', v: 35, c: C.green }, { l: '隔 1 米', v: 30, c: C.green }, { l: '隔 2 米', v: 20, c: C.orange }, { l: '隔 3 米', v: 13, c: C.gray }], dy: 130, y0: 330,
+      notes: [{ t: 5.0, text: '但越近越危险：{r}新手至少留 1 米{/}', x: 560, y: 900, size: 50 }],
+      emo: { n: '擦汗', x: 1780, y: 880, h: 220, t: 6.0 }, foot: '口径：风洞与仿真研究的常见范围，因车速、姿势而异，示意' },
+    { type: 'bars', dur: 11, title: '职业比赛的大集团里呢？', sub: '条长 = 剩下的风阻（独自骑 = 100）', col: C.purple, unit: '', x0: 560, wmax: 900, max: 100,
+      rows: [{ l: '独自骑', v: 100, c: C.gray }, { l: '跟一个人', v: 70, c: C.blue }, { l: '大集团正中间', v: 7, c: C.green, txt: '≈ 5～10' }], dy: 170, y0: 360, crown: 2,
+      notes: [{ t: 4.6, text: '集团中间的人：风阻只剩{g}十分之一{/}', x: 560, y: 880, size: 50 }],
+      emo: { n: '举手欢迎', x: 1780, y: 880, h: 220, t: 5.4 }, foot: '口径：参考 Blocken 等 2018 年对大集团的流体仿真，示意' },
+    { type: 'bars', dur: 10, title: '4 个人轮流领骑，平均能省多少？', sub: '条长 = 平均要出的力（一个人骑 = 100）', col: C.orange, unit: '', x0: 600, wmax: 860, max: 100,
+      rows: [{ l: '一个人骑', v: 100, c: C.gray }, { l: '4 人轮流领骑', v: 78, c: C.green, txt: '≈ 78（省两成多）' }], dy: 200, y0: 400,
+      notes: [{ t: 3.8, text: '所以骑行要{g}约伴{/}：轮流挡风，大家都轻松', x: 600, y: 820, size: 48 }],
+      emo: { n: '站立拍手', x: 1780, y: 880, h: 220, t: 4.8 }, foot: '估算：领骑 1/4 时间按 100，跟骑按 70，示意' },
+    { type: 'list', dur: 10, title: '跟车骑，安全三条', sub: '', col: C.red,
+      items: [['只跟{g}熟人{/}，别跟陌生人', '不知道对方什么时候刹车'], ['新手至少留 {g}1 米{/}，别轮子挨轮子', '前轮碰到后轮，很容易摔'], ['领骑的人：减速、躲坑要{g}喊出来、指出来{/}', '']], emo: '戴头盔', opt: { cx: 1640, cy: 680, ch: 440 } },
+    { type: 'end', dur: 10, items: ['跟骑能少 {g}三成{/}左右风阻', '大集团中间，风阻只剩约{g}十分之一{/}', '跟车要熟人、留距离、多喊话'] },
+    { type: 'next', dur: 6, emo: '托腮思考', l1: '匀速骑', l2: '还是{o}忽快忽慢{/}？', bk: 'flat', bc: C.green }
+  ] });
+
+})();
+</script>
+</body>
+</html>

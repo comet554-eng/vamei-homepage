@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行记 EP.02</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;width:100vw;max-height:100vh;aspect-ratio:16/9;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1920px;height:1080px;max-height:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/卷尺.js"></script>
+<script src="licai-seq/摔倒爬起.js"></script>
+<script src="licai-seq/累瘫.js"></script>
+<script src="licai-seq/记笔记.js"></script>
+<script src="licai-seq/骑车开心.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+/*
+ * 李财骑行记 EP.02《车架大小怎么选？》（78 秒，横版 16:9，无旁白）
+ * 开场 → 太小/合适/太大 → 身高对照表 → 看跨高 → 看伸手距离 → 网购先量跨高 → 试骑三步 → 下集
+ */
+const T = [0, 6, 16, 28, 39, 51, 62, 72, 78];
+const S = [];
+const GR = '#6f665d';   // 小人颜色
+
+// A
+S.push(lt => openScene(lt, '卷尺', '车架大小，', '怎么{o}选{/}？', 2));
+
+// B 太小 / 合适 / 太大
+const SZ = [['太小', .55, C.red, ['膝盖快顶到车把', '腰背憋得慌']], ['合适', .8, C.green, ['跨上去有空隙', '伸手刚刚好']], ['太大', 1.08, C.red, ['跨不上去', '够车把够得肩膀酸']]];
+S.push(lt => {
+  header(lt, '车太大、太小，会怎样？', '同一个人，三种尺码', C.orange);
+  SZ.forEach((z, i) => {
+    const x = 360 + i * 600, ct = lt - .8 - i * .9; if (ct < 0) return;
+    g.save(); g.translate(x, 480); g.scale(pop(ct), pop(ct)); bikeType(0, 0, z[1], 'flat', 0, z[2] === C.green ? C.green : C.gray); g.restore();
+    txt(z[0], x, 660, 60, z[2], { align: 'center', a: clamp(ct / .3, 0, 1) });
+    z[3].forEach((t, j) => txt(t, x, 730 + j * 52, 34, C.ink, { align: 'center', font: BODY, a: clamp((ct - .5 - j * .3) / .3, 0, 1) }));
+    if (ct > 1.4) { if (i === 1) tick(x + 110, 650, 26, (ct - 1.4) / .3); else cross(x + 110, 650, 20, (ct - 1.4) / .3); }
+  });
+  cat('摔倒爬起', 1790, 960, 220, lt - 4.6);
+  if (lt > 5.4) typeText('骑着难受，多半是尺码不对', 960, 950, 50, lt - 5.4, { color: C.red, cps: 12, align: 'center' });
+});
+
+// C 身高对照表
+const HT = [['155–165', [47, 50], 'XS / S', '14–15'], ['165–175', [50, 54], 'S / M', '15–17'], ['175–185', [54, 57], 'M / L', '17–19'], ['185–195', [57, 60], 'L / XL', '19–21']];
+S.push(lt => {
+  header(lt, '身高多少，选多大？', '条 = 公路车 / 瓜车常见车架尺寸（厘米）', C.blue);
+  const X0 = 560, PX = 40, base = 44;   // 从 44 厘米画起
+  txt('身高（厘米）', 110, 262, 30, C.sub, { font: BODY, a: clamp((lt - .5) / .3, 0, 1) });
+  txt('字母码', 1460, 262, 30, C.sub, { font: BODY, a: clamp((lt - .5) / .3, 0, 1) });
+  txt('山地车（寸）', 1660, 262, 30, C.sub, { font: BODY, a: clamp((lt - .5) / .3, 0, 1) });
+  hline(X0, 290, X0, 300 + 3 * 120 + 60, 1011, C.ink, 3.5, (lt - .6) / .4);
+  HT.forEach((r, i) => {
+    const y = 340 + i * 120, a = clamp((lt - .8 - i * .2) / .3, 0, 1); if (a <= 0) return;
+    txt(r[0], 110, y, 50, C.ink, { a });
+    const k = eout((lt - 1.4 - i * .45) / .8), x1 = X0 + (r[1][0] - base) * PX, w = (r[1][1] - r[1][0]) * PX * k;
+    g.save(); g.setLineDash([6, 8]); g.strokeStyle = C.faint; g.lineWidth = 2.5; g.globalAlpha = a; g.beginPath(); g.moveTo(X0, y); g.lineTo(x1, y); g.stroke(); g.restore();
+    if (k > 0) hatchBar(x1, y - 32, w, 64, [C.green, C.blue, C.purple, C.orange][i], 1020 + i * 7);
+    if (k > .9) { txt(r[1][0] + '–' + r[1][1], x1 + w + 18, y, 42, C.ink); txt(r[2], 1460, y, 42, C.ink); txt(r[3], 1660, y, 42, C.ink); }
+  });
+  // 李财单位：170 厘米 ≈ 7 只李财
+  if (lt > 5.4) {
+    txt('170 厘米 ≈', 110, 860, 46, C.ink);
+    for (let j = 0; j < 7; j++) { const ct = lt - 5.6 - j * .12; if (ct > 0) cat('乖巧端坐', 420 + j * 74, 850, 92, ct, { bob: false }); }
+    typeText('7 只李财叠起来', 960, 860, 46, lt - 6.6, { color: C.red, cps: 10 });
+  }
+  footnote('口径：常见尺码经验范围，各品牌尺码不同，以官方尺码表为准；李财坐着按约 24 厘米算（示意）', clamp((lt - 1) / .3, 0, 1));
+});
+
+// D 看跨高
+function standOver(lt, gap) {
+  const bx = 760, by = 700, s = 1.8, ground = by + 30 * s + 62 * s, tt = by - 50 * s;
+  bikeType(bx, by, s, 'flat', 0, C.green);
+  const cr = [bx + 14 * s, tt - gap], sh = [cr[0] + 8, ground - 520], hd = [sh[0] + 12, sh[1] - 66], hand = [bx + 64 * s, by - 72 * s];
+  stickLine([[cr[0] - 30, ground], knee(cr, [cr[0] - 30, ground], 150, 150, 1), cr], GR);
+  stickLine([[cr[0] + 36, ground], knee(cr, [cr[0] + 36, ground], 150, 150, 1), cr, sh], GR);
+  stickLine([sh, knee(sh, hand, 110, 110, -1), hand], GR, 8);
+  g.save(); g.fillStyle = PAPER; g.strokeStyle = GR; g.lineWidth = 8; g.beginPath(); g.arc(hd[0], hd[1], 42, 0, 6.283); g.fill(); g.stroke(); g.restore();
+  hline(500, ground + 4, 1150, ground + 4, 1031, C.ink, 3);
+  return { cr, tt };
+}
+S.push(lt => {
+  header(lt, '第一招：站着跨上去', '脚踩平地，看裆部和上管之间', C.green);
+  const R = standOver(lt, 46);
+  if (lt > 1.6) {
+    const k = clamp((lt - 1.6) / .4, 0, 1), x = R.cr[0] - 120;
+    g.save(); g.globalAlpha = k; g.strokeStyle = C.red; g.lineWidth = 4;
+    g.beginPath(); g.moveTo(x, R.cr[1]); g.lineTo(x, R.tt); g.moveTo(x - 14, R.cr[1]); g.lineTo(x + 14, R.cr[1]); g.moveTo(x - 14, R.tt); g.lineTo(x + 14, R.tt); g.stroke(); g.restore();
+    hline(x + 14, R.cr[1], R.cr[0] - 10, R.cr[1], 1041, C.red, 2, k); hline(x + 14, R.tt, R.cr[0] - 10, R.tt, 1043, C.red, 2, k);
+  }
+  hcircle(R.cr[0], (R.cr[1] + R.tt) / 2, 90, 60, 1045, C.red, 5, (lt - 2.0) / .4);
+  if (lt > 2.4) { harrow(1170, 400, 1050, 440, R.cr[0] + 90, (R.cr[1] + R.tt) / 2 - 20, C.red, (lt - 2.4) / .4); }
+  if (lt > 2.2) typeText('留 {r}2～5 厘米{/} 空隙', 1180, 380, 64, lt - 2.2, { cps: 10 });
+  if (lt > 3.8) txt('一拳都塞不进？车太大了', 1186, 480, 40, C.ink, { font: BODY, a: clamp((lt - 3.8) / .3, 0, 1) });
+  if (lt > 5.2) { bikeType(1260, 640, .45, 'mtb', 0, C.orange); typeText('山地车多留：{o}5～10 厘米{/}', 1350, 630, 42, lt - 5.4, { cps: 12 }); }
+  cat('卷尺', 1760, 920, 260, lt - 6.6);
+  footnote('口径：常见的经验做法；不同车型上管倾斜不同，以试骑感受为准', clamp((lt - 1) / .3, 0, 1));
+});
+
+// E 看伸手距离：太远 / 太近 / 合适 轮流演示
+function seated(lt, ang, label, col) {
+  const bx = 820, by = 720, s = 1.8;
+  const rot = lt * 3; bikeType(bx, by, s, 'flat', rot, C.green);
+  const hip = [bx - 38 * s - 4, by - 74 * s], hand = [bx + 64 * s, by - 72 * s], L = 270;
+  const sh = [hip[0] + Math.cos(-ang) * L, hip[1] + Math.sin(-ang) * L], hd = [sh[0] + 40, sh[1] - 52];
+  const bb = [bx - 8 * s, by + 30 * s], pa = rot * .5, ped = [bb[0] + Math.cos(pa) * 24 * s, bb[1] + Math.sin(pa) * 24 * s];
+  stickLine([ped, knee(hip, ped, 170, 165, -1), hip, sh], GR);
+  stickLine([sh, knee(sh, hand, 112, 112, 1), hand], GR, 8);
+  g.save(); g.fillStyle = PAPER; g.strokeStyle = GR; g.lineWidth = 8; g.beginPath(); g.arc(hd[0], hd[1], 40, 0, 6.283); g.fill(); g.stroke(); g.restore();
+  g.save(); g.strokeStyle = col; g.lineWidth = 3; g.setLineDash([8, 6]); g.beginPath(); g.moveTo(hip[0], hip[1]); g.lineTo(hip[0] + 200, hip[1]); g.stroke(); g.restore();
+  g.save(); g.strokeStyle = col; g.lineWidth = 4; g.beginPath(); g.arc(hip[0], hip[1], 90, -ang, 0); g.stroke(); g.restore();
+  txt(Math.round(ang / D2R) + '°', hip[0] + 120, hip[1] - 40, 40, col);
+  txt(label, 1250, 330, 60, col);
+}
+const REACH = [[.3, '太远：趴成虾米', C.red, '腰和脖子都酸'], [1.2, '太近：缩成一团', C.red, '手肘顶到膝盖'], [.78, '合适：背 45° 上下', C.green, '手肘微弯，肩膀放松']];
+S.push(lt => {
+  header(lt, '第二招：坐上去伸手', '握住车把，看背和手肘', C.purple);
+  const seg = clamp(Math.floor((lt - .5) / 3.6), 0, 2), sl = lt - .5 - seg * 3.6, R = REACH[seg];
+  const prev = REACH[Math.max(0, seg - 1)][0], ang = seg === 0 ? R[0] : lerp(prev, R[0], sm(sl / .6));
+  seated(lt, ang, R[1], R[2]);
+  txt(R[3], 1256, 420, 40, C.ink, { font: BODY });
+  if (seg === 2 && sl > .8) { tick(1230, 520, 28, (sl - .8) / .3); txt('伸手距离对了', 1290, 520, 44, C.green, { a: clamp((sl - .9) / .3, 0, 1) }); }
+  cat(seg === 2 ? '眯眼开心' : '累瘫灵魂出窍', 1700, 860, 300, seg === 2 ? sl - .8 : sl - .6, { bob: seg === 2 });
+  footnote('口径：休闲骑行的常见姿势，竞赛姿势会更低；车把可以通过换把立微调', clamp((lt - 1) / .3, 0, 1));
+});
+
+// F 网购：先量跨高
+S.push(lt => {
+  header(lt, '网上买车？先量跨高', '跨高 = 裆部到地面的高度', C.orange);
+  const steps = ['光脚，背靠墙站直', '书脊夹在裆下，往上顶到底', '量书脊到地面的高度', '对照品牌尺码表选尺码'];
+  steps.forEach((t, i) => { const ct = lt - .8 - i * 1.3; if (ct < 0) return; numDot(i + 1, 150, 330 + i * 140, ct, i === 3 ? C.green : C.orange); typeText(t, 220, 330 + i * 140, 48, ct - .2, { cps: 14 }); });
+  // 示意：靠墙站 + 书
+  const wx = 1500, ground = 900, cr = [1420, 520];
+  hline(wx, 260, wx, ground, 1051, C.ink, 4, (lt - .6) / .4); hline(1200, ground, wx, ground, 1053, C.ink, 4, (lt - .6) / .4);
+  if (lt > 1.0) {
+    stickLine([[cr[0] - 16, ground], [cr[0] - 12, (cr[1] + ground) / 2], cr, [cr[0] + 6, 300]], GR);
+    stickLine([[cr[0] + 20, ground], [cr[0] + 14, (cr[1] + ground) / 2], cr], GR);
+    g.save(); g.fillStyle = PAPER; g.strokeStyle = GR; g.lineWidth = 8; g.beginPath(); g.arc(cr[0] + 4, 240, 44, 0, 6.283); g.fill(); g.stroke(); g.restore();
+  }
+  if (lt > 2.2) { g.save(); g.fillStyle = C.blue; g.globalAlpha = clamp((lt - 2.2) / .3, 0, 1); g.fillRect(cr[0] - 70, cr[1] - 6, 150, 22); g.restore(); txt('书', cr[0] - 110, cr[1] + 4, 36, C.blue, { a: clamp((lt - 2.3) / .3, 0, 1) }); }
+  if (lt > 3.6) {
+    const k = clamp((lt - 3.6) / .5, 0, 1), y1 = lerp(ground, cr[1] + 16, k);
+    g.save(); g.strokeStyle = C.red; g.lineWidth = 4; g.beginPath(); g.moveTo(1290, ground); g.lineTo(1290, y1); g.moveTo(1276, ground); g.lineTo(1304, ground); g.stroke(); g.restore();
+    if (k >= 1) txt('跨高', 1200, (ground + cr[1]) / 2, 44, C.red);
+  }
+  cat('记笔记', 1760, 640, 300, lt - 6.4);
+  footnote('提示：两个尺码都能骑时，先试骑；没法试骑就把身高和跨高一起报给客服', clamp((lt - 1) / .3, 0, 1));
+});
+
+// G 试骑三步
+const TRY = [['站着跨上去', '看裆部空隙'], ['坐上去握把', '看背和手肘'], ['骑一圈', '膝盖、手腕、腰有没有不舒服']];
+S.push(lt => {
+  header(lt, '买之前，试骑三步走', '花 5 分钟，省掉以后很多难受', C.green);
+  TRY.forEach((t, i) => {
+    const y = 360 + i * 190, ct = lt - .8 - i * 1.8; if (ct < 0) return;
+    numDot(i + 1, 170, y, ct, C.green);
+    typeText(t[0], 250, y - 16, 60, ct - .2, { cps: 12 });
+    txt(t[1], 254, y + 50, 38, C.sub, { font: BODY, a: clamp((ct - .9) / .3, 0, 1) });
+    if (ct > 1.2) tick(900, y, 30, (ct - 1.2) / .3);
+  });
+  cat('骑车开心', 1500, 640, 560, lt - .6);
+  stamp('李财提醒', 1560, 960, 56, lt - 7.0, -.08);
+});
+
+// H
+S.push(lt => nextScene(lt, '举拳眨眼', '座椅', '调多{o}高{/}？'));
+
+function coverArt(key, w, h) {
+  epCover(key, w, h, { ep: 2, l1: '车架大小', l2: '怎么选？', sub: '身高对照 · 跨高 · 伸手距离', emo: '歪头',
+    art: (x, y, s, vert) => [.55, .8, 1.05].forEach((k, i) => bikeType(x + (i - 1) * (vert ? 300 : 250) * s / .8, y - (k - .8) * 40 * s, k * s * (vert ? 1 : .8), 'flat', 0, i === 1 ? C.green : C.gray)) });
+}
+
+function sound(K, c, DUR, T) {
+  const X = licaiSound(K, DUR);
+  for (let i = 1; i < T.length - 1; i++) { X.whoosh(T[i] - .08); X.ticks(T[i], 8); }
+  X.pop(.15); X.ticks(.7, 5, 10); X.ticks(1.4, 5, 8); X.pen(2.0, .4); X.ding(2.4);
+  let s = T[1]; for (let i = 0; i < 3; i++) { X.pop(s + .8 + i * .9); i === 1 ? X.ding(s + 2.2 + i * .9) : X.wrong(s + 2.2 + i * .9); } X.pop(s + 4.6); X.ticks(s + 5.4, 12, 12);
+  s = T[2]; for (let i = 0; i < 4; i++) X.grow(s + 1.4 + i * .45); for (let j = 0; j < 7; j++) X.pop(s + 5.6 + j * .12); X.ticks(s + 6.6, 7, 10);
+  s = T[3]; X.pen(s + 1.6, .5); X.ticks(s + 2.2, 10, 10); X.ding(s + 3.0); X.pop(s + 5.2); X.ticks(s + 5.4, 12, 12); X.pop(s + 6.6);
+  s = T[4]; X.wrong(s + 1.0); X.whoosh(s + 4.1); X.wrong(s + 4.6); X.whoosh(s + 7.7); X.ding(s + 8.4); X.pop(s + 8.4);
+  s = T[5]; for (let i = 0; i < 4; i++) { X.pop(s + .8 + i * 1.3); X.ticks(s + 1.0 + i * 1.3, 9, 14); } X.pen(s + 3.6, .5); X.pop(s + 6.4); X.ding(s + 6.5);
+  s = T[6]; X.pop(s + .6); for (let i = 0; i < 3; i++) { X.pop(s + .8 + i * 1.8); X.ticks(s + 1.0 + i * 1.8, 6, 12); X.ding(s + 2.0 + i * 1.8); } X.stamp(s + 7.0);
+  s = T[7]; X.ticks(s + .4, 2, 10); X.ticks(s + 1.0, 4, 10); X.bell(s + 1.4); X.stamp(s + 2.4); for (let i = 0; i < 6; i++) K.noise(s + 2.0 + i * .08, .1, .04, 'highpass', 5000);
+}
+
+licaiRun({ T, S, seed: 522, allText: SRC.replace(/[\x00-\x7f]/g, '') + '–～°≈', audio: sound, cover: coverArt, encode: { b: '4M', maxrate: '6M', bufsize: '12M' } });
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行记 EP.09</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;width:100vw;max-height:100vh;aspect-ratio:16/9;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1920px;height:1080px;max-height:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/吓一跳.js"></script>
+<script src="licai-seq/按车铃.js"></script>
+<script src="licai-seq/摆爪否定.js"></script>
+<script src="licai-seq/摔倒爬起.js"></script>
+<script src="licai-seq/背包出发2.js"></script>
+<script src="licai-seq/骑车挥手.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+/*
+ * 李财骑行记 EP.09《路上怎么骑才安全？》（78 秒，横版 16:9，无旁白）
+ * 开场 → 六个危险 → 大车盲区 → 开车门 → 四条规矩 → 手势 → 三个错误 → 下集
+ */
+const T = [0, 6, 17, 29, 40, 51, 62, 72, 78];
+const S = [];
+const GRY = '#6f665d';
+
+function hz(k, x, y, s) {
+  g.save(); g.translate(x, y); g.scale(s, s); g.lineCap = 'round'; g.lineJoin = 'round';
+  if (k === 0) { g.fillStyle = C.blue; g.fillRect(-70, -30, 90, 60); g.fillStyle = C.orange; g.fillRect(24, -24, 44, 54); g.fillStyle = PAPER; g.fillRect(40, -18, 22, 18); g.fillStyle = C.ink; [-50, -10, 46].forEach(o => { g.beginPath(); g.arc(o, 34, 12, 0, 6.283); g.fill(); }); }
+  else if (k === 1) { g.fillStyle = C.orange; g.fillRect(-60, -20, 100, 50); g.strokeStyle = C.red; g.lineWidth = 8; g.beginPath(); g.moveTo(20, -20); g.lineTo(60, -60); g.stroke(); g.fillStyle = C.ink; [-40, 20].forEach(o => { g.beginPath(); g.arc(o, 34, 12, 0, 6.283); g.fill(); }); }
+  else if (k === 2) { g.strokeStyle = C.red; g.lineWidth = 10; g.beginPath(); g.moveTo(60, 0); g.lineTo(-50, 0); g.moveTo(-20, -30); g.lineTo(-56, 0); g.lineTo(-20, 30); g.stroke(); }
+  else if (k === 3) { g.strokeStyle = C.ink; g.lineWidth = 14; g.beginPath(); g.moveTo(-70, 0); g.lineTo(70, 0); g.moveTo(0, -60); g.lineTo(0, 60); g.stroke(); g.fillStyle = C.red; g.beginPath(); g.arc(0, 0, 16, 0, 6.283); g.fill(); }
+  else if (k === 4) { g.fillStyle = C.gold; g.beginPath(); g.arc(0, 0, 50, 0, 6.283); g.fill(); g.fillStyle = PAPER; g.beginPath(); g.arc(22, -14, 46, 0, 6.283); g.fill(); }
+  else { g.fillStyle = C.ink; g.beginPath(); g.roundRect(-30, -55, 60, 110, 12); g.fill(); g.fillStyle = C.blue; g.fillRect(-22, -42, 44, 76); }
+  g.restore();
+}
+
+// A
+S.push(lt => openScene(lt, '按车铃', '路上，', '怎么骑才{o}安全{/}？', 9));
+
+// B 六个危险
+const HZ = ['大车盲区', '突然开车门', '逆行', '路口抢行', '夜里不开灯', '边骑边看手机'];
+S.push(lt => {
+  header(lt, '路上最要小心的六件事', '', C.red);
+  HZ.forEach((n, i) => {
+    const x = 330 + (i % 3) * 560, y = 400 + Math.floor(i / 3) * 300, ct = lt - .8 - i * .5; if (ct < 0) return;
+    g.save(); g.translate(x, y); g.scale(pop(ct), pop(ct)); g.fillStyle = '#fff8e8'; g.fillRect(-230, -110, 460, 220); hrect(-230, -110, 460, 220, 1901 + i, C.ink, 3); hz(i, -150, 0, .8); txt(n, -60, 0, 40, C.ink); g.restore();
+  });
+  cat('吓一跳', 1790, 950, 200, lt - 4.4);
+});
+
+// C 大车盲区（俯视）
+S.push(lt => {
+  header(lt, '第一条：离大车远一点', '俯视图 · 红色 = 司机看不见的地方', C.red);
+  const tx = 700, ty = 560;
+  g.save(); g.fillStyle = '#d8d2c4'; g.fillRect(110, 300, 1200, 520); g.restore();
+  g.save(); g.setLineDash([30, 24]); g.strokeStyle = '#fff'; g.lineWidth = 6; g.beginPath(); g.moveTo(110, 420); g.lineTo(1310, 420); g.stroke(); g.restore();
+  const z = clamp((lt - 1.0) / .5, 0, 1);
+  g.save(); g.globalAlpha = .45 * z; g.fillStyle = C.red; g.beginPath(); g.moveTo(tx + 230, ty - 50); g.lineTo(tx + 460, ty + 60); g.lineTo(tx + 460, ty + 230); g.lineTo(tx - 280, ty + 230); g.lineTo(tx - 280, ty + 60); g.closePath(); g.fill(); g.restore();
+  g.fillStyle = C.blue; g.fillRect(tx - 280, ty - 50, 420, 110); g.fillStyle = C.orange; g.fillRect(tx + 150, ty - 46, 90, 102); g.fillStyle = PAPER; g.fillRect(tx + 200, ty - 36, 30, 82);
+  txt('大货车', tx - 70, ty + 4, 44, '#fff', { align: 'center' });
+  const bx = lerp(200, 760, clamp((lt - 1.6) / 2.4, 0, 1)), inZone = bx > 430;
+  bikeType(bx, ty + 150, .35, 'city', lt * 6, inZone ? C.red : C.green);
+  if (lt > 3.4) { harrow(tx + 300, ty - 140, tx + 360, ty - 90, tx + 300, ty - 20, C.red, (lt - 3.4) / .4); txt('右转时，后轮还会往里“扫”', tx + 160, ty - 170, 34, C.red, { a: clamp((lt - 3.6) / .3, 0, 1) }); }
+  if (lt > 4.4) cross(bx, ty + 120, 30, (lt - 4.4) / .3);
+  if (lt > 5.4) typeText('别和大车{r}并排{/}', 1380, 420, 56, lt - 5.4, { cps: 10 });
+  if (lt > 6.6) typeText('等红灯：停在它{g}后面{/}', 1380, 520, 48, lt - 6.6, { cps: 10 });
+  if (lt > 8.0) txt('看不见司机的脸，司机也看不见你', 1384, 600, 32, C.sub, { font: BODY, a: clamp((lt - 8) / .3, 0, 1) });
+  cat('被吓一跳', 1720, 860, 260, lt - 8.6);
+  footnote('示意：我国靠右行驶，大车右侧和车头前方都是常见盲区', clamp((lt - 1) / .3, 0, 1));
+});
+
+// D 开车门（俯视）
+S.push(lt => {
+  header(lt, '第二条：小心“开门杀”', '俯视图 · 路边停着的车，随时可能开门', C.orange);
+  g.save(); g.fillStyle = '#d8d2c4'; g.fillRect(110, 300, 1200, 520); g.fillStyle = '#bfb6a5'; g.fillRect(110, 720, 1200, 100); g.restore();
+  const cx = 700, cy = 640;
+  g.fillStyle = C.purple; g.beginPath(); g.roundRect(cx - 200, cy - 60, 400, 120, 30); g.fill();
+  const da = clamp((lt - 2.0) / .5, 0, 1) * .9;
+  g.save(); g.translate(cx + 20, cy - 60); g.rotate(-da); g.fillStyle = C.red; g.fillRect(0, -10, 130, 16); g.restore();
+  if (lt > 1.0) { g.save(); g.globalAlpha = .3; g.fillStyle = C.orange; g.fillRect(cx - 220, cy - 180, 460, 120); g.restore(); txt('门区 ≈ 1 米', cx, cy - 120, 36, C.orange, { align: 'center' }); }
+  const safe = lt > 4.0, by = safe ? lerp(cy - 145, cy - 250, clamp((lt - 4) / .6, 0, 1)) : cy - 145, bx = lerp(180, 1200, ((lt - .5) % 4) / 4);
+  bikeType(bx, by, .35, 'city', lt * 6, safe ? C.green : C.red);
+  if (lt > 2.4 && !safe) txt('砰！', cx + 170, cy - 220, 60, C.red);
+  if (lt > 4.4) typeText('离停着的车 {g}1 米以上{/}', 1380, 420, 52, lt - 4.4, { cps: 10 });
+  if (lt > 6.0) txt('车里有人、车灯刚亮：更要小心', 1384, 500, 32, C.sub, { font: BODY, a: clamp((lt - 6) / .3, 0, 1) });
+  if (lt > 7.4) txt('自己开车：用远侧的手开门', 1384, 560, 30, C.blue, { font: BODY, a: clamp((lt - 7.4) / .3, 0, 1) });
+  cat('摔倒爬起', 1720, 860, 260, lt - 8.2);
+});
+
+// E 四条规矩
+S.push(lt => listPage(lt, '四条最基本的规矩', '', [['靠右走，{r}不逆行{/}', '逆行时，对面车很难反应过来'], ['走{g}非机动车道{/}', '没有的话，靠右边骑'], ['红灯停，路口{g}减速{/}', '左右都看一眼再过'], ['不带人，不撒把', '两只手都握着车把']], C.green, '乖巧端坐', { dy: 150, gap: 1.6, size: 54, y0: 330 }));
+
+// F 手势
+function rider(x, y, pose, lt) {
+  const sh = [x, y - 120], hip = [x, y + 30];
+  stickLine([hip, sh], GRY, 12);
+  g.save(); g.fillStyle = C.red; g.strokeStyle = GRY; g.lineWidth = 8; g.beginPath(); g.arc(x, y - 175, 46, 0, 6.283); g.fill(); g.stroke(); g.restore();
+  const L = [sh[0] - 30, sh[1] + 10], R = [sh[0] + 30, sh[1] + 10];
+  const rest = (p, d) => [[p, [p[0] + d * 30, p[1] + 90], [p[0] + d * 40, p[1] + 150]]];
+  const arm = (p, d, up) => up === 'out' ? [p, [p[0] + d * 120, p[1]], [p[0] + d * 220, p[1]]] : up === 'down' ? [p, [p[0] + d * 90, p[1] + 70], [p[0] + d * 160, p[1] + 130]] : rest(p, d)[0];
+  stickLine(arm(L, -1, pose === 'left' ? 'out' : pose === 'stop' ? 'down' : ''), GRY, 10);
+  stickLine(arm(R, 1, pose === 'right' ? 'out' : ''), GRY, 10);
+  stickLine([[hip[0] - 20, hip[1]], [hip[0] - 30, hip[1] + 150]], GRY, 12); stickLine([[hip[0] + 20, hip[1]], [hip[0] + 30, hip[1] + 150]], GRY, 12);
+}
+const POSE = [['left', '左转：左臂平伸'], ['right', '右转：右臂平伸'], ['stop', '减速 / 停车：手臂往下斜伸']];
+S.push(lt => {
+  header(lt, '转弯、停车，打个手势', '从后面看你的样子', C.blue);
+  POSE.forEach((p, i) => {
+    const x = 360 + i * 520, ct = lt - .8 - i * 1.6; if (ct < 0) return;
+    g.save(); g.globalAlpha = clamp(ct / .3, 0, 1); rider(x, 560, p[0], lt); g.restore();
+    txt(p[1], x, 830, 40, C.ink, { align: 'center', a: clamp((ct - .3) / .3, 0, 1) });
+  });
+  if (lt > 6.0) typeText('提前 {r}3 秒{/}打手势，别等到路口再打', 360, 930, 46, lt - 6.0, { cps: 12 });
+  cat('骑车挥手', 1780, 640, 240, lt - 7.0);
+  footnote('提示：打完手势，双手握好车把再转弯；手势写法各地略有不同，以当地交规为准', clamp((lt - 1) / .3, 0, 1));
+});
+
+// G
+S.push(lt => mistakesPage(lt, '骑车最危险的三个习惯', [['戴着耳机听歌', '最好不戴；至少留一只耳朵听路况'], ['边骑边看手机', '要看，先靠边停下'], ['和汽车抢道', '慢一点、让一让，安全到家最重要']], '斜眼嫌弃', 1951));
+
+// H
+S.push(lt => nextScene(lt, '背包出发2', '第一次', '骑 {o}30 公里{/}！', 'gravel', C.brown));
+
+function coverArt(key, w, h) {
+  epCover(key, w, h, { ep: 9, l1: '路上', l2: '怎么骑才安全？', sub: '大车盲区 · 开门杀 · 手势', emo: '捧脸尖叫',
+    art: (x, y, s, vert) => [0, 1, 5].forEach((k, i) => hz(k, x + (i - 1) * (vert ? 260 : 210) * s, y, (vert ? 1.2 : 1.0) * s)) });
+}
+
+function sound(K, c, DUR, T) {
+  const X = licaiSound(K, DUR);
+  for (let i = 1; i < T.length - 1; i++) { X.whoosh(T[i] - .08); X.ticks(T[i], 9); }
+  const horn = t => { K.tone(392, t, .35, .06, 'square'); K.tone(494, t, .35, .05, 'square'); };
+  X.pop(.15); X.ticks(.7, 3, 10); X.ticks(1.4, 7, 8); X.pen(2.0, .4); X.ding(2.4);
+  let s = T[1]; for (let i = 0; i < 6; i++) X.pop(s + .8 + i * .5); X.pop(s + 4.4);
+  s = T[2]; horn(s + 3.4); X.wrong(s + 4.4); X.ticks(s + 5.4, 7, 10); X.ticks(s + 6.6, 10, 10); X.pop(s + 8.6);
+  s = T[3]; K.thud(s + 2.4, .6); X.wrong(s + 2.5); X.ding(s + 4.2); X.ticks(s + 4.4, 10, 10); X.pop(s + 8.2);
+  s = T[4]; X.pop(s + .6); for (let i = 0; i < 4; i++) { X.pop(s + .8 + i * 1.6); X.ticks(s + 1.0 + i * 1.6, 9, 12); }
+  s = T[5]; for (let i = 0; i < 3; i++) { X.pop(s + .8 + i * 1.6); X.whoosh(s + 1.0 + i * 1.6); } X.ticks(s + 6.0, 16, 12); X.pop(s + 7.0);
+  s = T[6]; X.pop(s + .6); for (let i = 0; i < 3; i++) { const t = s + .8 + i * 2.2; X.pop(t); X.ticks(t + .2, 7, 12); X.wrong(t + 1.2); X.ding(t + 1.5); }
+  s = T[7]; X.ticks(s + .4, 3, 10); X.ticks(s + 1.0, 6, 10); X.bell(s + 1.4); X.stamp(s + 2.4); for (let i = 0; i < 6; i++) K.noise(s + 2.0 + i * .08, .1, .04, 'highpass', 5000);
+}
+
+licaiRun({ T, S, seed: 529, allText: SRC.replace(/[\x00-\x7f]/g, '') + '–～°≈×→“”！', audio: sound, cover: coverArt, encode: { b: '4M', maxrate: '6M', bufsize: '12M' } });
+
+})();
+</script>
+</body>
+</html>
