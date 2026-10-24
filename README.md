@@ -70,3 +70,30 @@
 - EP.08《下坡怎么走，不伤膝盖？》：`video/hike-ep08.html`（刹车受力、冲击柱状图、弹簧缓冲 `spring()`、落脚点）。
 - EP.09《路上怎么歇、怎么吃喝？》：`video/hike-ep09.html`（休息时间轴、补水与体力曲线 `curve()`、尿色示意）。
 - EP.10《路标和轨迹怎么看？走岔了怎么办》：`video/hike-ep10.html`（俯视树林岔路 `forestBG()`、路标种类、手机轨迹偏离、原路退回）。
+
+## 滑雪里的物理（科普系列）
+
+- 制作规范见 `.claude/skills/ski-science/`（技能包、原始提示词、模板源码）。横屏 1920×1080，深色底、字幕 + 配乐，Python + cairo 程序化渲染。
+- 《落在坡上，为什么不疼？》（单板跳台落地 · 等效下落高度）：源码 `video/ski-sci-EP02/`，叙事方案 `video/ski-sci-EP02-方案.md`。`jump.py` 是物理核心（桌面跳台、无阻力飞行、EFH、等 EFH 落地面），`scenes.py` 六个场景，`music.py` 配乐（落在坡上为铃声、砸到平地为闷响，时间由计算出的落地时刻决定）。`bash build.sh` 分块并行渲染并合成，`python3 covers.py 前缀` 出 4 张封面。
+- 《雪板为什么能滑？》（压力融化 vs 摩擦生热）：源码 `video/ski-sci-EP01/`，叙事方案 `video/ski-sci-EP01-方案.md`。`art.py` 放所有物理数值（克拉珀龙方程、压强、摩擦功率、水膜上限）和画面元素（侧面滑雪小人、俯视雪板、熔点数轴放大、雪粒微观剖面 `Grains`、冰表面分子），`scenes.py` 六个场景。构建方式同上。
+
+## 双板 · 用数据说话
+
+- 风格与《滑雪里的物理》相同（Python + cairo，深色横屏），内容以双板技术和安全为主，每集用研究数据说话。
+- EP.01《双板断十字韧带的三种方式》：源码 `video/ski-data-EP01/`，叙事方案 `video/ski-data-EP01-方案.md`。`art.py` 放研究数据常量和画面元素（正面双板小人 `skier_front()` 可设膝外翻、外板滑开、立刃角；侧面自由姿势 `side_pose()` 可做后坐 / 幽灵脚；点阵 `dot_matrix()`）。构建方式同上。
+- EP.02–05 共用 `video/ski-data-lib/`：`render.py EPDIR`、`build.sh EPDIR`（分块并行渲染、自动配乐、降噪编码）、`music.py`（按字幕自动配乐）、`covers.py EPDIR 前缀`（四种尺寸封面，读取 `scenes.COVER`）、`art.py`（`seq()` 按阅读速度自动排字幕时间）。方案与资料：`video/ski-data-EP02-05-方案.md`。
+  - EP.02《外脚到底该压多少？》 `video/ski-data-EP02/`
+  - EP.03《一个弯里，腿要扛几倍体重？》 `video/ski-data-EP03/`
+  - EP.04《搓雪为什么慢？》 `video/ski-data-EP04/`
+  - EP.05《立刃角和弯有多大？》 `video/ski-data-EP05/`
+
+## 单板 · 用数据说话（配音）
+
+- 共用 `video/ski-data-lib/`，另加 `board.py`（侧面单板小人 `rider_profile()` 可做往后坐 / 往前扑摔倒，人体热点图 `body_map()`，俯视单板 `board_top()`）。
+- 配音：离线 Kokoro-82M 中文音色（8 种，模型和音色文件来自 npm 包 `expo-kokoro`，用 `ski-data-lib/setup_tts.sh` 一次装好）。流程：`python3 voice.py list EPDIR` → `$TTS_HOME/venv/bin/python tts.py EPDIR`（合成每句并写 `voice/durations.json`，带一/不和三声变调）→ `build.sh EPDIR`（字幕时间按配音长度排，配乐在说话时自动压低 9 dB，响度 −16 LUFS）。`scenes.SAY` 可给某句字幕指定读法（年份、多音字）。
+- 音色对比样本：`video/配音音色对比-8种.mp3`。
+  - EP.01《单板最常伤哪里？》 `video/board-data-EP01/`（配音版）
+  - EP.02–06 不配音（用户自己配音），配音文稿见 `video/单板用数据说话-配音文稿.md`：
+    《护腕到底有没有用？》《第一天，为什么最危险？》《“单板踝”：被当成崴脚的骨折》《跳台，为什么是重伤头号来源？》《刻滑的单板，弯能有多小？》，源码 `video/board-data-EP02/` … `EP06/`
+  - EP.07–11（无配音）：《往后摔，还是往前摔？》《鸭子站还是前倾站？》《U 型池，选手到底飞多高？》《转 2340°，要转多快？》《大跳台：从起跳到落地》，源码 `video/board-data-EP07/` … `EP11/`
+  - `common.subtitle()` 现在会把超过 30 字的字幕在最靠近中间的标点处自动折成两行。
