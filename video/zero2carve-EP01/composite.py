@@ -111,7 +111,7 @@ for i in ([int(x * FPS) for x in STILLS] or range(n0, n1)):
         if a3 > 0:
             p3 = pop(t, ws[2][1], 0.45)
             card(c, 60, 430, W - 120, 300, a3, RED)
-            c.save(); c.translate(W / 2, 600); c.scale(p3, p3); c.translate(-W / 2, -600)
+            c.save(); c.translate(W / 2, 600); c.scale(max(p3, 1e-3), max(p3, 1e-3)); c.translate(-W / 2, -600)
             stroke_text(c, "27.6%", W / 2, 640, 170, RED, a3, face=SERIF, stroke=0)
             c.restore()
             stroke_text(c, "单板受伤里，手腕的占比", W / 2, 700, 36, INK, a3, stroke=0)
