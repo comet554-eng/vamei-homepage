@@ -1,7 +1,8 @@
 """Poster-style covers (v2): brushed dusk gradient, big left-aligned serif title, one restrained motif.
 python3 covers2.py EPDIR OUT_PREFIX     (EPDIR/scenes.py defines COVER2, see below)
 COVER2 = dict(kicker="单板 · 用数据说话", lines=[("往后摔", "ink"), ("还是往前摔", "gold")],
-              sub="38 例严重颅脑损伤 · 68% 是后摔", motif="track" | "arcs" | "pipe" | "spin" | "jump" | "board", seed=7)"""
+              sub="38 例严重颅脑损伤 · 68% 是后摔", motif="track" | "arcs" | "pipe" | "spin" | "jump" | "board", seed=7)
+motif="image" 时用 EPDIR 里的 3D 渲染图：image="cover_rider.png", ring=(x, y) 归一化坐标（可选）。"""
 import os, sys, math
 HERE = os.path.dirname(os.path.abspath(__file__))
 EP = os.path.abspath(sys.argv[1]); sys.path.insert(0, HERE); sys.path.insert(0, EP)
@@ -195,6 +196,32 @@ def motif_scene(c, kind, w, h, portrait):
     c.restore()
 
 
+def motif_image(c, C, w, h, portrait):
+    """3D 渲染的人物（透明底 PNG）当主图；C["ring"] = 归一化坐标时，在那里画一个红圈。"""
+    im = Image.open(os.path.join(EP, C["image"])).convert("RGBA")
+    rx, ry = (C["ring"][0] * im.width, C["ring"][1] * im.height) if C.get("ring") else (0, 0)
+    x0, y0, x1, y1 = Image.fromarray((np.asarray(im)[..., 3] > 12).astype(np.uint8) * 255).getbbox()
+    pad = int(0.06 * max(x1 - x0, y1 - y0))
+    x0, y0 = max(0, x0 - pad), max(0, y0 - pad); x1, y1 = min(im.width, x1 + pad), min(im.height, y1 + pad)
+    im = im.crop((x0, y0, x1, y1)); rx, ry = rx - x0, ry - y0
+    a = np.asarray(im).copy()
+    a[..., :3] = (a[..., :3].astype(np.float32) * a[..., 3:4] / 255).astype(np.uint8)   # 预乘 alpha
+    buf = np.dstack([a[..., 2], a[..., 1], a[..., 0], a[..., 3]]).copy()
+    _KEEP.append(buf)
+    src = cairo.ImageSurface.create_for_data(memoryview(buf), cairo.FORMAT_ARGB32, im.width, im.height)
+    c.save()
+    tall = h / w > 1.5
+    k = _place(c, w, h, portrait, im.width, im.height, fx=0.52 if tall else 0.58, fy=0.70 if tall else 0.77,
+               lfx=0.72, lfy=0.60, fill=0.88 if tall else 0.62)
+    c.set_source_surface(src, 0, 0); c.paint()
+    if C.get("ring"):
+        x, y = rx, ry
+        r0 = 0.09 * max(im.width, im.height)
+        for r, al, lw in ((r0 * 1.18, 0.25, r0 * 0.26), (r0, 1.0, r0 * 0.11)):
+            c.new_path(); c.arc(x, y, r, 0, 2 * math.pi); c.set_source_rgba(*REDC, al); c.set_line_width(lw); c.stroke()
+    c.restore()
+
+
 def _pipe(d, cx, base, R, flat):
     d.move_to(cx - flat / 2 - R - 40, base - R)
     d.arc_negative(cx - flat / 2, base - R, R, math.pi, math.pi / 2)
@@ -223,7 +250,9 @@ def cover(w, h, path, C):
     portrait = h > w
     img = background(w, h, C.get("seed", 3))
     s, buf = to_surface(img); c = cairo.Context(s)
-    if C.get("motif") in ("body", "spine", "guard", "calendar", "ankle", "falls", "stance"):
+    if C.get("motif") == "image":
+        motif_image(c, C, w, h, portrait)
+    elif C.get("motif") in ("body", "spine", "guard", "calendar", "ankle", "falls", "stance"):
         motif_scene(c, C["motif"], w, h, portrait)
     else:
         motif(c, C.get("motif", "track"), w, h, portrait, C.get("seed", 3))
