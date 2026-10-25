@@ -413,7 +413,7 @@ function epCover(key, w, h, o) {
   var vert = h > w;
   if (vert) {
     var s = w / 1080;
-    txt((o.series || '李财骑行记') + ' · 第 ' + o.ep + ' 集', 80 * s, 140 * s, 46 * s, C.sub);
+    txt(o.tag || (o.series || '李财骑行记') + ' · 第 ' + o.ep + ' 集', 80 * s, 140 * s, 46 * s, C.sub);
     var av = w - 140 * s, y1 = Math.min(150 * s, 150 * s * av / textW(o.l1, 150 * s)), y2 = Math.min(170 * s, 170 * s * av / textW(o.l2, 170 * s));
     txt(o.l1, 80 * s, 290 * s, y1, C.ink);
     txt(o.l2, 80 * s, 470 * s, y2, C.orange);
@@ -426,7 +426,7 @@ function epCover(key, w, h, o) {
     var s2 = h / 1080, q = key === '4x3';
     var es = o.emoScale || 1; cat(o.emo, q ? w * .25 : h * .38, h * .5, h * (q ? .72 : .86) * es, 1, { noPop: true, bob: false });
     var x = w * (q ? .5 : .44);
-    txt((o.series || '李财骑行记') + ' · 第 ' + o.ep + ' 集', x, 190 * s2, 44 * s2, C.sub);
+    txt(o.tag || (o.series || '李财骑行记') + ' · 第 ' + o.ep + ' 集', x, 190 * s2, 44 * s2, C.sub);
     var avail = w - x - 50 * s2, z1 = Math.min(140 * s2, 140 * s2 * avail / textW(o.l1, 140 * s2)), z2 = Math.min(170 * s2, 170 * s2 * avail / textW(o.l2, 170 * s2));
     txt(o.l1, x, 340 * s2, z1, C.ink);
     txt(o.l2, x, 520 * s2, z2, C.orange);
