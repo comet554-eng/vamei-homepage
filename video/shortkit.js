@@ -27,6 +27,9 @@ function subLine(text, lt, dur) {
 }
 // 顶部话题标题（盖章式出现后一直留着）
 function topTitle(text, lt, small, ts) {
+  // 插画背景上给标题垫一块纸色底（SHORT_TITLE_BG = true 时）
+  if (typeof SHORT_TITLE_BG !== 'undefined' && SHORT_TITLE_BG) { var tw0 = Math.max(textW((small || ''), lt < 0 ? 96 : 46), lt < 0 ? 0 : textW(text.replace(/\{[^}]*\}/g, ''), 92)) + 90;
+    g.save(); g.fillStyle = 'rgba(255,253,246,.9)'; g.beginPath(); g.roundRect(CX - 30 - tw0 / 2, lt < 0 ? 225 : 160, tw0, lt < 0 ? 150 : 225, 30); g.fill(); g.restore(); }
   // 小标题：大标题出现前先大字挂在上面当钩子，之后缩成一行小字
   if (small) { var m = eout(clamp((lt + .05) / .25, 0, 1)), sz = 96 - 50 * m; txt(small, CX - 30, 300 - 90 * m, sz, m < .5 ? C.ink : C.sub, { align: 'center', a: clamp(ts / .2, 0, 1) }); }
   if (lt < 0) return;
