@@ -5,7 +5,7 @@ VM88 进阶全能单板（硬度 5）· NUAGE 云境配色 · 25/26 雪季，淘
 - 设计规范：`DESIGN.md`
 - 页面源码：`src/page.html` + `src/page.css` + `src/page.js`（750 CSS px 宽，共 15 屏）
 - 素材：`assets/`（`src/` 原始素材，`gen/` 3D 渲染和场景图，`svg/` 图示和图标，`brand/` logo）
-- 素材生成器：`src/board3d.html`（three.js 雪板渲染）、`src/scenes.html`（着色器天空 / 雪地）
+- 素材生成器：`src/board3d.html`（three.js 雪板渲染，`?shot=hero|profile|layers|nose|base|top`）、`src/scenes.html`（着色器天空，`?scene=dusk|night`）、`tools/fog_ridges.py`（品牌屏晨雾山峦）
 
 ## 导出
 

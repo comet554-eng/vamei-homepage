@@ -40,7 +40,7 @@ async function drawLayerLines() {
     const ax = ib.left - box.left + a.x * k, ay = ib.top - box.top + a.y * k;
     return { li, ax, ay, right: ax > midX };
   }).filter(Boolean);
-  const GAP = 78, COL = 196, EDGE = 22;
+  const GAP = 66, COL = 196, EDGE = 22;
   for (const right of [false, true]) {
     let last = -Infinity;
     items.filter(it => it.right === right).sort((p, q) => p.ay - q.ay).forEach(it => {
