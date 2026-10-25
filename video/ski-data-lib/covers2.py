@@ -196,7 +196,7 @@ def motif_scene(c, kind, w, h, portrait):
     c.restore()
 
 
-def motif_image(c, C, w, h, portrait):
+def motif_image(c, C, w, h, portrait, top=0.0):
     """3D 渲染的人物（透明底 PNG）当主图；C["ring"] = 归一化坐标时，在那里画一个红圈。"""
     im = Image.open(os.path.join(EP, C["image"])).convert("RGBA")
     rx, ry = (C["ring"][0] * im.width, C["ring"][1] * im.height) if C.get("ring") else (0, 0)
@@ -211,8 +211,13 @@ def motif_image(c, C, w, h, portrait):
     src = cairo.ImageSurface.create_for_data(memoryview(buf), cairo.FORMAT_ARGB32, im.width, im.height)
     c.save()
     tall = h / w > 1.5
-    k = _place(c, w, h, portrait, im.width, im.height, fx=0.52 if tall else 0.58, fy=0.70 if tall else 0.77,
-               lfx=0.72, lfy=0.60, fill=0.88 if tall else 0.62)
+    if portrait:      # 竖版：放在副标题下面的空白里，高度封顶，别压到字
+        lo, hi = top + 0.02 * h, 0.97 * h
+        cx, cy, hmax, wmax = (0.55 if tall else 0.60) * w, (lo + hi) / 2, hi - lo, (0.85 if tall else 0.72) * w
+    else:
+        cx, cy, hmax, wmax = 0.72 * w, 0.60 * h, 0.62 * h, 0.40 * w
+    k = min(wmax / im.width, hmax / im.height)
+    c.translate(cx - im.width * k / 2, cy - im.height * k / 2); c.scale(k, k)
     c.set_source_surface(src, 0, 0); c.paint()
     if C.get("ring"):
         x, y = rx, ry
@@ -251,7 +256,10 @@ def cover(w, h, path, C):
     img = background(w, h, C.get("seed", 3))
     s, buf = to_surface(img); c = cairo.Context(s)
     if C.get("motif") == "image":
-        motif_image(c, C, w, h, portrait)
+        nl = max(len(t) for t, _ in C["lines"])
+        bg_ = min(w * 0.82 / max(nl, 2), w * 0.20) * (0.78 if portrait and h / w < 1.5 else 1.0)
+        y0 = 0.17 * h if h / w > 1.5 else 0.11 * h
+        motif_image(c, C, w, h, portrait, top=y0 + bg_ * (1.30 + 1.18 * len(C["lines"]) + 0.35))
     elif C.get("motif") in ("body", "spine", "guard", "calendar", "ankle", "falls", "stance"):
         motif_scene(c, C["motif"], w, h, portrait)
     else:
@@ -262,12 +270,18 @@ def cover(w, h, path, C):
         x = 0.095 * w
         big = min(w * 0.82 / max(n, 2), w * 0.20)
         y = 0.17 * h if h / w > 1.5 else 0.14 * h
+        if C.get("motif") == "image" and h / w < 1.5:    # 3:4 留更多地方给 3D 人物
+            big *= 0.78; y = 0.11 * h
     else:
         x = 0.05 * w
         big = min(0.40 * w / max(n, 2), h * 0.15)
         y = 0.30 * h
     font(c, big * 0.25, False, SERIF)
-    title_text(c, C["kicker"], x, y, big * 0.28, (0.82, 0.82, 0.82), spacing=0.55)
+    ks, sp = big * 0.28, 0.55
+    font(c, ks, BOLD_TITLE, SERIF)
+    while text_w(c, C["kicker"]) + ks * sp * len(C["kicker"]) > w - 2 * x and sp > 0.1:
+        sp -= 0.05
+    title_text(c, C["kicker"], x, y, ks, (0.82, 0.82, 0.82), spacing=sp)
     yy = y + big * 1.25
     for t, col in lines:
         title_text(c, t, x, yy, big, COLMAP.get(col, INKC))
