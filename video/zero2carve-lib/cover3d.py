@@ -11,7 +11,7 @@ out = sys.argv[2]
 C = ep.COVER3D
 S = Scene(1200, 1200, samples=int(os.environ.get("SAMPLES", 24)), transparent=True)
 P = interp(ep.PERF[C["perf"]], C["p"])
-P["slope"] = 0.0                     # 封面不要坡，人物摆正
+P["slope"] = 0.0; P["trail"] = 0.0      # 封面不要坡和雪痕，人物摆正
 J = S.place(P)
 g = Vector((P["gx"], 0, 0))
 pos, tgt, lens = C["cam"]
