@@ -7,7 +7,8 @@ from mathutils import Vector, Matrix
 
 # ------------------------------------------------------------------ pose
 POSE0 = dict(
-    gx=0.0,                                     # 整体沿 x 的滑行位移
+    gx=0.0, gy=0.0,                             # 整体沿 x / y 的位移（推坡时沿 y 往下坡走）
+    trail=0.0, ty0=0.0,                         # 雪痕：1 时显示，从 y=ty0 拉到板当前位置（宽 = 板长）
     bx=0.0, by=0.0, bz=0.0, broll=0.0,          # 板中心、绕 x 轴横滚（>0 前刃抬起/后刃压雪）
     px=0.0, py=-0.02, pz=0.86, tilt=0.0,        # 骨盆中心；躯干后仰角（>0 往后倒，<0 往前扑）
     curl=0.0, neck=0.0,                         # 上背前弯（团身）、低头收下巴
@@ -62,12 +63,12 @@ def skeleton(P):
     J = {}
     br = math.radians(P["broll"])
     Rb = Matrix.Rotation(br, 4, "X")
-    B = Vector((P["bx"] + P["gx"], P["by"], P["bz"]))
+    B = Vector((P["bx"] + P["gx"], P["by"] + P["gy"], P["bz"]))
     J["board_m"] = Matrix.Translation(B) @ Rb
     up_b = (Rb @ Vector((0, 0, 1, 0))).xyz
     for side, fx in (("L", -0.26), ("R", 0.26)):
         J["ankle" + side] = B + (Rb @ Vector((fx, 0.0, 0.13, 0))).xyz
-    free = Vector((P["lfx"] + P["gx"], P["lfy"], P["lfz"]))
+    free = Vector((P["lfx"] + P["gx"], P["lfy"] + P["gy"], P["lfz"]))
     J["ankleL"] = J["ankleL"].lerp(free, P["lfw"])
     J["bootL_m"] = Matrix.Translation(J["ankleL"] + (Rb @ Vector((0, 0.02, -0.04, 0))).xyz) @ Rb
     tl = math.radians(P["tilt"])
@@ -75,7 +76,7 @@ def skeleton(P):
     u = Vector((0, -math.sin(tl), math.cos(tl)))
     f = Rt @ Vector((0, math.cos(tl), math.sin(tl)))
     X = Rt @ Vector((1, 0, 0))
-    pel = Vector((P["px"] + P["gx"], P["py"], P["pz"]))
+    pel = Vector((P["px"] + P["gx"], P["py"] + P["gy"], P["pz"]))
     J["pelvis"] = pel
     chest = pel + u * 0.30
     cu = math.radians(P["curl"])
@@ -111,12 +112,15 @@ def skeleton(P):
         d2 = (d1 * math.cos(e) + perp * math.sin(e)).normalized()
         J["hand" + side] = el + d2 * FARM
     # 整体转向（绕竖轴）+ 雪坡倾斜
-    pv = Vector((P["gx"] + P["yx"], P["yy"], 0))
+    pv = Vector((P["gx"] + P["yx"], P["yy"] + P["gy"], 0))
     T = (Matrix.Rotation(math.radians(-P["slope"]), 4, "X") @ Matrix.Translation(pv)
          @ Matrix.Rotation(math.radians(P["yaw"]), 4, "Z") @ Matrix.Translation(-pv))
     for k in list(J):
         J[k] = (T @ J[k]) if isinstance(J[k], Matrix) else (T @ J[k])
     J["slope_m"] = Matrix.Rotation(math.radians(-P["slope"]), 4, "X")
+    y0, y1 = P["ty0"], P["by"] + P["gy"]
+    J["trail_m"] = (J["slope_m"] @ Matrix.Translation((P["gx"] + P["bx"], (y0 + y1) / 2, 0.004))
+                    @ Matrix.Diagonal((1.45, max(0.01, abs(y1 - y0)) + 0.25, 1, 1))) if P["trail"] > 0.5 else None
     return J
 
 
@@ -213,6 +217,13 @@ class Scene:
         sp.data.color = (1.0, 0.95, 0.88); sp.data.shadow_soft_size = 0.4
         self.spot = sp
 
+        bpy.ops.mesh.primitive_plane_add(size=1.0)
+        self.trail = bpy.context.object; self.trail.hide_render = True
+        tm = mat("scrape", (0.66, 0.74, 0.88), 0.95)
+        tn = tm.node_tree; nz = tn.nodes.new("ShaderNodeTexNoise"); nz.inputs["Scale"].default_value = 40.0
+        bp = tn.nodes.new("ShaderNodeBump"); bp.inputs["Strength"].default_value = 0.5
+        tn.links.new(nz.outputs["Fac"], bp.inputs["Height"]); tn.links.new(bp.outputs["Normal"], tn.nodes["Principled BSDF"].inputs["Normal"])
+        self.trail.data.materials.append(tm)
         self._build_body()
         cam_data = bpy.data.cameras.new("cam"); cam_data.lens = 35
         self.cam = bpy.data.objects.new("cam", cam_data); sc.collection.objects.link(self.cam); sc.camera = self.cam
@@ -317,6 +328,10 @@ class Scene:
         self.bootL.location = lb.translation; self.bootL.rotation_quaternion = lb.to_quaternion()
         sm = J["slope_m"]
         self.ground.rotation_mode = "QUATERNION"; self.ground.rotation_quaternion = sm.to_quaternion()
+        if J["trail_m"] is None:
+            self.trail.hide_render = True
+        else:
+            self.trail.hide_render = False; self.trail.matrix_world = J["trail_m"]
         pr = self.parts
 
         def seg(o, a, b, shrink=0.0):

@@ -39,6 +39,7 @@ for n, (shot, perf, p) in enumerate(jobs):
     pts.update({q: v for q, v in getattr(ep, "extra_points", lambda P, J: {})(P, J).items()})
     meta = S.project(pts)
     meta["_z"] = {q: round(J[q].z, 3) for q in PTS}
+    meta["_pose"] = {q: P[q] for q in ("broll", "gx", "gy", "slope", "tilt")}
     if not meta_only:
         S.render(path)
     with open(os.path.join(OUT, k + ".json"), "w") as f:
