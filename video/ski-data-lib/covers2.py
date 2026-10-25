@@ -19,7 +19,7 @@ GOLDC = (0.86, 0.66, 0.38)
 ICEC = (0.55, 0.78, 0.98)
 REDC = (0.85, 0.36, 0.32)
 BOLD_TITLE = False
-COLMAP = {"ink": INKC, "gold": GOLDC, "ice": ICEC, "red": REDC}
+COLMAP = {"ink": INKC, "gold": GOLDC, "ice": ICEC, "red": REDC, "green": (0.45, 0.85, 0.55)}
 
 
 def background(w, h, seed):
@@ -218,7 +218,7 @@ def motif_image(c, C, w, h, portrait):
         x, y = rx, ry
         r0 = 0.09 * max(im.width, im.height)
         for r, al, lw in ((r0 * 1.18, 0.25, r0 * 0.26), (r0, 1.0, r0 * 0.11)):
-            c.new_path(); c.arc(x, y, r, 0, 2 * math.pi); c.set_source_rgba(*REDC, al); c.set_line_width(lw); c.stroke()
+            c.new_path(); c.arc(x, y, r, 0, 2 * math.pi); c.set_source_rgba(*COLMAP.get(C.get("ring_col", "red"), REDC), al); c.set_line_width(lw); c.stroke()
     c.restore()
 
 

@@ -277,3 +277,102 @@ class Writer:
 
     def close(self):
         self.p.stdin.close(); self.p.wait()
+
+
+def chips(c, items, cur, t, alpha, y=440):
+    """分步进度条：当前一步亮金色，做完的变绿。"""
+    if alpha <= 0:
+        return
+    n = len(items); gap = 14; cw = (W - 120 - gap * (n - 1)) / n
+    for i, s in enumerate(items):
+        x = 60 + i * (cw + gap)
+        on, done = i == cur, i < cur
+        col = GOLD if on else (GREEN if done else (0.5, 0.53, 0.58))
+        c.set_source_rgba(0.03, 0.045, 0.09, (0.85 if on else 0.6) * alpha); rrect(c, x, y, cw, 84, 20); c.fill()
+        c.set_source_rgba(*col, alpha * (1 if on or done else 0.6)); c.set_line_width(4 if on else 2); rrect(c, x, y, cw, 84, 20); c.stroke()
+        size = 34 if len(s) <= 5 else (30 if len(s) <= 6 else 26)
+        stroke_text(c, s, x + cw / 2, y + 55, size, col if on else (INK if done else DIM), alpha, stroke=0)
+
+
+def step_of(t, S):
+    k = -1
+    for i, (_, a, _) in enumerate(S):
+        if t >= a - 0.1:
+            k = i
+    return k
+
+
+def mid(P, a, b):
+    return ((P[a][0] + P[b][0]) / 2, (P[a][1] + P[b][1]) / 2)
+
+
+def run_episode(ep, FR, OUTF, draw, zoom_fn=None, next_lines=None):
+    """逐帧：读 3D 帧 + 关节投影 -> 暗角、徽章、本集标注(draw)、字幕、结尾下一课卡片 -> 编码。
+    环境变量 STILLS="1.0 2.5" 时只出这几个时刻的 png（找不到的帧用同镜头最近的一帧代替）。"""
+    import os, json
+    import cairo as _c
+    plan = ep.plan()
+    e0, e1, es = ep.SEC["end"]
+    stills = [float(x) for x in os.environ.get("STILLS", "").split()]
+    avail = sorted(f[:-5] for f in os.listdir(FR) if f.endswith(".json"))
+
+    def find(k):
+        if os.path.exists(os.path.join(FR, k + ".json")) or not stills:
+            return k
+        sh, n = k.rsplit("_", 1)
+        cand = [a for a in avail if a.rsplit("_", 1)[0] == sh]
+        return min(cand, key=lambda a: abs(int(a.rsplit("_", 1)[1]) - int(n)))
+
+    wr = None if stills else Writer(OUTF)
+    frames = [int(x * FPS) for x in stills] or range(len(plan))
+    for i in frames:
+        t = i / FPS
+        shot, perf, p = plan[i]
+        k = find(ep.key(shot, p))
+        m = json.load(open(os.path.join(FR, k + ".json")))
+        zoom, focus = (zoom_fn(t, m, shot, p) if zoom_fn else (1.0, (0.5, 0.5)))
+        if t >= e0:
+            zoom *= 1 + 0.05 * ramp(t, e0, e1)
+        s, buf, px = load_frame(os.path.join(FR, k + ".png"), zoom, focus)
+        c = _c.Context(s)
+        P = {q: px(m[q][0], m[q][1]) for q in m if not q.startswith("_")}
+        vignette(c, 0.45)
+        if t >= e0:
+            c.set_source_rgba(0.01, 0.015, 0.03, 0.6 * ramp(t, e0, e0 + 0.5)); c.paint()
+        badge(c, ep.LEVEL, ep.LESSON, ep.TITLE, ramp(t, 0.0, 0.4), t / ep.DUR)
+        stroke_text(c, "3D 示意", W - 60, 235, 24, DIM, 0.8, bold=False, align="r", stroke=4)
+        draw(c, t, P, m, shot, p)
+        if t >= e0 - 0.3 and next_lines:
+            a = ramp(t, e0, e0 + 0.4)
+            stroke_text(c, "下一课", W / 2, 720, 48, GOLD, a, spacing=0.3)
+            big_title(c, next_lines, t, e0 + 0.1, e1 + 5, y=860, size=110)
+            stroke_text(c, "关注我，跟着练到刻滑", W / 2, 1180, 40, INK, a * ramp(t, e0 + 0.8, e0 + 1.2), bold=False)
+        for st, a0, a1 in ep.SUBS:
+            if st != es[0][0]:
+                subtitle(c, st, t, a0, a1)
+        fade = 1 - ramp(t, 0, 0.15) + ramp(t, ep.DUR - 0.4, ep.DUR)
+        if fade > 0:
+            c.set_source_rgba(0, 0, 0, min(1, fade)); c.paint()
+        if stills:
+            s.write_to_png(f"{OUTF}_{t:05.2f}.png")
+        else:
+            wr.write(s)
+    if wr:
+        wr.close()
+
+
+def spin_arrow(c, x, y, r, col, alpha=1.0, t=0.0, label=None):
+    """绕一点转圈的弧形箭头（板打转）。"""
+    if alpha <= 0:
+        return
+    a0 = t * 2.5
+    c.new_path(); c.arc(x, y, r, a0, a0 + 4.6)
+    c.set_source_rgba(0.02, 0.03, 0.06, 0.6 * alpha); c.set_line_width(14); c.stroke()
+    c.new_path(); c.arc(x, y, r, a0, a0 + 4.6); c.set_source_rgba(*col, alpha); c.set_line_width(8); c.stroke()
+    ae = a0 + 4.6; ex, ey = x + r * math.cos(ae), y + r * math.sin(ae)
+    tx, ty = -math.sin(ae), math.cos(ae)
+    c.new_path(); c.move_to(ex + tx * 26, ey + ty * 26)
+    c.line_to(ex - ty * 16 - tx * 4, ey + tx * 16 - ty * 4); c.line_to(ex + ty * 16 - tx * 4, ey - tx * 16 - ty * 4); c.close_path()
+    c.set_source_rgba(*col, alpha); c.fill()
+    if label:
+        stroke_text(c, label, x, y - r - 30, 48, col, alpha)

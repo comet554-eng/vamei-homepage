@@ -14,6 +14,10 @@ POSE0 = dict(
     arm=12.0, ab=22.0, elb=20.0, fin=0.0,       # 手臂前举角（<0 往后伸）、外展、屈肘、小臂向内收
     knee=(0.0, 1.0, 0.25),                      # 膝盖朝向提示（世界方向）
     face=0.0,                                   # 头侧转（度），前摔时把脸让开
+    twist=0.0,                                  # 上半身绕竖轴扭转（度，>0 胸口转向板头 +x）
+    lfw=0.0, lfx=-0.26, lfy=0.0, lfz=0.13,      # 后脚（L）离开固定器的程度和位置（相对 gx 的世界坐标）
+    yaw=0.0, yx=0.0, yy=0.0,                    # 整个人和板绕竖轴转（度），转轴在 (gx+yx, yy)
+    slope=0.0,                                  # 雪坡角（度，>0 时 +y 方向是下坡）
 )
 THIGH, SHIN, UARM, FARM = 0.45, 0.44, 0.30, 0.28
 
@@ -63,11 +67,14 @@ def skeleton(P):
     up_b = (Rb @ Vector((0, 0, 1, 0))).xyz
     for side, fx in (("L", -0.26), ("R", 0.26)):
         J["ankle" + side] = B + (Rb @ Vector((fx, 0.0, 0.13, 0))).xyz
-        J["toe" + side] = B + (Rb @ Vector((fx, 0.12, 0.05, 0))).xyz
+    free = Vector((P["lfx"] + P["gx"], P["lfy"], P["lfz"]))
+    J["ankleL"] = J["ankleL"].lerp(free, P["lfw"])
+    J["bootL_m"] = Matrix.Translation(J["ankleL"] + (Rb @ Vector((0, 0.02, -0.04, 0))).xyz) @ Rb
     tl = math.radians(P["tilt"])
+    Rt = Matrix.Rotation(math.radians(P["twist"]), 3, "Z")
     u = Vector((0, -math.sin(tl), math.cos(tl)))
-    f = Vector((0, math.cos(tl), math.sin(tl)))
-    X = Vector((1, 0, 0))
+    f = Rt @ Vector((0, math.cos(tl), math.sin(tl)))
+    X = Rt @ Vector((1, 0, 0))
     pel = Vector((P["px"] + P["gx"], P["py"], P["pz"]))
     J["pelvis"] = pel
     chest = pel + u * 0.30
@@ -103,6 +110,13 @@ def skeleton(P):
         e = math.radians(P["elb"])
         d2 = (d1 * math.cos(e) + perp * math.sin(e)).normalized()
         J["hand" + side] = el + d2 * FARM
+    # 整体转向（绕竖轴）+ 雪坡倾斜
+    pv = Vector((P["gx"] + P["yx"], P["yy"], 0))
+    T = (Matrix.Rotation(math.radians(-P["slope"]), 4, "X") @ Matrix.Translation(pv)
+         @ Matrix.Rotation(math.radians(P["yaw"]), 4, "Z") @ Matrix.Translation(-pv))
+    for k in list(J):
+        J[k] = (T @ J[k]) if isinstance(J[k], Matrix) else (T @ J[k])
+    J["slope_m"] = Matrix.Rotation(math.radians(-P["slope"]), 4, "X")
     return J
 
 
@@ -174,16 +188,19 @@ class Scene:
 
         if not transparent:
             bpy.ops.mesh.primitive_plane_add(size=400, location=(0, 0, 0))
-            bpy.context.object.data.materials.append(self.M["snow"])
+            self.ground = bpy.context.object
+            self.ground.data.materials.append(self.M["snow"])
             # 两侧的发光标杆（给速度感和空间参照）
             for k in range(-30, 60):
                 for y in (-3.2, 3.2):
                     bpy.ops.mesh.primitive_cube_add(size=1, location=(k * 2.5, y, 0.02))
                     o = bpy.context.object; o.scale = (0.7, 0.06, 0.02); o.data.materials.append(self.M["pole"])
+                    o.parent = self.ground
         else:
             # 透明底封面：只要一块接影子的地
             bpy.ops.mesh.primitive_plane_add(size=40, location=(0, 0, 0))
             g = bpy.context.object; g.data.materials.append(self.M["snow"]); g.is_shadow_catcher = True
+            self.ground = g
 
         bpy.ops.object.light_add(type="SUN", rotation=(math.radians(50), math.radians(10), math.radians(150)))
         sun = bpy.context.object; sun.data.energy = 0.7; sun.data.color = (1.0, 0.90, 0.78); sun.data.angle = math.radians(4)
@@ -255,8 +272,14 @@ class Scene:
             bpy.ops.mesh.primitive_cube_add(size=1, location=(fx, 0.0, 0.035)); b = bpy.context.object
             b.scale = (0.13, 0.27, 0.04); b.data.materials.append(M["binding"]); b.parent = self.board
             bpy.ops.mesh.primitive_cube_add(size=1, location=(fx, 0.02, 0.09)); bt = bpy.context.object
-            bt.scale = (0.12, 0.30, 0.10); bt.data.materials.append(M["boot"]); bt.parent = self.board
+            bt.scale = (0.12, 0.30, 0.10); bt.data.materials.append(M["boot"])
+            if side == "R":
+                bt.parent = self.board
+            else:
+                bt.location = (0, 0, 0); bt.rotation_mode = "QUATERNION"; self.bootL = bt
             m = bt.modifiers.new("bev", "BEVEL"); m.width = 0.03; m.segments = 3
+        bpy.ops.mesh.primitive_cube_add(size=1, location=(-0.10, 0.0, 0.022)); pad = bpy.context.object
+        pad.scale = (0.14, 0.17, 0.008); pad.data.materials.append(M["binding"]); pad.parent = self.board
         P = self.parts
         for side in "LR":
             P["shin" + side] = self._seg("shin" + side, 0.062, M["pants"])
@@ -290,6 +313,10 @@ class Scene:
         J = skeleton(P)
         bm = J["board_m"]
         self.board.location = bm.translation; self.board.rotation_quaternion = bm.to_quaternion()
+        lb = J["bootL_m"]
+        self.bootL.location = lb.translation; self.bootL.rotation_quaternion = lb.to_quaternion()
+        sm = J["slope_m"]
+        self.ground.rotation_mode = "QUATERNION"; self.ground.rotation_quaternion = sm.to_quaternion()
         pr = self.parts
 
         def seg(o, a, b, shrink=0.0):
