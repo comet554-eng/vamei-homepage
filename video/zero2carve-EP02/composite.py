@@ -25,7 +25,9 @@ def downhill(c, P, a, col=ICE, label="下坡"):
         return
     (x0, y0), (x1, y1) = P["board"], P["dn"]
     arrow(c, x0, y0, x1, y1, col, a, w=9)
-    stroke_text(c, label, x1 + (30 if x1 > x0 else -30), y1 + 20, 42, col, a, align="l" if x1 > x0 else "r")
+    font(c, 42, True); lw = tw(c, label)
+    lx = min(max(x1 + (30 if x1 > x0 else -30 - lw), 40), W - 40 - lw)
+    stroke_text(c, label, lx, y1 + 20, 42, col, a, align="l")
 
 
 def draw(c, t, P, m, shot, p):

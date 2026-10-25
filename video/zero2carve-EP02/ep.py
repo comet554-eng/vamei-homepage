@@ -64,7 +64,7 @@ def orbit(cx, cy, r, deg, z):
 def cam(shot, p, P):
     gx, s = P["gx"], P["slope"]
     if shot == "W1":     # 开场：正前方偏侧，看他往后撑、板往下溜
-        pos, tgt = orbit(gx, -0.2, 3.0, 62, 1.25), (gx, -0.1, 0.55)
+        pos, tgt = orbit(gx, -0.2, 3.6, 38, 1.35), (gx, -0.1, 0.80)
     elif shot == "W2":   # 侧面：看清板离屁股多远
         pos, tgt = orbit(gx, -0.1, 3.0, 12, 0.9), (gx, -0.05, 0.45)
     elif shot in ("G", "G2"):
