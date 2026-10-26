@@ -130,18 +130,16 @@ class Scene:
             o.select_set(True)
         bpy.context.view_layer.objects.active = t1; bpy.ops.object.join()
         tree = bpy.context.object; tree.hide_render = True; tree.hide_viewport = True
-        for k in range(160):
+        for k in range(170):           # 雪道顺着下坡方向（y），树在两边（|x| 大）
             side = -1 if k % 2 else 1
-            x = rnd.uniform(-60, 60); y = side * rnd.uniform(9, 30)
-            if abs(y) < 9:
-                continue
+            x = side * rnd.uniform(10, 34); y = rnd.uniform(-70, 40)
             inst = bpy.data.objects.new(f"tree{k}", tree.data); self.sc.collection.objects.link(inst)
             s = rnd.uniform(0.8, 1.6); inst.scale = (s, s, s * rnd.uniform(0.9, 1.3)); inst.location = (x, y, 0)
             inst.parent = self.ground
         # 雪道边的小旗杆（给近处的空间感）
-        for k in range(-20, 40):
-            for y in (-6.5, 6.5):
-                bpy.ops.mesh.primitive_cylinder_add(vertices=8, radius=0.025, depth=1.2, location=(k * 4.0, y, 0.6))
+        for k in range(-18, 12):
+            for x in (-7.5, 8.5):
+                bpy.ops.mesh.primitive_cylinder_add(vertices=8, radius=0.025, depth=1.2, location=(x, k * 4.0, 0.6))
                 o = bpy.context.object; o.data.materials.append(M["pole"]); o.parent = self.ground
 
     # ---------------------------------------------------------------- 人

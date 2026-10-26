@@ -12,6 +12,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("out"); ap.add_argument("dur", type=float)
 ap.add_argument("--style", default="pop"); ap.add_argument("--hits", default="")
 ap.add_argument("--level", type=float, default=-20.0)
+ap.add_argument("--sfx", default="")          # "t:kind,..."  kind = boom | ding | whoosh
 A = ap.parse_args()
 ST = dict(pop=dict(bpm=118, root=60, prog=[(0, "M"), (7, "M"), (9, "m"), (5, "M")], saw=0.25, kick=0.9),
           drive=dict(bpm=128, root=62, prog=[(0, "M"), (9, "m"), (5, "M"), (7, "M")], saw=0.7, kick=1.1))[A.style]
@@ -146,6 +147,26 @@ for b in range(nbars):
 for h in hits:
     riser(h, 2 * BEAT, 0.12)
     impact(h, 0.5)
+
+
+def ding(t0, g):
+    for m, gg in ((ST["root"] + 24, 1.0), (ST["root"] + 31, 0.5), (ST["root"] + 36, 0.3)):
+        t = tt(1.2); f = hz(m)
+        add(t0, (np.sin(2 * np.pi * f * t) * np.exp(-t * 4) + 0.3 * np.sin(4 * np.pi * f * t) * np.exp(-t * 9)) * gg, g, 0.2)
+
+
+def whoosh(t0, g, d=0.45):
+    t = tt(d); x = noise(d)
+    for _ in range(3):
+        x = np.convolve(x, np.ones(6) / 6, "same").astype(np.float32)
+    x = hp(x) * 3
+    e = np.sin(np.pi * t / d) ** 2
+    add(t0 - d / 2, x * e, g, 0.0)
+
+
+for item in [x for x in A.sfx.split(",") if x.strip()]:
+    tsec, kind = item.split(":")
+    {"boom": lambda q: impact(q, 0.9), "ding": lambda q: ding(q, 0.18), "whoosh": lambda q: whoosh(q, 0.35)}[kind](float(tsec))
 
 L *= duck; R *= duck * 0.98 + 0.02
 mix = np.stack([L, R], 1)[: int(A.dur * SR)]
