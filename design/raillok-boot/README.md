@@ -2,6 +2,17 @@
 
 > 约束：双扣，两个旋钮都是 ATOP 原厂件，旋钮上不能印任何 logo（提案 06 侧旋钮上印了图形标，是错的）。
 
+## 提案 08：概念渲染（Figma AI，待选方向）
+
+代码画的矢量线稿质感上不去，改用 Figma AI（gpt-image-2.5）出产品渲染级的概念效果图定方向，
+原图在 Figma 文件「RAILLOK 雪鞋概念渲染」：https://www.figma.com/design/YdHXMNyGOAQ1xgi9QRmmuv
+
+- `RAILLOK雪鞋概念渲染08.pdf` / `.png`：5 个方向一页总览（`tools/sheet8.py`）。
+- `renders/r8-A-石墨.jpg`、`r8-B-鼠尾草.jpg`、`r8-C-岩灰棱面.jpg`、`r8-D-曜黑.jpg`、`r8-E-骨白等高线.jpg`：单张 1536×1024。
+
+旋钮都是空白通用旋钮（实际用 ATOP 原厂件，不印 logo），鞋面上也没放品牌标识，选定方向后再加；
+选定后照 TP 格式出线稿和配色稿。
+
 ## 提案 07「一笔」（当前方案）
 
 - `RAILLOK雪鞋款式提案07_一笔.pdf`：3 页矢量 PDF。第 1 页白色款式图 + 10 处编号说明，第 2 页主推石墨 + 色卡，第 3 页四套配色。
