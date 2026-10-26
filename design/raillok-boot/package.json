@@ -1,0 +1,9 @@
+{
+  "name": "raillok-boot",
+  "private": true,
+  "description": "RAILLOK 雪鞋款式提案：鞋面新设计，标志做成鞋筒外侧结构",
+  "dependencies": {
+    "@fontsource/inter": "^5.3.0",
+    "@fontsource/noto-sans-sc": "^5.3.1"
+  }
+}

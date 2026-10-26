@@ -1,0 +1,31 @@
+/* RAILLOK 雪鞋：部件样式。配色只改各 .cw-* 里的变量；品牌色取自 LOGO 规范：
+   骨白 #F3F2EE  黑 #000  鼠尾草绿 #C2D8C5  岩灰 #68747A */
+.cw-slate { --base:#68747A; --guard:#535D63; --frame:#151617; --toe:#151617; --mid:#F3F2EE; --out:#151617;
+            --liner:#151617; --loop:#C2D8C5; --cable:#C2D8C5; --boa:#151617; --boa-light:#2E3134; --cap:#151617;
+            --mark:#C2D8C5; --stitch:rgba(255,255,255,.35); --stitch-f:rgba(255,255,255,.3); }
+.cw-bone  { --base:#EEECE6; --guard:#E0DED6; --frame:#68747A; --toe:#68747A; --mid:#F3F2EE; --out:#3B4246;
+            --liner:#151617; --loop:#C2D8C5; --cable:#C2D8C5; --boa:#151617; --boa-light:#2E3134; --cap:#151617;
+            --mark:#F3F2EE; --stitch:rgba(0,0,0,.28); --stitch-f:rgba(255,255,255,.45); }
+.cw-sage  { --base:#C2D8C5; --guard:#ADC5B1; --frame:#151617; --toe:#151617; --mid:#F3F2EE; --out:#151617;
+            --liner:#151617; --loop:#F3F2EE; --cable:#F3F2EE; --boa:#151617; --boa-light:#2E3134; --cap:#151617;
+            --mark:#C2D8C5; --stitch:rgba(0,0,0,.28); --stitch-f:rgba(255,255,255,.3); }
+.cw-black { --base:#1E2022; --guard:#2B2E31; --frame:#68747A; --toe:#151617; --mid:#F3F2EE; --out:#151617;
+            --liner:#151617; --loop:#C2D8C5; --cable:#C2D8C5; --boa:#151617; --boa-light:#2E3134; --cap:#151617;
+            --mark:#C2D8C5; --stitch:rgba(255,255,255,.22); --stitch-f:rgba(255,255,255,.4); }
+
+.base { fill:var(--base); } .guard { fill:var(--guard); } .frame { fill:var(--frame); } .toe { fill:var(--toe); }
+.drop { fill:#000; opacity:.22; }
+.line { stroke:#000; stroke-width:.6; stroke-linejoin:round; }
+.line-thin { stroke:#000; stroke-width:.3; }
+.stitch { stroke:var(--stitch); stroke-width:.4; stroke-dasharray:1.6 .9; }
+.stitch-f { stroke:var(--stitch-f); stroke-width:.4; stroke-dasharray:1.6 .9; }
+.liner { fill:var(--liner); } .liner-line { stroke:rgba(255,255,255,.25); stroke-width:.5; }
+.loop { fill:var(--loop); } .loop-in { fill:var(--loop); opacity:.8; }
+.midsole { fill:var(--mid); } .outsole { fill:var(--out); }
+.mid-detail { stroke:rgba(0,0,0,.08); stroke-width:1.2; }
+.cable { fill:var(--cable); }
+.boa { fill:var(--boa-light); } .boa-dark { fill:var(--boa); }
+.boa-cap { fill:var(--cap); } .dial-ring { stroke:rgba(255,255,255,.18); stroke-width:.4; }
+.knurl { stroke:rgba(255,255,255,.28); stroke-width:.35; }
+.mark { fill:var(--mark); }
+.shadow { fill:#000; opacity:.45; }
