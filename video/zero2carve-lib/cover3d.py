@@ -4,7 +4,11 @@ import sys, os, json
 HERE = os.path.dirname(os.path.abspath(__file__))
 EP = os.path.abspath(sys.argv[1]); sys.path.insert(0, EP); sys.path.insert(0, HERE)
 import ep
-from rig3d import Scene, interp
+from rig3d import interp
+if getattr(ep, "STYLE", "night") == "day":
+    from rig3d_day import Scene        # 第6课起：白天雪山 + 一体成型人物
+else:
+    from rig3d import Scene
 from mathutils import Vector
 
 out = sys.argv[2]

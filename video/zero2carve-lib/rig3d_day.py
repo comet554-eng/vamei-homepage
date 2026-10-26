@@ -246,18 +246,18 @@ class Scene:
             self.gloves.append(g)
         # 头：下巴（皮肤）+ 头盔 + 雪镜（弧形）+ 镜框
         hd = bpy.data.objects.new("headE", None); self.sc.collection.objects.link(hd); hd.rotation_mode = "QUATERNION"; self.head = hd
-        bpy.ops.mesh.primitive_uv_sphere_add(radius=0.105, segments=28, ring_count=14, location=(0, 0.01, -0.03)); fc = bpy.context.object
+        bpy.ops.mesh.primitive_uv_sphere_add(radius=0.095, segments=28, ring_count=14, location=(0, 0.04, -0.065)); fc = bpy.context.object
         fc.data.materials.append(M["skin"]); _smooth(fc); fc.parent = hd
-        bpy.ops.mesh.primitive_uv_sphere_add(radius=0.135, segments=32, ring_count=16, location=(0, -0.01, 0.025)); h = bpy.context.object
-        h.scale = (0.95, 1.08, 0.92); h.data.materials.append(M["helmet"]); _smooth(h); h.parent = hd
-        bpy.ops.mesh.primitive_cylinder_add(vertices=48, radius=0.122, depth=0.075, location=(0, 0.0, 0.0)); gg = bpy.context.object
+        bpy.ops.mesh.primitive_uv_sphere_add(radius=0.13, segments=32, ring_count=16, location=(0, -0.025, 0.03)); h = bpy.context.object
+        h.scale = (0.95, 1.0, 0.92); h.data.materials.append(M["helmet"]); _smooth(h); h.parent = hd
+        bpy.ops.mesh.primitive_cylinder_add(vertices=48, radius=0.138, depth=0.075, location=(0, 0.0, 0.0)); gg = bpy.context.object
         bm = bmesh.new(); bm.from_mesh(gg.data)
         bmesh.ops.delete(bm, geom=[v for v in bm.verts if v.co.y < 0.03], context="VERTS")
         bm.to_mesh(gg.data); bm.free()
         sol = gg.modifiers.new("sol", "SOLIDIFY"); sol.thickness = 0.012
-        gg.scale = (1.0, 1.04, 1.0); gg.location = (0, -0.005, 0.005); gg.data.materials.append(M["goggle"]); _smooth(gg); gg.parent = hd
-        bpy.ops.mesh.primitive_torus_add(major_radius=0.128, minor_radius=0.01, location=(0, 0, 0.0)); s = bpy.context.object
-        s.scale = (1.0, 1.06, 1.6); s.data.materials.append(M["frame"]); s.parent = hd
+        gg.scale = (0.98, 1.0, 1.0); gg.location = (0, 0.0, 0.0); gg.data.materials.append(M["goggle"]); _smooth(gg); gg.parent = hd
+        bpy.ops.mesh.primitive_torus_add(major_radius=0.132, minor_radius=0.009, location=(0, -0.01, 0.0)); s = bpy.context.object
+        s.scale = (1.0, 1.0, 1.6); s.data.materials.append(M["frame"]); s.parent = hd
 
     def place(self, P):
         J = skeleton(P)
