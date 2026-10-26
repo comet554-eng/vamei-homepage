@@ -9,6 +9,7 @@ from mathutils import Vector, Matrix
 POSE0 = dict(
     gx=0.0, gy=0.0,                             # 整体沿 x / y 的位移（推坡时沿 y 往下坡走）
     trail=0.0, ty0=0.0,                         # 雪痕：1 时显示，从 y=ty0 拉到板当前位置（宽 = 板长）
+    tw=(), tn=0.0,                              # 多段雪痕：途经点 (x0,y0,x1,y1,...)，已走过 tn 个点，再连到板当前位置
     bx=0.0, by=0.0, bz=0.0, broll=0.0,          # 板中心、绕 x 轴横滚（>0 前刃抬起/后刃压雪）
     px=0.0, py=-0.02, pz=0.86, tilt=0.0,        # 骨盆中心；躯干后仰角（>0 往后倒，<0 往前扑）
     curl=0.0, neck=0.0,                         # 上背前弯（团身）、低头收下巴
@@ -118,9 +119,23 @@ def skeleton(P):
     for k in list(J):
         J[k] = (T @ J[k]) if isinstance(J[k], Matrix) else (T @ J[k])
     J["slope_m"] = Matrix.Rotation(math.radians(-P["slope"]), 4, "X")
-    y0, y1 = P["ty0"], P["by"] + P["gy"]
-    J["trail_m"] = (J["slope_m"] @ Matrix.Translation((P["gx"] + P["bx"], (y0 + y1) / 2, 0.004))
-                    @ Matrix.Diagonal((1.45, max(0.01, abs(y1 - y0)) + 0.25, 1, 1))) if P["trail"] > 0.5 else None
+    J["trails"] = []
+    if P["trail"] > 0.5:
+        cur = (P["gx"] + P["bx"], P["gy"] + P["by"])
+        if P["tw"]:
+            wp = [(P["tw"][i], P["tw"][i + 1]) for i in range(0, len(P["tw"]), 2)][:int(P["tn"] + 1e-6) + 1]
+        else:
+            wp = [(cur[0], P["ty0"])]
+        pts = wp + [cur]
+        for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+            dx, dy = x1 - x0, y1 - y0
+            L = math.hypot(dx, dy)
+            if L < 0.02:
+                continue
+            ang = math.atan2(dy, dx)
+            wid = 1.45 * abs(math.sin(ang)) + 0.30 * abs(math.cos(ang))   # 板大致沿 x：横着推宽，顺着走窄
+            J["trails"].append(J["slope_m"] @ Matrix.Translation(((x0 + x1) / 2, (y0 + y1) / 2, 0.004 + 0.001 * len(J["trails"])))
+                               @ Matrix.Rotation(ang, 4, "Z") @ Matrix.Diagonal((L + 0.25, wid, 1, 1)))
     return J
 
 
@@ -217,13 +232,14 @@ class Scene:
         sp.data.color = (1.0, 0.95, 0.88); sp.data.shadow_soft_size = 0.4
         self.spot = sp
 
-        bpy.ops.mesh.primitive_plane_add(size=1.0)
-        self.trail = bpy.context.object; self.trail.hide_render = True
         tm = mat("scrape", (0.66, 0.74, 0.88), 0.95)
         tn = tm.node_tree; nz = tn.nodes.new("ShaderNodeTexNoise"); nz.inputs["Scale"].default_value = 40.0
         bp = tn.nodes.new("ShaderNodeBump"); bp.inputs["Strength"].default_value = 0.5
         tn.links.new(nz.outputs["Fac"], bp.inputs["Height"]); tn.links.new(bp.outputs["Normal"], tn.nodes["Principled BSDF"].inputs["Normal"])
-        self.trail.data.materials.append(tm)
+        self.trails = []
+        for _ in range(5):
+            bpy.ops.mesh.primitive_plane_add(size=1.0)
+            o = bpy.context.object; o.hide_render = True; o.data.materials.append(tm); self.trails.append(o)
         self._build_body()
         cam_data = bpy.data.cameras.new("cam"); cam_data.lens = 35
         self.cam = bpy.data.objects.new("cam", cam_data); sc.collection.objects.link(self.cam); sc.camera = self.cam
@@ -328,10 +344,11 @@ class Scene:
         self.bootL.location = lb.translation; self.bootL.rotation_quaternion = lb.to_quaternion()
         sm = J["slope_m"]
         self.ground.rotation_mode = "QUATERNION"; self.ground.rotation_quaternion = sm.to_quaternion()
-        if J["trail_m"] is None:
-            self.trail.hide_render = True
-        else:
-            self.trail.hide_render = False; self.trail.matrix_world = J["trail_m"]
+        for i, o in enumerate(self.trails):
+            if i < len(J["trails"]):
+                o.hide_render = False; o.matrix_world = J["trails"][i]
+            else:
+                o.hide_render = True
         pr = self.parts
 
         def seg(o, a, b, shrink=0.0):
