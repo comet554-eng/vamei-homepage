@@ -45,10 +45,10 @@ def to_poly(d, evenodd=False):
 
 def to_d(geom, prec=2):
     """polygon(s) -> SVG path d (with holes, evenodd-safe)"""
-    geoms = geom.geoms if isinstance(geom, MultiPolygon) else [geom]
+    geoms = list(geom.geoms) if hasattr(geom, 'geoms') else [geom]
     out = []
     for g in geoms:
-        if g.is_empty: continue
+        if g.is_empty or g.geom_type != 'Polygon': continue    # 交出来的碎线、碎点不要
         for ring in [g.exterior, *g.interiors]:
             c = list(ring.coords)
             out.append('M' + 'L'.join(f'{x:.{prec}f} {y:.{prec}f}' for x, y in c[:-1]) + 'Z')
