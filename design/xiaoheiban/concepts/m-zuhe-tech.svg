@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-800 -230 1600 520" width="1600mm" height="520mm">
+    <path d="M -770 0 C -770 -40 -758 -76 -742 -107 C -725 -140 -662 -148 -592 -148 L -567 -146.52 A 7842.1 7842.1 0 0 0 567 -146.52 L 592 -148 C 662 -148 725 -140 742 -107 C 758 -76 770 -40 770 0 C 770 40 758 76 742 107 C 725 140 662 148 592 148 L 567 146.52 A 7842.1 7842.1 0 0 0 -567 146.52 L -592 148 C -662 148 -725 140 -742 107 C -758 76 -770 40 -770 0 Z" fill="#fff" stroke="#2b2b2b" stroke-width="1.6"/>
+    <path d="M -770 0 C -770 -40 -758 -76 -742 -107 C -725 -140 -662 -148 -592 -148 L -567 -146.52 A 7842.1 7842.1 0 0 0 567 -146.52 L 592 -148 C 662 -148 725 -140 742 -107 C 758 -76 770 -40 770 0 C 770 40 758 76 742 107 C 725 140 662 148 592 148 L 567 146.52 A 7842.1 7842.1 0 0 0 -567 146.52 L -592 148 C -662 148 -725 140 -742 107 C -758 76 -770 40 -770 0 Z" fill="none" stroke="#2b2b2b" stroke-width="0.6" transform="scale(0.985)" stroke-dasharray="4 3"/>
+    <g fill="none" stroke="#9a978f" stroke-width="0.8"><circle cx="-220" cy="-20" r="4.5"/><circle cx="-220" cy="20" r="4.5"/><circle cx="-240" cy="-20" r="4.5"/><circle cx="-240" cy="20" r="4.5"/><circle cx="-260" cy="-20" r="4.5"/><circle cx="-260" cy="20" r="4.5"/><circle cx="-280" cy="-20" r="4.5"/><circle cx="-280" cy="20" r="4.5"/><circle cx="-300" cy="-20" r="4.5"/><circle cx="-300" cy="20" r="4.5"/><circle cx="-320" cy="-20" r="4.5"/><circle cx="-320" cy="20" r="4.5"/><circle cx="220" cy="-20" r="4.5"/><circle cx="220" cy="20" r="4.5"/><circle cx="240" cy="-20" r="4.5"/><circle cx="240" cy="20" r="4.5"/><circle cx="260" cy="-20" r="4.5"/><circle cx="260" cy="20" r="4.5"/><circle cx="280" cy="-20" r="4.5"/><circle cx="280" cy="20" r="4.5"/><circle cx="300" cy="-20" r="4.5"/><circle cx="300" cy="20" r="4.5"/><circle cx="320" cy="-20" r="4.5"/><circle cx="320" cy="20" r="4.5"/></g>
+    <rect x="725" y="-150" width="45" height="300" fill="#ff6a1a" fill-opacity=".25" clip-path="url(#tb)"/>
+    <rect x="-770" y="-150" width="45" height="300" fill="#ff6a1a" fill-opacity=".25" clip-path="url(#tb)"/>
+    <defs><clipPath id="tb"><path d="M -770 0 C -770 -40 -758 -76 -742 -107 C -725 -140 -662 -148 -592 -148 L -567 -146.52 A 7842.1 7842.1 0 0 0 567 -146.52 L 592 -148 C 662 -148 725 -140 742 -107 C 758 -76 770 -40 770 0 C 770 40 758 76 742 107 C 725 140 662 148 592 148 L 567 146.52 A 7842.1 7842.1 0 0 0 -567 146.52 L -592 148 C -662 148 -725 140 -742 107 C -758 76 -770 40 -770 0 Z"/></clipPath></defs>
+    <rect x="-210" y="-56" width="150" height="112" rx="18" fill="#2b2b2b" fill-opacity=".12" stroke="#2b2b2b" stroke-width="0.8"/>
+    <circle cx="700" cy="0" r="8.5" fill="none" stroke="#2b2b2b" stroke-width="1"/><circle cx="700" cy="0" r="5" fill="none" stroke="#2b2b2b" stroke-width="1"/>
+    
+    <line x1="-770" y1="-190" x2="770" y2="-190" stroke="#d1462f" stroke-width="1"/>
+    <line x1="-770" y1="-195" x2="-770" y2="-185" stroke="#d1462f" stroke-width="1"/>
+    <line x1="770" y1="-195" x2="770" y2="-185" stroke="#d1462f" stroke-width="1"/>
+    <text x="0" y="-197" text-anchor="middle" font-family="'WenQuanYi Zen Hei'" font-size="11" fill="#d1462f">总长 1540</text>
+    
+    <line x1="-567" y1="-168" x2="567" y2="-168" stroke="#d1462f" stroke-width="1"/>
+    <line x1="-567" y1="-173" x2="-567" y2="-163" stroke="#d1462f" stroke-width="1"/>
+    <line x1="567" y1="-173" x2="567" y2="-163" stroke="#d1462f" stroke-width="1"/>
+    <text x="0" y="-175" text-anchor="middle" font-family="'WenQuanYi Zen Hei'" font-size="11" fill="#d1462f">有效边 1134（接触点之间，挂孔和护角都在此范围外）</text>
+    
+    <line x1="725" y1="172" x2="770" y2="172" stroke="#d1462f" stroke-width="1"/>
+    <line x1="725" y1="167" x2="725" y2="177" stroke="#d1462f" stroke-width="1"/>
+    <line x1="770" y1="167" x2="770" y2="177" stroke="#d1462f" stroke-width="1"/>
+    <text x="747.5" y="190" text-anchor="middle" font-family="'WenQuanYi Zen Hei'" font-size="11" fill="#d1462f">护角 45</text>
+    
+    <line x1="700" y1="150" x2="770" y2="150" stroke="#d1462f" stroke-width="1"/>
+    <line x1="700" y1="145" x2="700" y2="155" stroke="#d1462f" stroke-width="1"/>
+    <line x1="770" y1="145" x2="770" y2="155" stroke="#d1462f" stroke-width="1"/>
+    <text x="735" y="145" text-anchor="middle" font-family="'WenQuanYi Zen Hei'" font-size="11" fill="#d1462f">70</text>
+    
+    <line x1="-210" y1="80" x2="-60" y2="80" stroke="#d1462f" stroke-width="1"/>
+    <line x1="-210" y1="75" x2="-210" y2="85" stroke="#d1462f" stroke-width="1"/>
+    <line x1="-60" y1="75" x2="-60" y2="85" stroke="#d1462f" stroke-width="1"/>
+    <text x="-135" y="98" text-anchor="middle" font-family="'WenQuanYi Zen Hei'" font-size="11" fill="#d1462f">止滑区 150</text>
+    <path d="M -748 40 L -770 222" stroke="#2b2b2b" stroke-width="0.8" fill="none"/><circle cx="-748" cy="40" r="2" fill="#2b2b2b"/><text x="-766" y="226" font-family="'WenQuanYi Zen Hei'" font-size="11" fill="#2b2b2b">板头/板尾护角：品牌色 TPU 软胶</text><text x="-766" y="240" font-family="'WenQuanYi Zen Hei'" font-size="11" fill="#2b2b2b">从板端往里包 45mm</text><text x="-766" y="254" font-family="'WenQuanYi Zen Hei'" font-size="11" fill="#2b2b2b">压板时一同成型或成型后粘接</text>
+    <path d="M -135 56 L -380 222" stroke="#2b2b2b" stroke-width="0.8" fill="none"/><circle cx="-135" cy="56" r="2" fill="#2b2b2b"/><text x="-376" y="226" font-family="'WenQuanYi Zen Hei'" font-size="11" fill="#2b2b2b">一体压纹止滑区：150×112mm，圆角 18</text><text x="-376" y="240" font-family="'WenQuanYi Zen Hei'" font-size="11" fill="#2b2b2b">面材压出 0.6–1.0mm 凸棱，同色黑</text><text x="-376" y="254" font-family="'WenQuanYi Zen Hei'" font-size="11" fill="#2b2b2b">位置：后脚固定器内侧</text>
+    <path d="M 200 128.55075211590975 L 10 222" stroke="#2b2b2b" stroke-width="0.8" fill="none"/><circle cx="200" cy="128.55075211590975" r="2" fill="#2b2b2b"/><text x="14" y="226" font-family="'WenQuanYi Zen Hei'" font-size="11" fill="#2b2b2b">360° 彩色包边</text><text x="14" y="240" font-family="'WenQuanYi Zen Hei'" font-size="11" fill="#2b2b2b">边墙用品牌色 ABS/PU，整圈一色</text>
+    <path d="M 700 8.5 L 400 222" stroke="#2b2b2b" stroke-width="0.8" fill="none"/><circle cx="700" cy="8.5" r="2" fill="#2b2b2b"/><text x="404" y="226" font-family="'WenQuanYi Zen Hei'" font-size="11" fill="#2b2b2b">板头挂孔：孔径 Ø10，护圈外径 Ø17</text><text x="404" y="240" font-family="'WenQuanYi Zen Hei'" font-size="11" fill="#2b2b2b">不锈钢或黄铜护圈，中心距板头端 70mm</text><text x="404" y="254" font-family="'WenQuanYi Zen Hei'" font-size="11" fill="#2b2b2b">孔壁环氧封边防进水，需做强度测试</text>
+  </svg>

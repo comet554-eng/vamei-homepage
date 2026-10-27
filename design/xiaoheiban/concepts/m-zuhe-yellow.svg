@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-800 -175 1600 350" width="1600mm" height="350mm">
+  <defs>
+    <clipPath id="board-yellow"><path d="M -770 0 C -770 -40 -758 -76 -742 -107 C -725 -140 -662 -148 -592 -148 L -567 -146.52 A 7842.1 7842.1 0 0 0 567 -146.52 L 592 -148 C 662 -148 725 -140 742 -107 C 758 -76 770 -40 770 0 C 770 40 758 76 742 107 C 725 140 662 148 592 148 L 567 146.52 A 7842.1 7842.1 0 0 0 -567 146.52 L -592 148 C -662 148 -725 140 -742 107 C -758 76 -770 40 -770 0 Z"/></clipPath>
+    <clipPath id="grip-yellow"><rect x="-210" y="-56" width="150" height="112" rx="18"/></clipPath>
+    <radialGradient id="metal-yellow" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#f4f5f6"/><stop offset=".55" stop-color="#b9bdc2"/><stop offset="1" stop-color="#8a8f95"/></radialGradient>
+  </defs>
+  <g clip-path="url(#board-yellow)">
+    <rect x="-800" y="-175" width="1600" height="350" fill="#141414"/>
+    <g clip-path="url(#grip-yellow)"><path d="M -200 -48 q 37.5 -6 65 0 t 65 0" fill="none" stroke="#262626" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M -200 -49.2 q 37.5 -6 65 0 t 65 0" fill="none" stroke="#2f2f2f" stroke-width="0.9" stroke-linecap="round"/><path d="M -200 -40 q 37.5 -6 65 0 t 65 0" fill="none" stroke="#262626" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M -200 -41.2 q 37.5 -6 65 0 t 65 0" fill="none" stroke="#2f2f2f" stroke-width="0.9" stroke-linecap="round"/><path d="M -200 -32 q 37.5 -6 65 0 t 65 0" fill="none" stroke="#262626" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M -200 -33.2 q 37.5 -6 65 0 t 65 0" fill="none" stroke="#2f2f2f" stroke-width="0.9" stroke-linecap="round"/><path d="M -200 -24 q 37.5 -6 65 0 t 65 0" fill="none" stroke="#262626" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M -200 -25.2 q 37.5 -6 65 0 t 65 0" fill="none" stroke="#2f2f2f" stroke-width="0.9" stroke-linecap="round"/><path d="M -200 -16 q 37.5 -6 65 0 t 65 0" fill="none" stroke="#262626" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M -200 -17.2 q 37.5 -6 65 0 t 65 0" fill="none" stroke="#2f2f2f" stroke-width="0.9" stroke-linecap="round"/><path d="M -200 -8 q 37.5 -6 65 0 t 65 0" fill="none" stroke="#262626" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M -200 -9.2 q 37.5 -6 65 0 t 65 0" fill="none" stroke="#2f2f2f" stroke-width="0.9" stroke-linecap="round"/><path d="M -200 0 q 37.5 -6 65 0 t 65 0" fill="none" stroke="#262626" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M -200 -1.2 q 37.5 -6 65 0 t 65 0" fill="none" stroke="#2f2f2f" stroke-width="0.9" stroke-linecap="round"/><path d="M -200 8 q 37.5 -6 65 0 t 65 0" fill="none" stroke="#262626" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M -200 6.8 q 37.5 -6 65 0 t 65 0" fill="none" stroke="#2f2f2f" stroke-width="0.9" stroke-linecap="round"/><path d="M -200 16 q 37.5 -6 65 0 t 65 0" fill="none" stroke="#262626" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M -200 14.8 q 37.5 -6 65 0 t 65 0" fill="none" stroke="#2f2f2f" stroke-width="0.9" stroke-linecap="round"/><path d="M -200 24 q 37.5 -6 65 0 t 65 0" fill="none" stroke="#262626" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M -200 22.8 q 37.5 -6 65 0 t 65 0" fill="none" stroke="#2f2f2f" stroke-width="0.9" stroke-linecap="round"/><path d="M -200 32 q 37.5 -6 65 0 t 65 0" fill="none" stroke="#262626" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M -200 30.8 q 37.5 -6 65 0 t 65 0" fill="none" stroke="#2f2f2f" stroke-width="0.9" stroke-linecap="round"/><path d="M -200 40 q 37.5 -6 65 0 t 65 0" fill="none" stroke="#262626" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M -200 38.8 q 37.5 -6 65 0 t 65 0" fill="none" stroke="#2f2f2f" stroke-width="0.9" stroke-linecap="round"/><path d="M -200 48 q 37.5 -6 65 0 t 65 0" fill="none" stroke="#262626" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M -200 46.8 q 37.5 -6 65 0 t 65 0" fill="none" stroke="#2f2f2f" stroke-width="0.9" stroke-linecap="round"/></g>
+    <rect x="-210" y="-56" width="150" height="112" rx="18" fill="none" stroke="#242424" stroke-width="1.5"/><rect x="725" y="-170" width="65" height="340" fill="#ffd23f"/>
+      <path d="M 725 -109.87469426307808 Q 735 0 725 109.87469426307808" fill="none" stroke="#000" stroke-opacity=".35" stroke-width="1.2"/><rect x="-790" y="-170" width="65" height="340" fill="#ffd23f"/>
+      <path d="M -725 -109.87469426307808 Q -735 0 -725 109.87469426307808" fill="none" stroke="#000" stroke-opacity=".35" stroke-width="1.2"/>
+  </g>
+  <g fill="#000" stroke="#444" stroke-width="0.8"><circle cx="-220" cy="-20" r="4.5"/><circle cx="-220" cy="20" r="4.5"/><circle cx="-240" cy="-20" r="4.5"/><circle cx="-240" cy="20" r="4.5"/><circle cx="-260" cy="-20" r="4.5"/><circle cx="-260" cy="20" r="4.5"/><circle cx="-280" cy="-20" r="4.5"/><circle cx="-280" cy="20" r="4.5"/><circle cx="-300" cy="-20" r="4.5"/><circle cx="-300" cy="20" r="4.5"/><circle cx="-320" cy="-20" r="4.5"/><circle cx="-320" cy="20" r="4.5"/><circle cx="220" cy="-20" r="4.5"/><circle cx="220" cy="20" r="4.5"/><circle cx="240" cy="-20" r="4.5"/><circle cx="240" cy="20" r="4.5"/><circle cx="260" cy="-20" r="4.5"/><circle cx="260" cy="20" r="4.5"/><circle cx="280" cy="-20" r="4.5"/><circle cx="280" cy="20" r="4.5"/><circle cx="300" cy="-20" r="4.5"/><circle cx="300" cy="20" r="4.5"/><circle cx="320" cy="-20" r="4.5"/><circle cx="320" cy="20" r="4.5"/></g>
+  <path d="M -770 0 C -770 -40 -758 -76 -742 -107 C -725 -140 -662 -148 -592 -148 L -567 -146.52 A 7842.1 7842.1 0 0 0 567 -146.52 L 592 -148 C 662 -148 725 -140 742 -107 C 758 -76 770 -40 770 0 C 770 40 758 76 742 107 C 725 140 662 148 592 148 L 567 146.52 A 7842.1 7842.1 0 0 0 -567 146.52 L -592 148 C -662 148 -725 140 -742 107 C -758 76 -770 40 -770 0 Z" fill="none" stroke="#ffd23f" stroke-width="4.5"/>
+  <circle cx="700" cy="0" r="8.5" fill="url(#metal-yellow)" stroke="#7d8187" stroke-width="0.8"/>
+    <circle cx="700" cy="0" r="5" fill="#e9e7e2" stroke="#5c6066" stroke-width="0.8"/>
+  <text x="-695" y="112" font-family="'Inter Display'" font-weight="600" font-size="13" letter-spacing="4" fill="#5a5a5a">VAMEI</text>
+</svg>

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-790 -170 1580 340" width="1580mm" height="340mm">
+  <defs><clipPath id="board"><path d="M -770 0 C -770 -40 -758 -76 -742 -107 C -725 -140 -662 -148 -592 -148 L -567 -146.52 A 7842.1 7842.1 0 0 0 567 -146.52 L 592 -148 C 662 -148 725 -140 742 -107 C 758 -76 770 -40 770 0 C 770 40 758 76 742 107 C 725 140 662 148 592 148 L 567 146.52 A 7842.1 7842.1 0 0 0 -567 146.52 L -592 148 C -662 148 -725 140 -742 107 C -758 76 -770 40 -770 0 Z"/></clipPath></defs>
+  <!-- 设计区：所有图案画在这个 g 里，会被板面轮廓裁切 -->
+  <g clip-path="url(#board)">
+    <rect x="-790" y="-170" width="1580" height="340" fill="#141414"/>
+    <defs><filter id="chalk" x="-10%" y="-10%" width="120%" height="120%" filterUnits="objectBoundingBox">
+  <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="4" result="n"/>
+  <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.4 1.75" result="m"/>
+  <feComposite in="SourceGraphic" in2="m" operator="in" result="tex"/>
+  <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="2" seed="9" result="w"/>
+  <feDisplacementMap in="tex" in2="w" scale="1.6" xChannelSelector="R" yChannelSelector="G"/>
+</filter></defs><g filter="url(#chalk)"><g fill="none" stroke="#97d0f0" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="610" cy="-52.4" r="12"/>
+  <path d="M 610 -26 L 610 26.8 M 610 -17.2 L 566 9.2 M 610 -17.2 L 645.2 -61.2 M 610 26.8 L 588 53.2 L 583.6 79.6 M 610 26.8 L 632 53.2 L 636.4 79.6"/>
+</g>
+<path d="M 552.8 92.8 Q 610 101.6 667.2 88.4" fill="none" stroke="#f5a3b7" stroke-width="2.5" stroke-linecap="round"/><g fill="none" stroke="#f7da74" stroke-width="2" stroke-linecap="round">
+  <rect x="649.4" y="-87.8" width="18" height="18" rx="3"/>
+  <rect x="654.4" y="-82.8" width="8" height="8" rx="1"/>
+  <path d="M 669.6 -90 A 16 16 0 0 1 669.6 -67.6"/><path d="M 675.2 -95.6 A 24 24 0 0 1 675.2 -62"/><path d="M 680.8 -101.2 A 32 32 0 0 1 680.8 -56.4"/>
+</g><text x="460" y="-96" font-family="'Long Cang'" font-size="18" fill="#f2efe6">手机碰一碰，有惊喜</text>
+<text x="-690" y="104" font-family="'Long Cang'" font-size="20" fill="#f2efe6">VAMEI 小黑板</text>
+<text x="-690" y="122" font-family="'Long Cang'" font-size="13" fill="#f2efe6" opacity="0.8">154 · 26/27</text></g>
+  </g>
+  <!-- 固定器孔位（仅示意，生产文件里删除） -->
+  <g id="inserts" fill="#000" stroke="#555" stroke-width="0.8"><circle cx="-220" cy="-20" r="4.5"/><circle cx="-220" cy="20" r="4.5"/><circle cx="-240" cy="-20" r="4.5"/><circle cx="-240" cy="20" r="4.5"/><circle cx="-260" cy="-20" r="4.5"/><circle cx="-260" cy="20" r="4.5"/><circle cx="-280" cy="-20" r="4.5"/><circle cx="-280" cy="20" r="4.5"/><circle cx="-300" cy="-20" r="4.5"/><circle cx="-300" cy="20" r="4.5"/><circle cx="-320" cy="-20" r="4.5"/><circle cx="-320" cy="20" r="4.5"/><circle cx="220" cy="-20" r="4.5"/><circle cx="220" cy="20" r="4.5"/><circle cx="240" cy="-20" r="4.5"/><circle cx="240" cy="20" r="4.5"/><circle cx="260" cy="-20" r="4.5"/><circle cx="260" cy="20" r="4.5"/><circle cx="280" cy="-20" r="4.5"/><circle cx="280" cy="20" r="4.5"/><circle cx="300" cy="-20" r="4.5"/><circle cx="300" cy="20" r="4.5"/><circle cx="320" cy="-20" r="4.5"/><circle cx="320" cy="20" r="4.5"/></g>
+  <!-- 板面轮廓线 / 边墙示意 -->
+  <path d="M -770 0 C -770 -40 -758 -76 -742 -107 C -725 -140 -662 -148 -592 -148 L -567 -146.52 A 7842.1 7842.1 0 0 0 567 -146.52 L 592 -148 C 662 -148 725 -140 742 -107 C 758 -76 770 -40 770 0 C 770 40 758 76 742 107 C 725 140 662 148 592 148 L 567 146.52 A 7842.1 7842.1 0 0 0 -567 146.52 L -592 148 C -662 148 -725 140 -742 107 C -758 76 -770 40 -770 0 Z" fill="none" stroke="#3a3a3a" stroke-width="2"/>
+</svg>

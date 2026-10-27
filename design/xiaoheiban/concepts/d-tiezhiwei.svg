@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-790 -170 1580 340" width="1580mm" height="340mm">
+  <defs><clipPath id="board"><path d="M -770 0 C -770 -40 -758 -76 -742 -107 C -725 -140 -662 -148 -592 -148 L -567 -146.52 A 7842.1 7842.1 0 0 0 567 -146.52 L 592 -148 C 662 -148 725 -140 742 -107 C 758 -76 770 -40 770 0 C 770 40 758 76 742 107 C 725 140 662 148 592 148 L 567 146.52 A 7842.1 7842.1 0 0 0 -567 146.52 L -592 148 C -662 148 -725 140 -742 107 C -758 76 -770 40 -770 0 Z"/></clipPath></defs>
+  <!-- 设计区：所有图案画在这个 g 里，会被板面轮廓裁切 -->
+  <g clip-path="url(#board)">
+    <rect x="-790" y="-170" width="1580" height="340" fill="#141414"/>
+    <g id="ink-slots"><circle cx="-650" cy="-40" r="44" fill="none" stroke="#8d8a84" stroke-width="1" stroke-dasharray="4 3"/><text x="-618.32" y="-73.68" font-family="'Inter Display'" font-size="6.5" font-weight="500" text-anchor="start" letter-spacing="0.6" fill="#8d8a84">01</text>
+<text x="-690" y="22" font-family="'WenQuanYi Zen Hei'" font-size="5.5" fill="#8d8a84">雪场</text><line x1="-677" y1="23" x2="-610" y2="23" stroke="#8d8a84" stroke-width="0.7"/>
+<rect x="-594" y="6" width="56" height="56" rx="8" fill="none" stroke="#8d8a84" stroke-width="1" stroke-dasharray="4 3"/><text x="-591" y="3" font-family="'Inter Display'" font-size="6.5" font-weight="500" text-anchor="start" letter-spacing="0.6" fill="#8d8a84">02</text>
+<circle cx="-520" cy="-78" r="24" fill="none" stroke="#8d8a84" stroke-width="1" stroke-dasharray="4 3"/><text x="-502.72" y="-97.28" font-family="'Inter Display'" font-size="6.5" font-weight="500" text-anchor="start" letter-spacing="0.6" fill="#8d8a84">03</text>
+<polygon points="-440.56,5 -470,22 -499.44,5 -499.44,-29 -470,-46 -440.56,-29" fill="none" stroke="#8d8a84" stroke-width="1" stroke-dasharray="4 3"/><text x="-451.3" y="-48" font-family="'Inter Display'" font-size="6.5" font-weight="500" text-anchor="start" letter-spacing="0.6" fill="#8d8a84">04</text>
+<rect x="-105" y="-96" width="210" height="36" rx="18" fill="none" stroke="#8d8a84" stroke-width="1" stroke-dasharray="4 3"/><text x="-102" y="-99" font-family="'Inter Display'" font-size="6.5" font-weight="500" text-anchor="start" letter-spacing="0.6" fill="#8d8a84">05</text>
+<circle cx="-70" cy="18" r="30" fill="none" stroke="#8d8a84" stroke-width="1" stroke-dasharray="4 3"/><text x="-48.4" y="-5.6" font-family="'Inter Display'" font-size="6.5" font-weight="500" text-anchor="start" letter-spacing="0.6" fill="#8d8a84">06</text>
+<circle cx="10" cy="30" r="22" fill="none" stroke="#8d8a84" stroke-width="1" stroke-dasharray="4 3"/><text x="25.84" y="12.16" font-family="'Inter Display'" font-size="6.5" font-weight="500" text-anchor="start" letter-spacing="0.6" fill="#8d8a84">07</text>
+<rect x="51" y="-13" width="58" height="58" rx="6" fill="none" stroke="#8d8a84" stroke-width="1" stroke-dasharray="4 3"/><text x="54" y="-16" font-family="'Inter Display'" font-size="6.5" font-weight="500" text-anchor="start" letter-spacing="0.6" fill="#8d8a84">08</text>
+<polygon points="499.44,37 470,54 440.56,37 440.56,3 470,-14 499.44,3" fill="none" stroke="#8d8a84" stroke-width="1" stroke-dasharray="4 3"/><text x="488.7" y="-16" font-family="'Inter Display'" font-size="6.5" font-weight="500" text-anchor="start" letter-spacing="0.6" fill="#8d8a84">09</text>
+<rect x="529" y="-91" width="62" height="62" rx="31" fill="none" stroke="#8d8a84" stroke-width="1" stroke-dasharray="4 3"/><text x="532" y="-94" font-family="'Inter Display'" font-size="6.5" font-weight="500" text-anchor="start" letter-spacing="0.6" fill="#8d8a84">10</text>
+<circle cx="650" cy="30" r="44" fill="none" stroke="#8d8a84" stroke-width="1" stroke-dasharray="4 3"/><text x="681.68" y="-3.68" font-family="'Inter Display'" font-size="6.5" font-weight="500" text-anchor="start" letter-spacing="0.6" fill="#8d8a84">11</text>
+<text x="612" y="94" font-family="'WenQuanYi Zen Hei'" font-size="5.5" fill="#8d8a84">雪场</text><line x1="625" y1="95" x2="692" y2="95" stroke="#8d8a84" stroke-width="0.7"/>
+<circle cx="530" cy="88" r="20" fill="none" stroke="#8d8a84" stroke-width="1" stroke-dasharray="4 3"/><text x="544.4" y="71.6" font-family="'Inter Display'" font-size="6.5" font-weight="500" text-anchor="start" letter-spacing="0.6" fill="#8d8a84">12</text></g>
+<g id="ink-header">
+  <text x="-650" y="106" font-family="'Inter Display'" font-size="13" font-weight="600" letter-spacing="3.5" fill="#e4e0d6">VAMEI</text>
+  <text x="-585" y="106" font-family="'WenQuanYi Zen Hei'" font-size="7" letter-spacing="1" fill="#8d8a84">小黑板 · 雪场护照</text>
+  <text x="-650" y="118" font-family="'WenQuanYi Zen Hei'" font-size="5.5" letter-spacing="0.6" fill="#8d8a84">154 · 26/27 · 12 个贴纸位，一季一季攒满它</text>
+</g>
+  </g>
+  <!-- 固定器孔位（仅示意，生产文件里删除） -->
+  <g id="inserts" fill="#000" stroke="#555" stroke-width="0.8"><circle cx="-220" cy="-20" r="4.5"/><circle cx="-220" cy="20" r="4.5"/><circle cx="-240" cy="-20" r="4.5"/><circle cx="-240" cy="20" r="4.5"/><circle cx="-260" cy="-20" r="4.5"/><circle cx="-260" cy="20" r="4.5"/><circle cx="-280" cy="-20" r="4.5"/><circle cx="-280" cy="20" r="4.5"/><circle cx="-300" cy="-20" r="4.5"/><circle cx="-300" cy="20" r="4.5"/><circle cx="-320" cy="-20" r="4.5"/><circle cx="-320" cy="20" r="4.5"/><circle cx="220" cy="-20" r="4.5"/><circle cx="220" cy="20" r="4.5"/><circle cx="240" cy="-20" r="4.5"/><circle cx="240" cy="20" r="4.5"/><circle cx="260" cy="-20" r="4.5"/><circle cx="260" cy="20" r="4.5"/><circle cx="280" cy="-20" r="4.5"/><circle cx="280" cy="20" r="4.5"/><circle cx="300" cy="-20" r="4.5"/><circle cx="300" cy="20" r="4.5"/><circle cx="320" cy="-20" r="4.5"/><circle cx="320" cy="20" r="4.5"/></g>
+  <!-- 板面轮廓线 / 边墙示意 -->
+  <path d="M -770 0 C -770 -40 -758 -76 -742 -107 C -725 -140 -662 -148 -592 -148 L -567 -146.52 A 7842.1 7842.1 0 0 0 567 -146.52 L 592 -148 C 662 -148 725 -140 742 -107 C 758 -76 770 -40 770 0 C 770 40 758 76 742 107 C 725 140 662 148 592 148 L 567 146.52 A 7842.1 7842.1 0 0 0 -567 146.52 L -592 148 C -662 148 -725 140 -742 107 C -758 76 -770 40 -770 0 Z" fill="none" stroke="#3a3a3a" stroke-width="2"/>
+</svg>
