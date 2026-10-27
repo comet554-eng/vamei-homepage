@@ -17,7 +17,7 @@ S = Scene(1200, 1200, samples=int(os.environ.get("SAMPLES", 24)), transparent=Tr
 P = interp(ep.PERF[C["perf"]], C["p"])
 P["slope"] = 0.0; P["trail"] = 0.0      # 封面不要坡和雪痕，人物摆正
 J = S.place(P)
-g = Vector((P["gx"], 0, 0))
+g = Vector((P["gx"], P["gy"], 0))     # 人在坡上的位置（x 横向、y 顺坡）
 pos, tgt, lens = C["cam"]
 S.camera(Vector(pos) + g, Vector(tgt) + g, lens)
 meta = {}
