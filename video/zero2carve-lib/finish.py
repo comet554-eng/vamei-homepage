@@ -19,5 +19,5 @@ if style:
 else:
     aud = ["-f", "lavfi", "-i", "anullsrc=r=48000:cl=stereo"]
 subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", raw] + aud + ["-shortest", "-c:v", "libx264", "-crf", "21", "-preset", "slow",
-                "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "160k", "-movflags", "+faststart", out], check=True)
+                "-pix_fmt", "yuv420p", "-af", "alimiter=limit=0.84:level=false", "-c:a", "aac", "-b:a", "160k", "-movflags", "+faststart", out], check=True)
 print("ok", out)

@@ -111,10 +111,10 @@ def draw(c, t, P, m, shot, p):
         chips(c, ["①垂直坡面", "②弯短一点", "③立刃>坡", "④压低重心"], cur, t, ac)
         if ac > 0:
             e = abs(broll); ok = e >= ep.SLOPE
-            col = GREEN if ok else (GOLD if e > 3 else RED)
+            col = GREEN if ok else (RED if e > 8 else GOLD)
             card(c, W - 360, 545, 300, 170, ac, col)
             stroke_text(c, f"立刃 {e:.0f}°", W - 210, 615, 48, col, ac, stroke=0)
-            stroke_text(c, f"坡 {ep.SLOPE:.0f}° · " + ("咬得住" if ok else ("换刃中" if e <= 3 else "不够")), W - 210, 675, 30, INK, ac, stroke=0)
+            stroke_text(c, f"坡 {ep.SLOPE:.0f}° · " + ("咬得住" if ok else ("换刃中" if e <= 8 else "不够")), W - 210, 675, 30, INK, ac, stroke=0)
         if cur == 0:
             ring(c, *P["head"], 60, GOLD, a * ramp(t, ss[0][1] + 0.3, ss[0][1] + 0.6), t, label="看山下")
         elif cur == 3:
