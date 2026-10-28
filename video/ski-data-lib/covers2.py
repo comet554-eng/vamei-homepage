@@ -1,0 +1,300 @@
+"""Poster-style covers (v2): brushed dusk gradient, big left-aligned serif title, one restrained motif.
+python3 covers2.py EPDIR OUT_PREFIX     (EPDIR/scenes.py defines COVER2, see below)
+COVER2 = dict(kicker="单板 · 用数据说话", lines=[("往后摔", "ink"), ("还是往前摔", "gold")],
+              sub="38 例严重颅脑损伤 · 68% 是后摔", motif="track" | "arcs" | "pipe" | "spin" | "jump" | "board", seed=7)
+motif="image" 时用 EPDIR 里的 3D 渲染图：image="cover_rider.png", ring=(x, y) 归一化坐标（可选）。"""
+import os, sys, math
+HERE = os.path.dirname(os.path.abspath(__file__))
+EP = os.path.abspath(sys.argv[1]); sys.path.insert(0, HERE); sys.path.insert(0, EP)
+import numpy as np
+import cairo
+from PIL import Image, ImageFilter
+from common import font, text_w, SERIF, SANS
+import scenes
+import board as B
+
+SIZES = {"竖版9x16": (1080, 1920), "竖版3x4": (1080, 1440), "横版16x9": (1920, 1080), "横版4x3": (1440, 1080)}
+INKC = (0.95, 0.93, 0.88)
+GOLDC = (0.86, 0.66, 0.38)
+ICEC = (0.55, 0.78, 0.98)
+REDC = (0.85, 0.36, 0.32)
+BOLD_TITLE = False
+COLMAP = {"ink": INKC, "gold": GOLDC, "ice": ICEC, "red": REDC, "green": (0.45, 0.85, 0.55)}
+
+
+def background(w, h, seed):
+    rng = np.random.default_rng(seed)
+    y = np.linspace(0, 1, h)[:, None]; x = np.linspace(0, 1, w)[None, :]
+    top = np.array([0.075, 0.075, 0.08]); bot = np.array([0.42, 0.44, 0.50])
+    warm = np.array([0.50, 0.45, 0.40])
+    g = (y ** 1.3)[..., None]
+    base = top * (1 - g) + (bot * (0.55 + 0.45 * x[..., None]) + warm * (0.45 - 0.45 * x[..., None])) * g
+    # brushed vertical streaks
+    n = rng.normal(0, 1, (h // 4 + 1, w))
+    n = np.asarray(Image.fromarray(((n - n.min()) / (np.ptp(n)) * 255).astype(np.uint8)).resize((w, h)).filter(ImageFilter.GaussianBlur(1.2)), float) / 255 - 0.5
+    streak = np.asarray(Image.fromarray(((n + 0.5) * 255).astype(np.uint8)).filter(ImageFilter.BoxBlur(0)).resize((w, h)), float) / 255 - 0.5
+    cloud = rng.normal(0, 1, (12, 20))
+    cloud = np.asarray(Image.fromarray(((cloud - cloud.min()) / np.ptp(cloud) * 255).astype(np.uint8)).resize((w, h), Image.BICUBIC), float) / 255 - 0.5
+    img = base * (1 + 0.20 * streak[..., None] + 0.18 * cloud[..., None] * (0.3 + g))
+    # vignette
+    vx = (x - 0.5) * 2; vy = (y - 0.5) * 2
+    img *= (1 - 0.25 * (vx ** 2 + vy ** 2) ** 1.2)[..., None]
+    return np.clip(img, 0, 1)
+
+
+def to_surface(img):
+    h, w, _ = img.shape
+    a = (img * 255).astype(np.uint8)
+    buf = np.dstack([a[..., 2], a[..., 1], a[..., 0], np.full((h, w), 255, np.uint8)]).copy()
+    s = cairo.ImageSurface.create_for_data(memoryview(buf), cairo.FORMAT_ARGB32, w, h)
+    return s, buf
+
+
+_KEEP = []
+
+
+def soft_layer(w, h, draw, blur):
+    """draw on a transparent layer, blur it, return a cairo surface."""
+    s = cairo.ImageSurface(cairo.FORMAT_ARGB32, w, h); c = cairo.Context(s)
+    draw(c)
+    s.flush()
+    a = np.ndarray((h, w, 4), np.uint8, s.get_data()).copy()
+    im = Image.fromarray(a, "RGBA").filter(ImageFilter.GaussianBlur(blur))
+    b = np.asarray(im).copy()
+    out = cairo.ImageSurface.create_for_data(memoryview(b), cairo.FORMAT_ARGB32, w, h)
+    _KEEP.append(b)
+    return out
+
+
+def path_pts(kind, w, h, rng, portrait):
+    if portrait:
+        x0, x1, y0, y1 = 0.42 * w, 0.62 * w, 0.42 * h, 0.86 * h
+    else:
+        x0, x1, y0, y1 = 0.50 * w, 0.92 * w, 0.0, 1.0 * h
+    t = np.linspace(0, 1, 400)
+    amp = (x1 - x0) * 0.6
+    ph = rng.uniform(0, 1)
+    xs = (x0 + x1) / 2 + amp * np.sin(2 * math.pi * (1.6 * t + ph)) * (0.6 + 0.4 * t)
+    ys = y0 + (y1 - y0) * t
+    return np.stack([xs, ys], 1)
+
+
+def ribbon(c, pts, width, col, alpha):
+    c.set_line_cap(cairo.LINE_CAP_ROUND); c.set_line_join(cairo.LINE_JOIN_ROUND)
+    for k, (wf, af) in enumerate(((1.0, 0.35), (0.7, 0.35), (0.4, 0.4))):
+        c.move_to(*pts[0])
+        for p in pts[1:]:
+            c.line_to(*p)
+        c.set_source_rgba(*col, alpha * af); c.set_line_width(width * wf); c.stroke()
+
+
+def motif(c, kind, w, h, portrait, seed):
+    rng = np.random.default_rng(seed)
+    S = min(w, h)
+    if kind in ("track", "board"):
+        pts = path_pts(kind, w, h, rng, portrait)
+        lay = soft_layer(w, h, lambda d: ribbon(d, pts, S * 0.09, (0.20, 0.26, 0.40), 0.9), 3)
+        c.set_source_surface(lay); c.paint_with_alpha(0.85)
+        ex, ey = pts[-1]
+        ang = math.atan2(*(pts[-1] - pts[-6])[::-1])
+        c.save(); c.translate(ex, ey); c.rotate(ang)
+        L = S * 0.10
+        c.new_path(); c.move_to(-L / 2, 0); c.line_to(L / 2, 0)
+        c.set_source_rgba(0.08, 0.09, 0.12, 0.95); c.set_line_width(S * 0.022); c.set_line_cap(cairo.LINE_CAP_ROUND); c.stroke()
+        c.arc(0, 0, S * 0.008, 0, 2 * math.pi); c.set_source_rgba(*GOLDC, 1); c.fill()
+        c.restore()
+        for r, a in ((S * 0.065, 0.9), (S * 0.125, 0.35)):
+            c.new_path(); c.arc(ex, ey, r, 0, 2 * math.pi); c.set_source_rgba(*REDC, a); c.set_line_width(2.5); c.stroke()
+    elif kind == "arcs":
+        cx, cy = (0.30 * w, 1.05 * h) if portrait else (0.62 * w, 1.10 * h)
+        for i, (rf, col) in enumerate(((1.0, ICEC), (0.82, GOLDC), (0.48, REDC))):
+            r = S * 0.62 * rf
+            c.new_path(); c.arc(cx, cy, r, -math.pi * 0.95, -math.pi * 0.05)
+            c.set_source_rgba(*col, 0.85); c.set_line_width(2.2); c.stroke()
+            c.new_path(); c.arc(cx, cy, r + 5, -math.pi * 0.95, -math.pi * 0.05)
+            c.set_source_rgba(0.05, 0.06, 0.08, 0.5); c.set_line_width(1.2); c.stroke()
+    elif kind == "pipe":
+        cx = 0.5 * w if portrait else 0.72 * w; base = 0.96 * h; R = S * (0.40 if portrait else 0.30); flat = S * 0.22
+        lay = soft_layer(w, h, lambda d: _pipe(d, cx, base, R, flat), 2)
+        c.set_source_surface(lay); c.paint()
+        xr = cx + flat / 2 + R; top = base - R
+        c.set_dash([8, 8]); c.set_source_rgba(*REDC, 0.9); c.set_line_width(2.5)
+        c.move_to(xr, top); c.line_to(xr, top - R * (1.15 if not portrait else 0.9)); c.stroke(); c.set_dash([])
+        c.arc(xr, top - R * (1.15 if not portrait else 0.9), S * 0.012, 0, 2 * math.pi); c.set_source_rgba(*GOLDC, 1); c.fill()
+    elif kind == "spin":
+        cx, cy = (0.5 * w, 0.66 * h) if portrait else (0.72 * w, 0.52 * h)
+        for i in range(7):
+            r = S * (0.10 + 0.035 * i)
+            a0 = -math.pi / 2 + i * 0.5
+            c.new_path(); c.arc(cx, cy, r, a0, a0 + math.pi * (1.2 + 0.1 * i))
+            c.set_source_rgba(*(GOLDC if i < 6 else REDC), 0.25 + 0.1 * i); c.set_line_width(2.2); c.stroke()
+        c.save(); c.translate(cx, cy); c.rotate(-0.5)
+        c.new_path(); c.move_to(-S * 0.07, 0); c.line_to(S * 0.07, 0)
+        c.set_source_rgba(0.08, 0.09, 0.12, 0.95); c.set_line_width(S * 0.022); c.set_line_cap(cairo.LINE_CAP_ROUND); c.stroke()
+        c.restore()
+    elif kind == "jump":
+        x0 = 0.30 * w if portrait else 0.62 * w; gy = 0.80 * h
+        k = S * 0.0065
+        prof = [(x0 - 60 * k, gy - 30 * k), (x0, gy - 2 * k), (x0 + 6 * k, gy - 6 * k), (x0 + 6 * k, gy), (x0 + 30 * k, gy),
+                (x0 + 80 * k, gy + 34 * k), (w + 10, gy + 34 * k)]
+        def dr(d):
+            d.move_to(*prof[0])
+            for p in prof[1:]:
+                d.line_to(*p)
+            d.line_to(w + 10, h + 10); d.line_to(prof[0][0], h + 10); d.close_path()
+            d.set_source_rgba(0.12, 0.14, 0.19, 0.9); d.fill()
+        lay = soft_layer(w, h, dr, 2); c.set_source_surface(lay); c.paint()
+        c.set_dash([8, 8]); c.set_source_rgba(*GOLDC, 0.9); c.set_line_width(2.5)
+        c.move_to(x0 + 6 * k, gy - 6 * k)
+        c.curve_to(x0 + 20 * k, gy - 30 * k, x0 + 40 * k, gy - 30 * k, x0 + 52 * k, gy + 12 * k); c.stroke(); c.set_dash([])
+
+
+def _place(c, w, h, portrait, box_w, box_h, fx=0.5, fy=0.70, lfx=0.74, lfy=0.55, fill=0.62):
+    """map a box_w x box_h drawing into the free area; returns scale and leaves ctx translated."""
+    if portrait:
+        cx, cy, avail = fx * w, fy * h, fill * w
+    else:
+        cx, cy, avail = lfx * w, lfy * h, 0.42 * w
+    k = min(avail / box_w, (0.55 * h) / box_h)
+    c.translate(cx - box_w * k / 2, cy - box_h * k / 2); c.scale(k, k)
+    return k
+
+
+def motif_scene(c, kind, w, h, portrait):
+    c.save()
+    if kind == "body":
+        _place(c, w, h, portrait, 600, 700)
+        B.body_map(c, 300, 690, 380, [("wrist", 1.0, REDC), ("wrist_r", 0.85, REDC)], 0.95, col=(0.30, 0.34, 0.44))
+    elif kind == "spine":
+        _place(c, w, h, portrait, 600, 700)
+        B.body_map(c, 300, 690, 380, [("spine", 1.0, REDC), ("neck", 0.7, REDC), ("head", 0.5, REDC)], 0.95, col=(0.30, 0.34, 0.44))
+    elif kind == "guard":
+        _place(c, w, h, portrait, 700, 500)
+        c.rectangle(-200, 400, 1100, 300); c.set_source_rgba(0.12, 0.14, 0.19, 0.95); c.fill()
+        B.forearm(c, 360, 400, 360, 0.95, guard=1.0, spread=1.0)
+    elif kind == "calendar":
+        _place(c, w, h, portrait, 700, 760)
+        for i in range(28):
+            x = (i % 7) * 100; y = (i // 7) * 120 + 140
+            B.rounded_rect(c, x, y, 86, 100, 10)
+            col = REDC if i == 0 else (0.30, 0.34, 0.44)
+            c.set_source_rgba(*col, 0.95 if i == 0 else 0.55 - 0.012 * i); c.fill()
+        c.new_path(); c.arc(43, 190, 80, 0, 2 * math.pi); c.set_source_rgba(*REDC, 0.6); c.set_line_width(3); c.stroke()
+    elif kind == "ankle":
+        _place(c, w, h, portrait, 600, 800)
+        B.ankle_bones(c, 300, 430, 230, 0.9, lp_mark=1.0, crack=1.0, label=False)
+        c.new_path(); c.arc(300 + 0.18 * 230, 430 + 0.40 * 230, 60, 0, 2 * math.pi); c.set_source_rgba(*REDC, 0.8); c.set_line_width(3); c.stroke()
+    elif kind == "falls":
+        _place(c, w, h, portrait, 900, 520)
+        c.rectangle(-300, 450, 1500, 300); c.set_source_rgba(0.12, 0.14, 0.19, 0.95); c.fill()
+        B.rider_profile(c, 280, 450, 300, back=1.0, wrist_mark=1.0, alpha=0.95)
+        B.rider_profile(c, 640, 450, 300, fwd=1.0, alpha=0.6)
+    elif kind == "stance":
+        _place(c, w, h, portrait, 800, 600)
+        B.board_top(c, 400, 160, 500, 0.95, angles=(15, -15))
+        B.board_top(c, 400, 440, 500, 0.95, angles=(50, 40))
+    c.restore()
+
+
+def motif_image(c, C, w, h, portrait, top=0.0):
+    """3D 渲染的人物（透明底 PNG）当主图；C["ring"] = 归一化坐标时，在那里画一个红圈。"""
+    im = Image.open(os.path.join(EP, C["image"])).convert("RGBA")
+    rx, ry = (C["ring"][0] * im.width, C["ring"][1] * im.height) if C.get("ring") else (0, 0)
+    x0, y0, x1, y1 = Image.fromarray((np.asarray(im)[..., 3] > 12).astype(np.uint8) * 255).getbbox()
+    pad = int(0.06 * max(x1 - x0, y1 - y0))
+    x0, y0 = max(0, x0 - pad), max(0, y0 - pad); x1, y1 = min(im.width, x1 + pad), min(im.height, y1 + pad)
+    im = im.crop((x0, y0, x1, y1)); rx, ry = rx - x0, ry - y0
+    a = np.asarray(im).copy()
+    a[..., :3] = (a[..., :3].astype(np.float32) * a[..., 3:4] / 255).astype(np.uint8)   # 预乘 alpha
+    buf = np.dstack([a[..., 2], a[..., 1], a[..., 0], a[..., 3]]).copy()
+    _KEEP.append(buf)
+    src = cairo.ImageSurface.create_for_data(memoryview(buf), cairo.FORMAT_ARGB32, im.width, im.height)
+    c.save()
+    tall = h / w > 1.5
+    if portrait:      # 竖版：放在副标题下面的空白里，高度封顶，别压到字
+        lo, hi = top + 0.02 * h, 0.97 * h
+        cx, cy, hmax, wmax = (0.55 if tall else 0.60) * w, (lo + hi) / 2, hi - lo, (0.85 if tall else 0.72) * w
+    else:
+        cx, cy, hmax, wmax = 0.72 * w, 0.60 * h, 0.62 * h, 0.40 * w
+    k = min(wmax / im.width, hmax / im.height)
+    c.translate(cx - im.width * k / 2, cy - im.height * k / 2); c.scale(k, k)
+    c.set_source_surface(src, 0, 0); c.paint()
+    if C.get("ring"):
+        x, y = rx, ry
+        r0 = 0.09 * max(im.width, im.height)
+        for r, al, lw in ((r0 * 1.18, 0.25, r0 * 0.26), (r0, 1.0, r0 * 0.11)):
+            c.new_path(); c.arc(x, y, r, 0, 2 * math.pi); c.set_source_rgba(*COLMAP.get(C.get("ring_col", "red"), REDC), al); c.set_line_width(lw); c.stroke()
+    c.restore()
+
+
+def _pipe(d, cx, base, R, flat):
+    d.move_to(cx - flat / 2 - R - 40, base - R)
+    d.arc_negative(cx - flat / 2, base - R, R, math.pi, math.pi / 2)
+    d.line_to(cx + flat / 2, base)
+    d.arc_negative(cx + flat / 2, base - R, R, math.pi / 2, 0)
+    d.line_to(cx + flat / 2 + R + 40, base - R)
+    d.line_to(cx + flat / 2 + R + 40, base + 400); d.line_to(cx - flat / 2 - R - 40, base + 400); d.close_path()
+    d.set_source_rgba(0.12, 0.14, 0.19, 0.92); d.fill()
+
+
+def title_text(c, s, x, y, size, col, spacing=0.0):
+    font(c, size, BOLD_TITLE, SERIF)
+    if spacing:
+        for ch in s:
+            _shadow_text(c, ch, x, y, size, col); x += text_w(c, ch) + size * spacing
+    else:
+        _shadow_text(c, s, x, y, size, col)
+
+
+def _shadow_text(c, s, x, y, size, col):
+    c.move_to(x + size * 0.02, y + size * 0.03); c.set_source_rgba(0, 0, 0, 0.55); c.show_text(s)
+    c.move_to(x, y); c.set_source_rgba(*col, 1); c.show_text(s)
+
+
+def cover(w, h, path, C):
+    portrait = h > w
+    img = background(w, h, C.get("seed", 3))
+    s, buf = to_surface(img); c = cairo.Context(s)
+    if C.get("motif") == "image":
+        nl = max(len(t) for t, _ in C["lines"])
+        bg_ = min(w * 0.82 / max(nl, 2), w * 0.20) * (0.78 if portrait and h / w < 1.5 else 1.0)
+        y0 = 0.17 * h if h / w > 1.5 else 0.11 * h
+        motif_image(c, C, w, h, portrait, top=y0 + bg_ * (1.30 + 1.18 * len(C["lines"]) + 0.35))
+    elif C.get("motif") in ("body", "spine", "guard", "calendar", "ankle", "falls", "stance"):
+        motif_scene(c, C["motif"], w, h, portrait)
+    else:
+        motif(c, C.get("motif", "track"), w, h, portrait, C.get("seed", 3))
+    lines = C["lines"]
+    n = max(len(t) for t, _ in lines)
+    if portrait:
+        x = 0.095 * w
+        big = min(w * 0.82 / max(n, 2), w * 0.20)
+        y = 0.17 * h if h / w > 1.5 else 0.14 * h
+        if C.get("motif") == "image" and h / w < 1.5:    # 3:4 留更多地方给 3D 人物
+            big *= 0.78; y = 0.11 * h
+    else:
+        x = 0.05 * w
+        big = min(0.40 * w / max(n, 2), h * 0.15)
+        y = 0.30 * h
+    font(c, big * 0.25, False, SERIF)
+    ks, sp = big * 0.28, 0.55
+    font(c, ks, BOLD_TITLE, SERIF)
+    while text_w(c, C["kicker"]) + ks * sp * len(C["kicker"]) > w - 2 * x and sp > 0.1:
+        sp -= 0.05
+    title_text(c, C["kicker"], x, y, ks, (0.82, 0.82, 0.82), spacing=sp)
+    yy = y + big * 1.25
+    for t, col in lines:
+        title_text(c, t, x, yy, big, COLMAP.get(col, INKC))
+        yy += big * 1.18
+    font(c, big * 0.22, False, SANS)
+    yy += big * 0.05
+    _shadow_text(c, C["sub"], x, yy, big * 0.22, (0.92, 0.92, 0.92))
+    s.flush()
+    out = np.ndarray((h, w, 4), np.uint8, s.get_data())[..., [2, 1, 0]].copy()
+    Image.fromarray(out).save(path, quality=93)
+
+
+if __name__ == "__main__":
+    pre = sys.argv[2]
+    for name, (w, h) in SIZES.items():
+        cover(w, h, f"{pre}-{name}.jpg", scenes.COVER2); print(f"{pre}-{name}.jpg")
