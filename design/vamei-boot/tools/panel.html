@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>白灰色卡栏</title>
+<link rel="stylesheet" href="../node_modules/@fontsource/noto-sans-sc/300.css">
+<link rel="stylesheet" href="../node_modules/@fontsource/noto-sans-sc/400.css">
+<link rel="stylesheet" href="../node_modules/@fontsource/inter/400.css">
+<link rel="stylesheet" href="../node_modules/@fontsource/inter/600.css">
+<link rel="stylesheet" href="../node_modules/@fontsource/inter/800.css">
+<style>
+  /* 整页 A4 横版，单位 pt，只画右侧色卡栏；合成时叠在线稿 PDF 上 */
+  @page { size: 841.89pt 595.276pt; margin: 0; }
+  html, body { margin: 0; padding: 0; background: transparent; }
+  svg { display: block; width: 841.89pt; height: 595.276pt; }
+  .cn { font-family: "Noto Sans SC", sans-serif; fill: #000; }
+  .big { font-weight: 300; font-size: 34px; letter-spacing: 1px; }
+  .sub { font-weight: 400; font-size: 12.5px; fill: #222; }
+  .note { font-weight: 400; font-size: 11.5px; fill: #222; }
+  .pt-brand { font-family: Inter, sans-serif; font-weight: 800; font-size: 13px; letter-spacing: -0.2px; fill: #000; }
+  .pt-code { font-family: Inter, sans-serif; font-weight: 400; font-size: 9.6px; fill: #333; }
+  .pt-name { font-family: Inter, sans-serif; font-weight: 600; font-size: 9.6px; fill: #333; }
+</style>
+</head>
+<body>
+<!-- viewBox 用 pt：1 单位 = 1pt，坐标原点在页面左上角 -->
+<svg viewBox="0 0 841.89 595.276" xmlns="http://www.w3.org/2000/svg">
+  <!-- 潘通色卡：上半色块，下半白底标签（照黑灰稿里 Quiet Shade 色卡的位置和比例） -->
+  <!-- 色卡 1：中间面 Quiet Shade（与黑灰版同色号） -->
+  <g transform="translate(473.78 18.85)">
+    <rect width="120.18" height="180.76" fill="#fff"/>
+    <rect width="120.18" height="119.7" fill="#6E6F72"/>
+    <text x="4.4" y="137.8" class="pt-brand">PANTONE<tspan font-size="7" dy="-5">®</tspan></text>
+    <text x="4.4" y="150.2" class="pt-code">18-4006 TPG</text>
+    <text x="4.4" y="162.7" class="pt-name">Quiet Shade</text>
+  </g>
+  <text x="617" y="104" class="cn big">中间面</text>
+  <text x="618" y="134" class="cn sub">另：织带、内里领口、</text>
+  <text x="618" y="152" class="cn sub">提拉环、大底也用这个灰</text>
+
+  <!-- 色卡 2：其它地方 Cloud Dancer（米白，不是死白） -->
+  <g transform="translate(473.78 221.6)">
+    <rect width="120.18" height="180.76" fill="#fff"/>
+    <rect width="120.18" height="119.7" fill="#F0EEE9"/>
+    <rect x="0.25" y="0.25" width="119.68" height="119.2" fill="none" stroke="#D9D6CF" stroke-width="0.5"/>
+    <text x="4.4" y="137.8" class="pt-brand">PANTONE<tspan font-size="7" dy="-5">®</tspan></text>
+    <text x="4.4" y="150.2" class="pt-code">11-4201 TPG</text>
+    <text x="4.4" y="162.7" class="pt-name">Cloud Dancer</text>
+  </g>
+  <text x="617" y="307" class="cn big">其它地方</text>
+  <text x="618" y="337" class="cn sub">米白，不要选太假白的色号</text>
+
+  <!-- 细节 -->
+  <g class="cn note">
+    <text x="476" y="446">· 侧面 vamei 字标：米白</text>
+    <text x="476" y="466">· BOA 旋钮、鞋带、中底：米白</text>
+    <text x="476" y="486">· 圆标三角、后跟小标、鞋舌旁织网：灰</text>
+    <text x="476" y="514" style="fill:#555">灰色与黑灰版中间面同一色号，两款可共用一批料</text>
+  </g>
+</svg>
+</body>
+</html>

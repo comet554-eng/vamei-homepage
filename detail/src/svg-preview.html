@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SVG Preview</title>
+<!--
+  assets/svg/ 全部图示与图标的预览：每个图示在米白（#EFEDDF）和深夜（#15172E）底上各放一份，
+  宽度与详情页里的实际宽度一致（内容区 622 px，碳纤条图 170 px，图标 64 px），方便检查线宽和字号。
+  用法（在 detail/ 下）：
+    node tools/render.mjs src/svg-preview.html out.png --w 1400 --h 1000 --scale 1 --full
+    只看某一项：--query only=camber   （camber | flex | stringers | height | scales | icons | spiral）
+  SVG 和详情页一样用 fetch 内联（currentColor、页面字体才会生效），全部就绪后设置 window.__READY = true。
+-->
+<link rel="stylesheet" href="fonts.css">
+<style>
+  :root {
+    --cream: #EFEDDF; --paper: #F6F4EC; --night: #15172E; --indigo: #2C2E57; --moon: #F3EFE4;
+    --ink-2: #4A4856; --rose: #D9879A;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #0d0e1c; }
+  body { width: 1400px; font-family: "Noto Sans SC", sans-serif; }
+  .block { display: grid; grid-template-columns: 1fr 1fr; }
+  .block > div { padding: 56px 39px 64px; position: relative; }
+  .light { background: var(--cream); color: var(--indigo); }
+  .dark { background: linear-gradient(180deg, var(--night) 0%, #1b1d3c 100%); color: var(--moon); }
+  .tag { position: absolute; left: 39px; top: 20px; font: 500 14px/1 Inter, sans-serif; letter-spacing: .2em; text-transform: uppercase; opacity: .55; }
+  .w622 { width: 622px; }
+  .w622 svg, .w170 svg, .wide svg { width: 100%; height: auto; display: block; }
+  .row { display: flex; gap: 48px; align-items: flex-start; }
+  .w170 { width: 170px; }
+  .stack > * + * { margin-top: 44px; }
+  .scale-h { font: 600 28px/1 "Noto Serif SC", serif; letter-spacing: .1em; margin-bottom: 18px; }
+  .icons { display: grid; grid-template-columns: repeat(5, 64px); gap: 40px 56px; }
+  .icons span { display: block; width: 64px; height: 64px; }
+  .icons span svg { width: 100%; height: 100%; display: block; }
+  .icons-big { display: grid; grid-template-columns: repeat(5, 96px); gap: 28px 26px; margin-top: 48px; }
+  .icons-big span { display: block; width: 96px; height: 96px; outline: 1px dashed currentColor; outline-offset: 0; }
+  .icons-big span svg { width: 100%; height: 100%; display: block; }
+  .spiral-wrap { position: relative; height: 560px; }
+  .spiral-wrap .big { position: absolute; left: -40px; top: 0; width: 560px; opacity: .16; }
+  .spiral-wrap .small { position: absolute; right: 0; bottom: 20px; width: 200px; }
+  .spiral-wrap svg { width: 100%; height: auto; display: block; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<section class="block" data-k="camber">
+  <div class="light"><p class="tag">camber-profile · 622</p><div class="w622" data-svg="../assets/svg/camber-profile.svg"></div></div>
+  <div class="dark"><p class="tag">camber-profile · 622</p><div class="w622" data-svg="../assets/svg/camber-profile.svg"></div></div>
+</section>
+
+<section class="block" data-k="flex">
+  <div class="light"><p class="tag">flex-curve · 622</p><div class="w622" data-svg="../assets/svg/flex-curve.svg"></div></div>
+  <div class="dark"><p class="tag">flex-curve · 622</p><div class="w622" data-svg="../assets/svg/flex-curve.svg"></div></div>
+</section>
+
+<section class="block" data-k="stringers">
+  <div class="light"><p class="tag">stringers-top · 170 / 300</p>
+    <div class="row"><div class="w170" data-svg="../assets/svg/stringers-top.svg"></div><div class="wide" style="width:300px" data-svg="../assets/svg/stringers-top.svg"></div></div></div>
+  <div class="dark"><p class="tag">stringers-top · 170 / 300</p>
+    <div class="row"><div class="w170" data-svg="../assets/svg/stringers-top.svg"></div><div class="wide" style="width:300px" data-svg="../assets/svg/stringers-top.svg"></div></div></div>
+</section>
+
+<section class="block" data-k="height">
+  <div class="light"><p class="tag">height-guide · 622</p><div class="w622" data-svg="../assets/svg/height-guide.svg"></div></div>
+  <div class="dark"><p class="tag">height-guide · 622</p><div class="w622" data-svg="../assets/svg/height-guide.svg"></div></div>
+</section>
+
+<section class="block" data-k="scales">
+  <div class="light"><p class="tag">hardness / terrain · 622</p>
+    <div class="w622 stack">
+      <div><p class="scale-h">硬度</p><div data-svg="../assets/svg/hardness-scale.svg"></div></div>
+      <div><p class="scale-h">地形</p><div data-svg="../assets/svg/terrain-scale.svg"></div></div>
+    </div></div>
+  <div class="dark"><p class="tag">hardness / terrain · 622</p>
+    <div class="w622 stack">
+      <div><p class="scale-h">硬度</p><div data-svg="../assets/svg/hardness-scale.svg"></div></div>
+      <div><p class="scale-h">地形</p><div data-svg="../assets/svg/terrain-scale.svg"></div></div>
+    </div></div>
+</section>
+
+<section class="block" data-k="icons">
+  <div class="light"><p class="tag">icons · 64 / 96</p><div class="icons"></div><div class="icons-big"></div></div>
+  <div class="dark"><p class="tag">icons · 64 / 96</p><div class="icons"></div><div class="icons-big"></div></div>
+</section>
+
+<section class="block" data-k="spiral">
+  <div class="light"><p class="tag">spiral · 560 @16% / 200</p><div class="spiral-wrap">
+    <div class="big" data-svg="../assets/svg/spiral.svg"></div><div class="small" data-svg="../assets/svg/spiral.svg"></div></div></div>
+  <div class="dark"><p class="tag">spiral · 560 @16% / 200</p><div class="spiral-wrap">
+    <div class="big" data-svg="../assets/svg/spiral.svg"></div><div class="small" data-svg="../assets/svg/spiral.svg"></div></div></div>
+</section>
+
+<script>
+(async () => {
+  const only = new URLSearchParams(location.search).get('only');
+  if (only) document.querySelectorAll('.block').forEach(b => b.classList.toggle('hidden', b.dataset.k !== only));
+
+  const ICONS = ['tuned', 'waxed', 'wax', 'edge', 'wipe', 'store', 'return', 'ship', 'warranty', 'color'];
+  document.querySelectorAll('.icons, .icons-big').forEach(box => {
+    box.innerHTML = ICONS.map(n => `<span data-svg="../assets/svg/icon-${n}.svg" title="${n}"></span>`).join('');
+  });
+
+  const cache = {};
+  const get = u => cache[u] || (cache[u] = fetch(u).then(r => r.ok ? r.text() : `<p style="color:#D9879A">missing ${u}</p>`));
+  await Promise.all([...document.querySelectorAll('[data-svg]')].map(async el => { el.innerHTML = await get(el.dataset.svg); }));
+  await document.fonts.ready;
+  window.__READY = true;
+})();
+</script>
+</body>
+</html>
