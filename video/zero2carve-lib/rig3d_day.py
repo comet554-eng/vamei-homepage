@@ -87,14 +87,16 @@ class Scene:
         sun = bpy.context.object; sun.data.energy = 2.6; sun.data.color = (1.0, 0.98, 0.95); sun.data.angle = math.radians(1.5)
         self.spot = None
 
-        tm = mat("scrape", (0.84, 0.89, 0.98), 0.95)
+        tm = mat("scrape", (0.70, 0.78, 0.92), 0.95)
         tn = tm.node_tree; nz = tn.nodes.new("ShaderNodeTexNoise"); nz.inputs["Scale"].default_value = 30.0
         bp = tn.nodes.new("ShaderNodeBump"); bp.inputs["Strength"].default_value = 0.6
         tn.links.new(nz.outputs["Fac"], bp.inputs["Height"]); tn.links.new(bp.outputs["Normal"], tn.nodes["Principled BSDF"].inputs["Normal"])
-        self.trails = []
-        for _ in range(5):
-            bpy.ops.mesh.primitive_plane_add(size=1.0)
-            o = bpy.context.object; o.hide_render = True; o.data.materials.append(tm); self.trails.append(o)
+        gm = mat("groove", (0.28, 0.38, 0.56), 0.6)            # 刻滑切出来的细刻痕：深一点才看得见
+        self.trails, self.grooves = [], []
+        for lst, m_ in ((self.trails, tm), (self.grooves, gm)):
+            for _ in range(40):
+                bpy.ops.mesh.primitive_plane_add(size=1.0)
+                o = bpy.context.object; o.hide_render = True; o.data.materials.append(m_); lst.append(o)
         self._build_body()
         cam_data = bpy.data.cameras.new("cam"); cam_data.lens = 35
         self.cam = bpy.data.objects.new("cam", cam_data); sc.collection.objects.link(self.cam); sc.camera = self.cam
@@ -266,7 +268,10 @@ class Scene:
         self.bootL.location = J["ankleL"]; self.bootL.rotation_quaternion = J["bootL_m"].to_quaternion()
         sm = J["slope_m"]
         self.ground.rotation_mode = "QUATERNION"; self.ground.rotation_quaternion = sm.to_quaternion()
-        for i, o in enumerate(self.trails):
+        use, other = (self.grooves, self.trails) if J.get("groove") else (self.trails, self.grooves)
+        for o in other:
+            o.hide_render = True
+        for i, o in enumerate(use):
             if i < len(J["trails"]):
                 o.hide_render = False; o.matrix_world = J["trails"][i]
             else:
