@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行小课堂 · 爬坡不累的办法</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;max-width:100vw;aspect-ratio:9/16;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/举手欢迎.js"></script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/打招呼.js"></script>
+<script src="licai-seq/爬坡吃力.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script src="shortkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财骑行小课堂 · 竖版教程 01《爬坡不累的办法》：手绘 + Mixkit 实拍
+// 实拍在这里只画相框，片段由 ffmpeg 按 SHOTS 叠进去，见 video/素材/爬坡不累/素材清单.md
+const k01 = (t, a, b) => clamp((t - a) / (b - a), 0, 1);
+// 相框：W 横版 960×540；V 竖版 420×746（放在左边，右边画图解）
+const FR = { W: { x: 60, y: 430, w: 960, h: 540 }, V: { x: 70, y: 430, w: 420, h: 746 } };
+const SHOTS = [
+  [0.0, 2.6, 'W', ''],
+  [5.8, 9.8, 'W', '坡底就把挡换好'],
+  [10.0, 14.4, 'V', ''],
+  [19.2, 23.4, 'V', ''],
+  [28.2, 32.4, 'W', '坐着骑，均匀用力'],
+  [37.0, 41.2, 'W', '肩膀放松，手轻扶车把'],
+  [41.2, 45.2, 'W', '呼吸跟上节奏，别憋气']
+];
+function photoFrame(t) {
+  const s = SHOTS.find(x => t >= x[0] && t < x[1]); if (!s) return; const P = FR[s[2]];
+  g.save(); g.fillStyle = 'rgba(58,51,45,.18)'; g.fillRect(P.x - 8, P.y + 4, P.w + 30, P.h + 30);
+  g.fillStyle = '#fff'; g.fillRect(P.x - 16, P.y - 16, P.w + 32, P.h + 32);
+  g.fillStyle = '#3a332d'; g.fillRect(P.x, P.y, P.w, P.h); g.restore();
+  hrect(P.x - 16, P.y - 16, P.w + 32, P.h + 32, 611, C.ink, 3, 1);
+  [[P.x + 40, P.y - 18, -.25], [P.x + P.w - 40, P.y - 18, .22]].forEach(p => { g.save(); g.translate(p[0], p[1]); g.rotate(p[2]); g.fillStyle = 'rgba(232,200,120,.75)'; g.fillRect(-60, -18, 120, 36); g.restore(); });
+  if (s[3]) { const k = clamp((t - s[0]) / .3, 0, 1); txt(s[3], CX - 30, P.y + P.h + 62, 50, C.ink, { align: 'center', a: k }); hline(CX - 30 - textW(s[3], 50) / 2, P.y + P.h + 100, CX - 30 + textW(s[3], 50) / 2, P.y + P.h + 98, 612, C.orange, 6, k); }
+}
+const withShots = list => list.map(sc => [sc[0], sc[1], (lt, t) => { sc[2](lt, t); photoFrame(t); }]);
+// 手绘齿轮：r 半径，n 齿数，rot 转角
+function gear(x, y, r, n, rot, col, lw) {
+  g.save(); g.translate(x, y); g.rotate(rot); g.strokeStyle = col || C.ink; g.lineWidth = lw || 5; g.lineJoin = 'round'; g.beginPath();
+  for (let i = 0; i <= n * 2; i++) { const a = i / (n * 2) * 6.283, rr = i % 2 ? r : r - Math.max(6, r * .12); g.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); }
+  g.stroke(); g.beginPath(); g.arc(0, 0, r * .35, 0, 6.283); g.stroke(); g.fillStyle = col || C.ink; g.beginPath(); g.arc(0, 0, 8, 0, 6.283); g.fill(); g.restore();
+}
+// 曲柄 + 踏板，rpm 转速，force 用力（画箭头大小）
+function crank(x, y, t, rpm, force, col, seed) {
+  const a = t * rpm / 60 * 6.283, L = 110, px = x + Math.cos(a) * L, py = y + Math.sin(a) * L;
+  gear(x, y, 70, 18, a, C.ink, 4);
+  g.save(); g.strokeStyle = col; g.lineWidth = 12; g.lineCap = 'round'; g.beginPath(); g.moveTo(x, y); g.lineTo(px, py); g.stroke();
+  g.fillStyle = C.ink; g.fillRect(px - 26, py - 8, 52, 16); g.restore();
+  if (Math.sin(a) > -.2) harrow(px, py - 30 - force * 90, px, py - 20 - force * 45, px, py - 18, C.red, 1, 3 + force * 8);
+}
+function boxNote(x, y, w, h, seed, col, a) { if (a <= 0) return; g.save(); g.globalAlpha = a; g.fillStyle = 'rgba(255,253,246,.95)'; g.fillRect(x, y, w, h); g.restore(); hrect(x, y, w, h, seed, col || C.ink, 3.5, a); }
+
+const LINES = [
+  [0.1, 2.6, '爬坡总是骑到腿软？'],
+  [2.7, 5.4, '三个办法，下次骑车就能用。'],
+  [5.8, 9.8, '第一，到坡底之前，就{o}提前换轻挡{/}。'],
+  [10.0, 14.4, '前面小盘、后面大飞轮，就是最轻的挡。'],
+  [14.6, 18.8, '别等踩不动了再换，那时链条受力大，容易掉链。'],
+  [19.2, 23.4, '第二，{o}踩快一点、踩轻一点{/}，别硬憋重挡。'],
+  [23.5, 27.8, '一分钟踩七八十圈，比慢慢使劲踩省腿得多。'],
+  [28.2, 32.4, '第三，{o}坐着骑为主{/}，前半段别冲太猛。'],
+  [32.5, 36.8, '坐着更省力，太陡的一小段再站起来顶一下。'],
+  [37.0, 41.2, '上身放松，手轻轻扶着车把，'],
+  [41.3, 45.2, '呼吸跟上踩踏的节奏，别憋气。'],
+  [45.6, 50.4, '记住口诀：{o}早换挡、快踩踏、坐着骑{/}。'],
+  [50.8, 54.6, '你骑过最难的坡是哪一个？'],
+  [54.7, 57.8, '评论区说说，下次李财陪你爬。']
+];
+const KEYS = ['早换挡', '快踩踏', '坐着骑'];
+
+shortRun({ src: SRC, seed: 961, lines: LINES,
+  title: { text: '爬坡{r}不累{/}的办法', t: 0, small: '李财骑行小课堂' },
+  scenes: withShots([
+    // 1 钩子：实拍爬坡 → 三个办法预告
+    [0, 5.7, (lt, t) => {
+      if (t < 2.6) return;
+      KEYS.forEach((k, i) => { const ct = t - 2.8 - i * .5, y = 520 + i * 170; if (ct < 0) return; numDot(i + 1, 140, y, ct, C.orange); txt(k, 210, y, 72, C.ink, { a: clamp(ct / .2, 0, 1) }); });
+      cat('爬坡吃力', 820, 1000, 320, t - 2.7);
+    }],
+    // 2 早换挡
+    [5.7, 19.0, (lt, t) => {
+      if (t < 9.8) return;
+      if (t < 14.5) {
+        // 右侧：前盘小 + 后飞轮大 = 最轻
+        const x = 780, a = t * 2;
+        txt('前面', x, 470, 40, C.sub, { align: 'center' }); gear(x - 110, 600, 100, 34, a, C.gray, 3); gear(x + 30, 600, 62, 22, a, C.green, 6);
+        txt('小盘', x + 30, 700, 44, C.green, { align: 'center', a: k01(t, 10.4, 10.7) });
+        txt('后面', x, 790, 40, C.sub, { align: 'center' }); gear(x - 80, 920, 44, 13, -a, C.gray, 3); gear(x + 60, 920, 86, 30, -a, C.green, 6);
+        txt('大飞轮', x + 60, 1040, 44, C.green, { align: 'center', a: k01(t, 11.2, 11.5) });
+        if (t > 12.4) stamp('最轻挡', x, 1120, 56, t - 12.4, -.06);
+      } else {
+        // 踩不动再换 ✗ / 坡底提前换 ✓
+        boxNote(90, 460, 860, 300, 701, C.red, k01(t, 14.6, 14.9));
+        txt('踩不动了才换', 140, 530, 58, C.ink, { a: k01(t, 14.7, 15.0) }); bigX(840, 560, 60, k01(t, 15.6, 15.9));
+        txt('链条绷得最紧 → 换不进、容易掉链', 140, 640, 38, C.red, { a: k01(t, 16.0, 16.3) });
+        boxNote(90, 800, 860, 260, 702, C.green, k01(t, 16.8, 17.1));
+        txt('坡底提前换', 140, 870, 58, C.ink, { a: k01(t, 16.9, 17.2) }); tick(840, 880, 50, k01(t, 17.4, 17.7));
+        txt('脚下稍微松一点劲，再拨挡', 140, 970, 38, C.green, { a: k01(t, 17.6, 17.9) });
+      }
+    }],
+    // 3 快踩踏
+    [19.0, 28.0, (lt, t) => {
+      if (t < 23.4) {
+        // 右侧（左边是竖版踩踏实拍）
+        txt('踩快一点', 770, 560, 60, C.orange, { align: 'center', a: k01(t, 19.6, 19.9) });
+        txt('踩轻一点', 770, 680, 60, C.orange, { align: 'center', a: k01(t, 20.4, 20.7) });
+        if (t > 21.4) { txt('别硬憋', 770, 840, 52, C.ink, { align: 'center', a: k01(t, 21.4, 21.7) }); txt('重挡', 770, 910, 52, C.ink, { align: 'center', a: k01(t, 21.5, 21.8) }); bigX(770, 875, 90, k01(t, 22.0, 22.3)); }
+        return;
+      }
+      const a1 = k01(t, 23.6, 24.0), a2 = k01(t, 24.6, 25.0);
+      if (a1 > 0) { crank(280, 700, t, 40, 1, C.gray); txt('一分钟 40 圈', 280, 900, 42, C.ink, { align: 'center', a: a1 }); txt('每一脚都很重', 280, 960, 38, C.red, { align: 'center', a: a1 }); }
+      if (a2 > 0) { crank(780, 700, t, 80, .35, C.green); txt('一分钟 80 圈', 780, 900, 42, C.ink, { align: 'center', a: a2 }); txt('每一脚都轻', 780, 960, 38, C.green, { align: 'center', a: a2 }); }
+      if (t > 26.0) stamp('70～90 圈/分', 540, 1090, 56, t - 26.0, -.05);
+    }],
+    // 4 坐着骑
+    [28.0, 37.0, (lt, t) => {
+      if (t < 32.4) return;
+      // 坡道剖面：大部分坐着，陡的一小段站起来
+      const k = k01(t, 32.6, 33.6), pts = [[80, 1050], [400, 900], [560, 820], [700, 620], [1000, 560]];
+      g.save(); g.fillStyle = 'rgba(79,179,134,.12)'; g.beginPath(); g.moveTo(80, 1100); pts.forEach(p => g.lineTo(p[0], p[1])); g.lineTo(1000, 1100); g.closePath(); g.fill(); g.restore();
+      for (let i = 0; i < pts.length - 1; i++) { const steep = i === 2; hline(pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1], 720 + i, steep ? C.red : C.green, steep ? 12 : 9, k * 4 - i); }
+      if (t > 33.6) { txt('坐着骑', 250, 1030, 52, C.green, { align: 'center', a: k01(t, 33.6, 33.9) }); txt('坐着骑', 850, 500, 52, C.green, { align: 'center', a: k01(t, 33.8, 34.1) }); }
+      if (t > 34.6) { txt('陡的一小段', 830, 760, 50, C.red, { align: 'center', a: k01(t, 34.6, 34.9) }); txt('站起来顶一下', 830, 825, 50, C.red, { align: 'center', a: k01(t, 34.8, 35.1) }); }
+      cat('爬坡吃力', 240, 790, 220, t - 33.0);
+    }],
+    // 5 放松 + 呼吸（全程实拍）
+    [37.0, 45.4, () => {}],
+    // 6 口诀
+    [45.4, 50.6, (lt, t) => {
+      KEYS.forEach((k, i) => { const ct = t - 46.4 - i * .9; if (ct < 0) return; stamp(k, 330, 540 + i * 200, 90, ct, -.06 + i * .04); });
+      cat('叉腰得意', 820, 900, 380, t - 45.6);
+    }],
+    // 7 结尾提问
+    [50.6, 58.4, (lt, t) => {
+      cat('打招呼', 520, 790, 560, lt - .1);
+      g.save(); g.globalAlpha = k01(t, 51.2, 51.5); g.fillStyle = '#fff'; g.strokeStyle = C.ink; g.lineWidth = 5;
+      g.beginPath(); g.roundRect(690, 450, 280, 140, 40); g.fill(); g.stroke(); g.beginPath(); g.moveTo(730, 588); g.lineTo(710, 640); g.lineTo(780, 588); g.fill(); g.stroke();
+      txt('最难的坡？', 830, 520, 42, C.orange, { align: 'center' }); g.restore();
+      txt('关注李财，骑车少走弯路', 520, 1150, 44, C.sub, { align: 'center', a: k01(t, 55.0, 55.4) });
+    }]
+  ]),
+  cues: [['whoosh', .05], ['pop', 2.8], ['pop', 3.3], ['pop', 3.8], ['whoosh', 5.8], ['pop', 10.4], ['pop', 11.2], ['stamp', 12.4], ['pop', 14.7], ['wrong', 15.6], ['pop', 16.9], ['ding', 17.4],
+    ['whoosh', 19.2], ['pop', 19.6], ['pop', 20.4], ['wrong', 22.0], ['pop', 23.6], ['pop', 24.6], ['stamp', 26.0], ['whoosh', 28.2], ['pen', 32.6], ['pop', 33.6], ['ding', 34.6], ['whoosh', 37.0],
+    ['stamp', 46.4], ['stamp', 47.3], ['stamp', 48.2], ['pop', 50.8], ['ding', 51.2]],
+  cover: (key, w, h) => epCover(key, w, h, { tag: '李财骑行小课堂', l1: '爬坡总腿软？', l2: '3个办法不累', sub: '早换挡 · 快踩踏 · 坐着骑', emo: '握拳加油', emoScale: .85,
+    art: (x, y, s) => { const b = y + 110 * s; hline(x - 200 * s, b, x - 40 * s, b - 60 * s, 31, C.green, 8 * s, 1); hline(x - 40 * s, b - 60 * s, x + 60 * s, b - 170 * s, 32, C.red, 10 * s, 1); hline(x + 60 * s, b - 170 * s, x + 200 * s, b - 200 * s, 33, C.green, 8 * s, 1); } })
+});
+
+})();
+</script>
+</body>
+</html>
