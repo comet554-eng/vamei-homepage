@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行小课堂 · 骑后拉伸</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;max-width:100vw;aspect-ratio:9/16;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/举手欢迎.js"></script>
+<script src="licai-seq/伸展运动.js"></script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/弓背伸懒腰.js"></script>
+<script src="licai-seq/打招呼.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script src="shortkit.js"></script>
+<script src="tutkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 公共件里用到的动作（splitseq 按名字加载）：'打招呼' '叉腰得意'
+// 李财骑行小课堂 · 竖版教程 05《骑完车怎么拉伸》：手绘 + Mixkit 实拍（见 video/素材/骑后拉伸/素材清单.md）
+// 实拍没有找到清楚的大腿前侧、臀部、胸口拉伸，这三个用手绘简笔小人
+const SHOTS = [
+  [0.0, 2.6, 'W', ''],
+  [5.8, 9.8, 'W', '先慢骑两三分钟'],
+  [14.6, 18.8, 'W', '脚搭矮处，背挺直往前倾'],
+  [19.2, 23.4, 'W', '弓步，后脚跟踩实'],
+  [37.0, 41.2, 'W', '每个动作 20～30 秒'],
+  [41.3, 45.2, 'W', '慢慢拉，别弹']
+];
+const withShots = tutFrames(SHOTS);
+const LINES = [
+  [0.1, 2.6, '骑完车，腿和腰背发紧？'],
+  [2.7, 5.4, '花五分钟，做这五个拉伸。'],
+  [5.8, 9.8, '先慢骑或者走两三分钟，让心跳降下来。'],
+  [10.0, 14.4, '第一，{o}大腿前侧{/}：站稳，手抓脚背，脚跟往屁股贴。'],
+  [14.6, 18.8, '第二，{o}大腿后侧{/}：脚搭在矮处伸直，背挺直往前倾。'],
+  [19.2, 23.4, '第三，{o}小腿{/}：弓步，后脚跟踩实地面。'],
+  [23.5, 27.8, '第四，{o}屁股{/}：坐着把脚踝搭在另一侧膝盖上，身体前倾。'],
+  [28.2, 32.4, '第五，{o}胸口和肩膀{/}：双手在背后交握，挺胸往后拉。'],
+  [32.5, 36.8, '骑车一直弓着背，这个动作最舒服。'],
+  [37.0, 41.2, '每个动作停 20 到 30 秒，左右两边都做。'],
+  [41.3, 45.2, '拉到有点紧就好，别弹、别硬压，疼就松一点。'],
+  [45.6, 50.4, '记住：{o}慢慢拉、不弹振、不硬压{/}。'],
+  [50.8, 54.6, '你骑完车哪里最酸？'],
+  [54.7, 57.8, '评论区说说，下次李财专门讲。']
+];
+const P = (o, dx, dy) => { const r = {}; Object.keys(o).forEach(k => r[k] = [o[k][0] + dx, o[k][1] + dy]); return r; };
+// 三个手绘姿势（侧面，面朝右）
+const QUAD = { head: [540, 560], neck: [540, 615], hip: [540, 810], k1: [548, 945], f1: [548, 1080], k2: [528, 955], f2: [452, 845], el2: [500, 720], h2: [455, 840], el1: [600, 700], h1: [650, 640] };
+const GLUTE = { head: [600, 640], neck: [575, 690], hip: [470, 880], k1: [640, 885], f1: [640, 1065], k2: [560, 800], f2: [650, 860], el1: [620, 780], h1: [660, 860], el2: [600, 790], h2: [640, 870] };
+const CHEST = { head: [575, 560], neck: [560, 615], hip: [535, 815], k1: [545, 950], f1: [550, 1080], k2: [525, 950], f2: [520, 1080], el1: [490, 700], h1: [470, 805], el2: [482, 706], h2: [462, 810] };
+function hold(t, t0, x, y) { const k = tk01(t, t0, t0 + 3); if (k <= 0) return; g.save(); g.strokeStyle = C.orange; g.lineWidth = 10; g.lineCap = 'round'; g.beginPath(); g.arc(x, y, 50, -1.57, -1.57 + 6.283 * k); g.stroke(); g.restore(); txt('20～30 秒', x, y + 90, 34, C.orange, { align: 'center' }); }
+shortRun({ src: SRC, seed: 965, lines: LINES, bgm: 'lofi',
+  title: { text: '骑完车{r}怎么拉伸{/}', t: 0, small: '李财骑行小课堂' },
+  scenes: withShots([
+    [0, 5.7, (lt, t) => { if (t >= 2.6) tutPreview(t, 2.8, ['大腿前侧', '大腿后侧', '小腿', '屁股', '胸口肩膀'], '伸展运动'); }],
+    [5.7, 14.5, (lt, t) => {
+      if (t < 10.0) return;
+      stick(QUAD, C.ink, 14); hcircle(470, 860, 80, 70, 851, C.red, 5, tk01(t, 10.8, 11.2));
+      txt('脚跟贴屁股', 250, 980, 46, C.red, { align: 'center', a: tk01(t, 11.0, 11.3) });
+      txt('膝盖朝下', 760, 960, 42, C.ink, { align: 'center', a: tk01(t, 11.8, 12.1) }); harrow(700, 950, 620, 960, 570, 955, C.ink, tk01(t, 11.8, 12.2), 4);
+      hold(t, 12.0, 830, 600);
+    }],
+    [14.5, 23.5, () => {}],
+    [23.5, 37.0, (lt, t) => {
+      if (t < 28.2) {
+        g.save(); g.fillStyle = 'rgba(122,90,72,.25)'; g.fillRect(380, 880, 180, 200); g.restore(); hrect(380, 880, 180, 200, 861, C.brown, 4, 1);
+        stick(GLUTE, C.ink, 14); hcircle(620, 830, 90, 60, 862, C.red, 5, tk01(t, 24.4, 24.8));
+        txt('脚踝搭在膝盖上', 300, 560, 46, C.red, { align: 'center', a: tk01(t, 24.6, 24.9) });
+        harrow(560, 640, 640, 660, 700, 700, C.orange, tk01(t, 25.6, 26.0), 6); txt('身体前倾', 820, 640, 44, C.orange, { align: 'center', a: tk01(t, 25.8, 26.1) });
+        hold(t, 25.0, 860, 960);
+        return;
+      }
+      stick(CHEST, C.ink, 14); hcircle(470, 805, 50, 50, 871, C.red, 5, tk01(t, 29.0, 29.4));
+      txt('双手背后交握', 260, 900, 44, C.red, { align: 'center', a: tk01(t, 29.2, 29.5) });
+      harrow(600, 690, 660, 680, 720, 690, C.orange, tk01(t, 30.0, 30.4), 6); txt('挺胸', 790, 690, 48, C.orange, { align: 'center', a: tk01(t, 30.2, 30.5) });
+      if (t > 32.5) { cat('弓背伸懒腰', 830, 1000, 260, t - 32.5); txt('骑车一直弓着背', 760, 540, 44, C.ink, { align: 'center', a: tk01(t, 32.6, 32.9) }); }
+      hold(t, 30.8, 250, 600);
+    }],
+    [37.0, 45.4, () => {}],
+    [45.4, 50.6, (lt, t) => tutSlogan(t, 46.4, ['慢慢拉', '不弹振', '不硬压'], '伸展运动')],
+    [50.6, 58.4, (lt, t) => tutEnd(lt, t, 50.6, '哪里最酸？')]
+  ]),
+  cues: [['whoosh', .05], ['pop', 2.8], ['pop', 3.3], ['pop', 3.8], ['pop', 4.3], ['pop', 4.8], ['whoosh', 5.8], ['pop', 10.0], ['pen', 10.8], ['grow', 12.0], ['whoosh', 14.6], ['whoosh', 19.2],
+    ['pop', 23.5], ['pen', 24.4], ['grow', 25.0], ['pop', 28.2], ['pen', 29.0], ['grow', 30.8], ['pop', 32.6], ['whoosh', 37.0], ['whoosh', 41.3],
+    ['stamp', 46.4], ['stamp', 47.3], ['stamp', 48.2], ['pop', 50.8], ['ding', 51.2]],
+  cover: (key, w, h) => epCover(key, w, h, { tag: '李财骑行小课堂', l1: '骑完浑身发紧？', l2: '5个拉伸放松', sub: '慢慢拉 · 不弹振 · 不硬压', emo: '张开双臂', emoScale: .85,
+    art: (x, y, s) => { g.save(); g.translate(x - 540 * s * .35, y - 820 * s * .35); g.scale(s * .35, s * .35); stick(QUAD, C.ink, 14); g.restore(); } })
+});
+
+})();
+</script>
+</body>
+</html>

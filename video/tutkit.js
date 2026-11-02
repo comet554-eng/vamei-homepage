@@ -50,3 +50,9 @@ function tutCompare(t, t0, bad, badSub, good, goodSub) {
   txt(good, 140, 870, 58, C.ink, { a: tk01(t, t0 + 2.3, t0 + 2.6) }); tick(840, 880, 50, tk01(t, t0 + 2.8, t0 + 3.1));
   txt(goodSub, 140, 970, 38, C.green, { a: tk01(t, t0 + 3.0, t0 + 3.3) });
 }
+// 手绘齿轮：r 半径，n 齿数，rot 转角
+function gear(x, y, r, n, rot, col, lw) {
+  g.save(); g.translate(x, y); g.rotate(rot); g.strokeStyle = col || C.ink; g.lineWidth = lw || 5; g.lineJoin = 'round'; g.beginPath();
+  for (var i = 0; i <= n * 2; i++) { var a = i / (n * 2) * 6.283, rr = i % 2 ? r : r - Math.max(6, r * .12); g.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); }
+  g.stroke(); g.beginPath(); g.arc(0, 0, r * .35, 0, 6.283); g.stroke(); g.fillStyle = col || C.ink; g.beginPath(); g.arc(0, 0, 8, 0, 6.283); g.fill(); g.restore();
+}
