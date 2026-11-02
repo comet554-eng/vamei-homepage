@@ -3,6 +3,7 @@ import math, subprocess
 import cairo
 import numpy as np
 from PIL import Image
+from epbase import plain
 
 W, H, FPS = 1080, 1920, 30
 SERIF, SANS = "Noto Serif SC", "Noto Sans SC"
@@ -105,6 +106,8 @@ def rich_line(c, sp, cx, y, size, alpha=1.0, face=SANS):
 
 def wrap(s, maxc=13):
     """按标点把长字幕拆成最多两行（竖屏每行 ≤ 13 字左右）。"""
+    if "\n" in s:                                   # 手动断行
+        return s.split("\n")
     from_plain = s
     vis = []
     i, depth = 0, 0
@@ -138,6 +141,8 @@ def subtitle(c, s, t, t0, t1, y=1500, size=58):
     lines = [ln[:-1] if ln.endswith("。") else ln for ln in lines]
     lines = [ln.replace("。}", "}") if ln.endswith("。}") else ln for ln in lines]
     lift = 6 * (1 - ramp(t, t0, t0 + 0.2))
+    longest = max(len(plain(ln)) for ln in lines)
+    size = min(size, size * 16.5 / max(longest, 1))     # 一行太长时缩小字号，不出画
     for i, ln in enumerate(lines):
         rich_line(c, spans(ln), W / 2, y + i * size * 1.35 + lift, size, a)
 

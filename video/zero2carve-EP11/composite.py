@@ -83,11 +83,11 @@ def draw(c, t, P, m, shot, p):
                 tag(c, "一条线 ✓", GREEN, P["turnA"][0] - 120, P["turnA"][1] - 40, ak, size=40)
             ab = a * ramp(p, ep.W_MID + 2.0, ep.W_MID + 2.4)
             if ab > 0:
-                tag(c, "一大片 ✗", RED, P["turnB"][0] - 60, P["turnB"][1] - 40, ab, size=40)
-            big_title(c, [("一站直，板就{r|甩}", 1.0)], t, ws[3][1] + 2.5, ws[4][1] - 0.1, y=1560, size=86)
+                tag(c, "一大片 ×", RED, P["turnB"][0] - 60, P["turnB"][1] - 40, ab, size=40)
+            big_title(c, [("一站直，板就{r|甩}", 1.0)], t, ws[3][1] + 2.5, ws[4][1] - 0.1, y=1380, size=86)
         else:
             tag(c, "正确 · 俯视", GREEN, 60, 330, a, icon="v")
-            big_title(c, [("一条线{w|到底}", 1.0)], t, ws[4][1] + 2.5, w1, y=1560, size=86)
+            big_title(c, [("一条线{w|到底}", 1.0)], t, ws[4][1] + 2.5, w1, y=1380, size=86)
     if s0 - 0.3 < t < s1 + 0.3:
         a = window(t, s0, s1, 0.3)
         tag(c, "正确做法", GREEN, 60, 330, a, icon="v")
