@@ -269,14 +269,20 @@ class Scene:
         sm = J["slope_m"]
         self.ground.rotation_mode = "QUATERNION"; self.ground.rotation_quaternion = sm.to_quaternion()
         flags = J.get("trail_groove") or [J.get("groove", False)] * len(J["trails"])
-        for o in self.trails + self.grooves:
-            o.hide_render = True
+        # 不用的雪痕片挪到地下、缩成一点，而不是切换 hide_render：持久数据模式下频繁切换可见性
+        # 偶尔会让远山整片渲成黑色（第10、11课踩过的坑）
+        park = Matrix.Translation((0, 0, -40)) @ Matrix.Diagonal((1e-3, 1e-3, 1e-3, 1))
         ni = {False: 0, True: 0}
+        used = set()
         for mtx, g in zip(J["trails"], flags):          # 每段按自己的宽度选材质：搓雪宽痕 / 刻滑细刻痕
             pool = self.grooves if g else self.trails
             if ni[g] < len(pool):
                 o = pool[ni[g]]; ni[g] += 1
-                o.hide_render = False; o.matrix_world = mtx
+                o.matrix_world = mtx; used.add(o.name)
+        for o in self.trails + self.grooves:
+            o.hide_render = False
+            if o.name not in used:
+                o.matrix_world = park
         up = (J["neck"] - J["pelvis"]).normalized()
         legs = [J["pelvis"] - up * 0.02, J["hipL"], J["kneeL"], J["ankleL"] + up * 0.05, J["hipR"], J["kneeR"], J["ankleR"] + up * 0.05]
         for i, v in enumerate(legs):
