@@ -53,6 +53,18 @@ function bang(text, x, y, lt, size) {
   g.restore();
 }
 
+// 安静的 lo-fi 铺底：75 拍，Fmaj7 → Em7 → Dm7 → Cmaj7 慢和弦 + 轻鼓，没有重复的高音琶音（只借用 licaiSound 的音效，不要它的旋律）
+function lofiMusic(K, DUR) {
+  var beat = .8, bar = beat * 4, CH = [[174.61, 220, 261.63, 329.63], [164.81, 196, 246.94, 293.66], [146.83, 174.61, 220, 261.63], [130.81, 164.81, 196, 246.94]];
+  for (var t = .1, i = 0; t < DUR - .5; t += bar, i++) {
+    var ch = CH[i % 4];
+    ch.forEach(function (f, j) { K.tone(f, t + j * .03, bar + .4, .014, 'sine', K.music, .35); K.tone(f * 2, t + j * .03, bar * .8, .004, 'triangle', K.music, .5); });
+    K.tone(ch[0] / 2, t, beat * 1.8, .05, 'sine', K.music, .04); K.tone(ch[0] / 2, t + beat * 2, beat * 1.8, .04, 'sine', K.music, .04);
+    for (var b = 0; b < 4; b++) { if (b % 2 === 0) K.kick(t + b * beat, .32); K.hat(t + b * beat + beat / 2, .22); }
+    if (i % 2 === 1) K.tone(ch[3] * 2, t + beat * 2.5, 1.6, .006, 'sine', K.music, .2);
+  }
+}
+
 /* shortRun({ src, seed, title:{text, t, small}, lines:[[开始秒, 结束秒, 字幕]], scenes:[[开始秒, 结束秒, fn(lt, t)]], cues:[[音效, 秒]], cover }) */
 function shortRun(o) {
   var T = [0], S = [];
@@ -65,7 +77,10 @@ function shortRun(o) {
     T.push(sc[1]);
   });
   function sound(K, c, DUR, TT) {
-    var X = licaiSound(K, DUR), mg = K.music.gain;
+    var X;
+    if (o.bgm === 'lofi') { var real = K.music; K.music = c.createGain(); X = licaiSound(K, DUR); K.music = real; lofiMusic(K, DUR); }
+    else X = licaiSound(K, DUR);
+    var mg = K.music.gain;
     // 背景乐压低，给后期配音留位置
     mg.cancelScheduledValues(0); mg.setValueAtTime(o.music == null ? .32 : o.music, 0); mg.setValueAtTime(o.music == null ? .32 : o.music, DUR - 1.5); mg.linearRampToValueAtTime(0, DUR);
     (o.cues || []).forEach(function (q) { if (q[1] < DUR - .2) { if (X[q[0]]) X[q[0]](q[1]); else if (K[q[0]]) K[q[0]](q[1], q[2]); } });
