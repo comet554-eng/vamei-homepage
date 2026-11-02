@@ -1,6 +1,6 @@
 """给合成好的无声成片配上背景音乐和音效，再压成最终 mp4：
 python3 finish.py EPDIR RAW.mp4 OUT.mp4
-EPDIR/ep.py 里：MUSIC = "pop" | "drive" | None；music_hits() -> (重拍时刻列表, [(时刻, "boom"|"ding"|"whoosh")])"""
+EPDIR/ep.py 里：MUSIC = "pop" | "drive" | "bounce" | None；music_hits() -> (重拍时刻列表, [(时刻, "boom"|"ding"|"whoosh")])"""
 import sys, os, subprocess, tempfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 EP = os.path.abspath(sys.argv[1]); sys.path.insert(0, EP); sys.path.insert(0, HERE)

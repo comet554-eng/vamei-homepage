@@ -2,6 +2,7 @@
 python3 music_up.py OUT.wav DURATION [--style pop|drive] [--hits t1,t2,...] [--level -20]
   pop   = 轻快流行（118 BPM，C 大调 I–V–vi–IV）
   drive = 动感电子（128 BPM，D 大调，更重的鼓和锯齿和弦）
+  bounce = 阳光律动（122 BPM，A 大调 vi–IV–I–V，反拍贝斯 + 钢琴和弦切分 + 沙锤）
   hits  = 段落切换时刻（秒）：之前 2 拍上扬，切换点一个重拍
 全部本地合成，没有版权问题。"""
 import sys, math, wave, argparse
@@ -15,7 +16,9 @@ ap.add_argument("--level", type=float, default=-20.0)
 ap.add_argument("--sfx", default="")          # "t:kind,..."  kind = boom | ding | whoosh
 A = ap.parse_args()
 ST = dict(pop=dict(bpm=118, root=60, prog=[(0, "M"), (7, "M"), (9, "m"), (5, "M")], saw=0.25, kick=0.9),
-          drive=dict(bpm=128, root=62, prog=[(0, "M"), (9, "m"), (5, "M"), (7, "M")], saw=0.7, kick=1.1))[A.style]
+          drive=dict(bpm=128, root=62, prog=[(0, "M"), (9, "m"), (5, "M"), (7, "M")], saw=0.7, kick=1.1),
+          bounce=dict(bpm=122, root=57, prog=[(9, "m"), (5, "M"), (0, "M"), (7, "M")], saw=0.0, kick=1.0))[A.style]
+BOUNCE = A.style == "bounce"
 BPM = ST["bpm"]; BEAT = 60 / BPM; BAR = 4 * BEAT
 N = int((A.dur + 1) * SR)
 L = np.zeros(N, np.float32); R = np.zeros(N, np.float32)
@@ -81,6 +84,18 @@ def tone(f, d, kind="sine", dec=None, att=0.004):
     return (s * e).astype(np.float32)
 
 
+def piano(f, d):
+    t = tt(d)
+    s = sum(np.sin(2 * np.pi * f * k * t) * np.exp(-t * (3 + 2.5 * k)) / k ** 1.3 for k in range(1, 7))
+    na = int(0.003 * SR); s[:na] *= np.linspace(0, 1, na)
+    return s.astype(np.float32)
+
+
+def shaker(t0, g):
+    t = tt(0.07); x = hp(hp(noise(0.07)))
+    add(t0, x * np.sin(np.pi * t / 0.07) * 0.18, g, 0.3)
+
+
 def chord_notes(root, q):
     return [root, root + (4 if q == "M" else 3), root + 7]
 
@@ -121,11 +136,21 @@ for b in range(nbars):
         hat(tb, 0.35)
     # 贝斯：八分音符
     bnotes = [root - 24, root - 24, root - 12, root - 24]
-    for e8 in range(8):
+    if BOUNCE:                                              # 反拍贝斯（house 的“蹦”）+ 十六分沙锤
+        for k in range(4):
+            add(t_bar + k * BEAT + BEAT / 2, tone(hz(root - 24 + (12 if k == 3 else 0)), BEAT * 0.42, "tri", dec=0.18), 0.30 if not intro else 0.0)
+        for s16 in range(16):
+            shaker(t_bar + s16 * BEAT / 4, 0.9 if s16 % 2 else 0.45)
+    else:
+      for e8 in range(8):
         add(t_bar + e8 * BEAT / 2, tone(hz(bnotes[e8 % 4]), BEAT / 2 * 0.9, "saw" if A.style == "drive" else "tri", dec=0.35), 0.22 if not intro else 0.0)
     # 和弦铺底（随底鼓抽吸）
     cn = chord_notes(root, q)
-    for m in cn + [cn[0] + 12]:
+    if BOUNCE:                                              # 钢琴和弦切分：1、2&、4 拍
+        for pos, g in ((0, 0.11), (1.5, 0.08), (3, 0.09)):
+            for m in cn + [cn[0] + 12]:
+                add(t_bar + pos * BEAT, piano(hz(m), BEAT * 1.4), g / 4 * 1.6, 0.15)
+    for m in (cn + [cn[0] + 12]) if not BOUNCE else []:
         for det in (-0.003, 0.003):
             s = tone(hz(m) * (1 + det), BAR, "saw", dec=None, att=0.05) * ST["saw"]
             add(t_bar, s, 0.018, det * 150)
@@ -135,14 +160,20 @@ for b in range(nbars):
         if intro and s16 % 2:
             continue
         m = arp[s16 % 8]
+        if BOUNCE and s16 % 4 not in (2, 3):             # 律动版琶音更稀，留出钢琴的位置
+            continue
         p = tone(hz(m), 0.25, "tri", dec=0.09)
         add(t_bar + s16 * BEAT / 4, p, 0.07, 0.35 * (1 if s16 % 2 else -1))
         add(t_bar + s16 * BEAT / 4 + 3 * BEAT / 4, p, 0.025, -0.5)        # 延迟回声
     # 每 4 小节一个短旋律钩子
     if b % 4 == 2 and not intro:
-        for j, (off, d) in enumerate(((7, 0.5), (9, 0.5), (12, 1.0), (9, 0.5), (7, 1.5))):
-            pos = sum(x[1] for x in ((7, 0.5), (9, 0.5), (12, 1.0), (9, 0.5), (7, 1.5))[:j])
-            add(t_bar + pos * BEAT, tone(hz(ST["root"] + 12 + off), d * BEAT, "saw", dec=0.4), 0.05, 0.1)
+        mel = ((12, 0.5), (14, 0.5), (16, 0.75), (14, 0.25), (12, 1.0), (9, 1.0)) if BOUNCE else ((7, 0.5), (9, 0.5), (12, 1.0), (9, 0.5), (7, 1.5))
+        for j, (off, d) in enumerate(mel):
+            pos = sum(x[1] for x in mel[:j])
+            if BOUNCE:
+                add(t_bar + pos * BEAT, piano(hz(ST["root"] + 12 + off), d * BEAT + 0.3), 0.09, -0.1)
+            else:
+                add(t_bar + pos * BEAT, tone(hz(ST["root"] + 12 + off), d * BEAT, "saw", dec=0.4), 0.05, 0.1)
 
 for h in hits:
     riser(h, 2 * BEAT, 0.12)

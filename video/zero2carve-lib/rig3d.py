@@ -11,6 +11,7 @@ POSE0 = dict(
     trail=0.0, ty0=0.0,                         # 雪痕：1 时显示，从 y=ty0 拉到板当前位置（宽 = 板长）
     tw=(), tn=0.0,                              # 多段雪痕：途经点 (x0,y0,x1,y1,...)，已走过 tn 个点，再连到板当前位置
     trw=0.0,                                    # 雪痕宽度（米）；0 = 按方向自动估；< 0.3 时画成刻滑的细刻痕
+    tws=(),                                     # 可选：每段雪痕各自的宽度（第 i 段 = 途经点 i → i+1），覆盖 trw
     bx=0.0, by=0.0, bz=0.0, broll=0.0,          # 板中心、绕 x 轴横滚（>0 前刃抬起/后刃压雪）
     px=0.0, py=-0.02, pz=0.86, tilt=0.0,        # 骨盆中心；躯干后仰角（>0 往后倒，<0 往前扑）
     curl=0.0, neck=0.0,                         # 上背前弯（团身）、低头收下巴
@@ -128,14 +129,17 @@ def skeleton(P):
         else:
             wp = [(cur[0], P["ty0"])]
         pts = wp + [cur]
-        for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+        J["trail_groove"] = []
+        for si, ((x0, y0), (x1, y1)) in enumerate(zip(pts, pts[1:])):
             dx, dy = x1 - x0, y1 - y0
             L = math.hypot(dx, dy)
             if L < 0.02:
                 continue
             ang = math.atan2(dy, dx)
-            wid = P["trw"] or (1.45 * abs(math.sin(ang)) + 0.30 * abs(math.cos(ang)))   # 板大致沿 x：横着推宽，顺着走窄
-            ext = 0.25 if not P["trw"] else min(0.25, P["trw"])
+            sw = P["tws"][min(si, len(P["tws"]) - 1)] if P["tws"] else P["trw"]
+            wid = sw or (1.45 * abs(math.sin(ang)) + 0.30 * abs(math.cos(ang)))   # 板大致沿 x：横着推宽，顺着走窄
+            ext = 0.25 if not sw else min(0.25, sw)
+            J["trail_groove"].append(0 < sw < 0.3)
             J["trails"].append(J["slope_m"] @ Matrix.Translation(((x0 + x1) / 2, (y0 + y1) / 2, 0.004 + 0.0002 * len(J["trails"])))
                                @ Matrix.Rotation(ang, 4, "Z") @ Matrix.Diagonal((L + ext, wid, 1, 1)))
     J["groove"] = 0 < P["trw"] < 0.3

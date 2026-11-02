@@ -87,7 +87,7 @@ class Scene:
         sun = bpy.context.object; sun.data.energy = 2.6; sun.data.color = (1.0, 0.98, 0.95); sun.data.angle = math.radians(1.5)
         self.spot = None
 
-        tm = mat("scrape", (0.70, 0.78, 0.92), 0.95)
+        tm = mat("scrape", (0.58, 0.67, 0.86), 0.95)
         tn = tm.node_tree; nz = tn.nodes.new("ShaderNodeTexNoise"); nz.inputs["Scale"].default_value = 30.0
         bp = tn.nodes.new("ShaderNodeBump"); bp.inputs["Strength"].default_value = 0.6
         tn.links.new(nz.outputs["Fac"], bp.inputs["Height"]); tn.links.new(bp.outputs["Normal"], tn.nodes["Principled BSDF"].inputs["Normal"])
@@ -268,14 +268,15 @@ class Scene:
         self.bootL.location = J["ankleL"]; self.bootL.rotation_quaternion = J["bootL_m"].to_quaternion()
         sm = J["slope_m"]
         self.ground.rotation_mode = "QUATERNION"; self.ground.rotation_quaternion = sm.to_quaternion()
-        use, other = (self.grooves, self.trails) if J.get("groove") else (self.trails, self.grooves)
-        for o in other:
+        flags = J.get("trail_groove") or [J.get("groove", False)] * len(J["trails"])
+        for o in self.trails + self.grooves:
             o.hide_render = True
-        for i, o in enumerate(use):
-            if i < len(J["trails"]):
-                o.hide_render = False; o.matrix_world = J["trails"][i]
-            else:
-                o.hide_render = True
+        ni = {False: 0, True: 0}
+        for mtx, g in zip(J["trails"], flags):          # 每段按自己的宽度选材质：搓雪宽痕 / 刻滑细刻痕
+            pool = self.grooves if g else self.trails
+            if ni[g] < len(pool):
+                o = pool[ni[g]]; ni[g] += 1
+                o.hide_render = False; o.matrix_world = mtx
         up = (J["neck"] - J["pelvis"]).normalized()
         legs = [J["pelvis"] - up * 0.02, J["hipL"], J["kneeL"], J["ankleL"] + up * 0.05, J["hipR"], J["kneeR"], J["ankleR"] + up * 0.05]
         for i, v in enumerate(legs):
