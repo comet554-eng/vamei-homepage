@@ -58,10 +58,13 @@ for name, (w, h) in SIZES.items():
     else:
         rh = int(h * 0.84); rx = 0.74; ry = 0.97
     r = RIDER.resize((int(RIDER.width * rh / RIDER.height), rh), Image.LANCZOS)
-    sh = Image.new("RGBA", r.size, (0, 0, 0, 0)); sh.putalpha(r.getchannel("A").point(lambda v: int(v * 0.45)))
+    pad = 60     # 影子先留边再模糊，不然模糊被裁在人物框里，会留下一道方形的边
+    sh = Image.new("RGBA", (r.width + 2 * pad, r.height + 2 * pad), (0, 0, 0, 0))
+    al = Image.new("L", sh.size, 0); al.paste(r.getchannel("A").point(lambda v: int(v * 0.45)), (pad, pad)); sh.putalpha(al)
     sh = sh.filter(ImageFilter.GaussianBlur(18))
     px = int(w * rx - r.width / 2); py = int(h * ry - r.height)
-    img.alpha_composite(sh, (px + 14, py + 18)); img.alpha_composite(r, (px, py))
+    lay = Image.new("RGBA", img.size, (0, 0, 0, 0)); lay.paste(sh, (px + 14 - pad, py + 18 - pad)); img.alpha_composite(lay)
+    img.alpha_composite(r, (px, py))
     # 文字
     arr = np.asarray(img.convert("RGB"))
     buf = np.dstack([arr[..., 2], arr[..., 1], arr[..., 0], np.full((h, w), 255, np.uint8)]).copy()
