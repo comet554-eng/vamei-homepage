@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行小课堂 · 疼痛对照</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;max-width:100vw;aspect-ratio:9/16;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/委屈难过.js"></script>
+<script src="licai-seq/打招呼.js"></script>
+<script src="licai-seq/点头指向.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script src="shortkit.js"></script>
+<script src="tutkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财骑行小课堂 · 竖版教程 07《屁股疼、手麻、膝盖疼怎么办》：手绘 + Mixkit 实拍（见 video/素材/疼痛对照/素材清单.md）
+// 公共件里用到的动作（splitseq 按名字加载）：'打招呼' '叉腰得意'
+const SHOTS = [
+  [0.0, 2.6, 'W', ''],
+  [5.8, 9.8, 'W', '坐垫放平，别往上翘'],
+  [14.6, 18.8, 'W', '重量别全压在手上'],
+  [23.5, 27.8, 'V', ''],
+  [37.0, 41.2, 'W', '腰酸：车把可能太远太低']
+];
+const withShots = tutFrames(SHOTS);
+const LINES = [
+  [0.1, 2.6, '骑车屁股疼、手麻、膝盖疼？'],
+  [2.7, 5.4, '对照这张表，自己就能调。'],
+  [5.8, 9.8, '{o}屁股疼{/}：先看坐垫，前后放平，别往上翘。'],
+  [10.0, 14.4, '穿带垫子的骑行裤，里程一点点往上加。'],
+  [14.6, 18.8, '{o}手麻{/}：多半是身子太往前，重量全压在手上。'],
+  [19.2, 23.4, '手肘微弯、轻握车把，隔一会儿换个握法，戴副手套。'],
+  [23.5, 27.8, '{o}膝盖前面疼{/}：多半坐垫太低，往上调一点。'],
+  [28.2, 32.4, '{o}膝盖后面疼{/}：坐垫太高了，往下调一点。'],
+  [32.5, 36.8, '每次只调五毫米，骑几天再看。'],
+  [37.0, 41.2, '{o}腰酸{/}：车把可能太远太低，试着调高或换短把立。'],
+  [41.3, 45.2, '调了还是疼，或者越来越疼，就去看医生。'],
+  [45.6, 50.4, '记住：{o}先调车，再加量{/}。'],
+  [50.8, 54.6, '你骑车哪里最容易疼？'],
+  [54.7, 57.8, '评论区说说，李财帮你对一对。']
+];
+// 侧面坐垫：tilt 正 = 前端上翘
+function saddle(x, y, s, tilt, col) {
+  g.save(); g.translate(x, y); g.scale(s, s); g.rotate(-tilt); g.fillStyle = col; g.strokeStyle = C.ink; g.lineWidth = 4;
+  g.beginPath(); g.moveTo(-110, -10); g.quadraticCurveTo(-90, -40, -20, -30); g.lineTo(120, -12); g.quadraticCurveTo(130, 0, 110, 6); g.lineTo(-100, 12); g.closePath(); g.fill(); g.stroke(); g.restore();
+  g.save(); g.strokeStyle = C.ink; g.lineWidth = 10 * s; g.beginPath(); g.moveTo(x - 20 * s, y + 10 * s); g.lineTo(x - 50 * s, y + 160 * s); g.stroke(); g.restore();
+}
+function rowFix(y, pain, fix, col, a) { if (a <= 0) return; boxNote(80, y - 70, 900, 140, 900 + y, col, a); txt(pain, 130, y, 52, C.ink, { a: a }); txt('→', 520, y, 52, C.sub, { a: a }); txt(fix, 590, y, 52, col, { a: a }); }
+shortRun({ src: SRC, seed: 967, lines: LINES, bgm: 'lofi',
+  title: { text: '骑车{r}哪里疼{/}，对照调', t: 0, small: '李财骑行小课堂' },
+  scenes: withShots([
+    [0, 5.7, (lt, t) => { if (t >= 2.6) tutPreview(t, 2.8, ['屁股疼', '手麻', '膝盖前面疼', '膝盖后面疼', '腰酸'], '委屈难过'); }],
+    [5.7, 14.5, (lt, t) => {
+      if (t < 10.0) return;
+      saddle(300, 640, 1.3, .25, C.gray); bigX(300, 520, 50, tk01(t, 10.3, 10.6)); txt('往上翘', 300, 900, 46, C.red, { align: 'center', a: tk01(t, 10.4, 10.7) });
+      saddle(780, 640, 1.3, 0, C.green); tick(780, 520, 44, tk01(t, 10.9, 11.2)); txt('放平', 780, 900, 46, C.green, { align: 'center', a: tk01(t, 11.0, 11.3) });
+      txt('骑行裤 + 里程慢慢加', 540, 1050, 52, C.ink, { align: 'center', a: tk01(t, 12.0, 12.3) });
+    }],
+    [14.5, 23.5, (lt, t) => {
+      if (t < 19.2) return;
+      ['手肘微弯', '轻轻握把', '常换握法', '戴副手套'].forEach((k, i) => { const ct = t - 19.4 - i * .7; if (ct < 0) return; tick(150, 520 + i * 140, 40, clamp(ct / .3, 0, 1)); txt(k, 220, 530 + i * 140, 62, C.ink, { a: clamp(ct / .2, 0, 1) }); });
+      cat('点头指向', 850, 1000, 300, t - 19.4, { flip: true });
+    }],
+    [23.5, 37.0, (lt, t) => {
+      if (t < 28.0) { txt('膝盖前面疼', 770, 580, 50, C.red, { align: 'center', a: tk01(t, 24.0, 24.3) }); txt('坐垫太低', 770, 680, 50, C.ink, { align: 'center', a: tk01(t, 24.6, 24.9) }); txt('往上调 ↑', 770, 800, 64, C.green, { align: 'center', a: tk01(t, 25.4, 25.7) }); return; }
+      rowFix(560, '膝盖前面疼', '坐垫 ↑ 调高', C.green, tk01(t, 28.2, 28.5));
+      rowFix(760, '膝盖后面疼', '坐垫 ↓ 调低', C.blue, tk01(t, 28.8, 29.1));
+      if (t > 32.5) stamp('每次 5 毫米', 540, 990, 70, t - 32.6, -.05);
+    }],
+    [37.0, 45.4, (lt, t) => {
+      if (t < 41.3) return;
+      boxNote(90, 520, 880, 300, 991, C.red, tk01(t, 41.4, 41.7));
+      txt('调了还疼', 540, 600, 60, C.ink, { align: 'center', a: tk01(t, 41.5, 41.8) }); txt('或者越来越疼', 540, 690, 60, C.ink, { align: 'center', a: tk01(t, 41.9, 42.2) });
+      txt('→ 去看医生', 540, 770, 56, C.red, { align: 'center', a: tk01(t, 42.6, 42.9) });
+      cat('委屈难过', 540, 1010, 260, t - 41.6);
+    }],
+    [45.4, 50.6, (lt, t) => tutSlogan(t, 46.4, ['先调车', '再加量'])],
+    [50.6, 58.4, (lt, t) => tutEnd(lt, t, 50.6, '哪里最疼？')]
+  ]),
+  cues: [['whoosh', .05], ['pop', 2.8], ['pop', 3.3], ['pop', 3.8], ['pop', 4.3], ['pop', 4.8], ['whoosh', 5.8], ['wrong', 10.3], ['ding', 10.9], ['pop', 12.0], ['whoosh', 14.6],
+    ['pop', 19.4], ['pop', 20.1], ['pop', 20.8], ['pop', 21.5], ['whoosh', 23.5], ['ding', 25.4], ['pop', 28.2], ['pop', 28.8], ['stamp', 32.6], ['whoosh', 37.0], ['pop', 41.4], ['wrong', 42.6],
+    ['stamp', 46.4], ['stamp', 47.3], ['pop', 50.8], ['ding', 51.2]],
+  cover: (key, w, h) => epCover(key, w, h, { tag: '李财骑行小课堂', l1: '骑车哪里疼？', l2: '对照表自己调', sub: '屁股 · 手 · 膝盖 · 腰', emo: '委屈含泪', emoScale: .85,
+    art: (x, y, s) => { saddle(x, y + 10 * s, .8 * s, 0, C.green); } })
+});
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行小课堂 · 掉链子</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;max-width:100vw;aspect-ratio:9/16;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/吓一跳.js"></script>
+<script src="licai-seq/打招呼.js"></script>
+<script src="licai-seq/擦汗.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script src="shortkit.js"></script>
+<script src="tutkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财骑行小课堂 · 竖版教程 08《掉链子了怎么装回去》：手绘步骤 + Mixkit 实拍（见 video/素材/掉链子/素材清单.md）
+// Mixkit 上没有自行车装链条的实拍（修车类只有摩托车），步骤用手绘传动图，实拍只放牙盘、飞轮这类特写
+// 公共件里用到的动作（splitseq 按名字加载）：'打招呼' '叉腰得意'
+const SHOTS = [
+  [0.0, 2.6, 'W', ''],
+  [5.8, 9.8, 'W', '先靠边，把车放稳'],
+  [10.0, 14.4, 'V', ''],
+  [28.2, 32.4, 'V', ''],
+  [37.0, 41.2, 'W', '别在踩得很重时换挡']
+];
+const withShots = tutFrames(SHOTS);
+const LINES = [
+  [0.1, 2.6, '骑着骑着，链条掉了？'],
+  [2.7, 5.4, '别慌，不用工具，一分钟装回去。'],
+  [5.8, 9.8, '先靠边停车，把车放稳，别站在路中间弄。'],
+  [10.0, 14.4, '看看链条掉在哪：多半掉在前面牙盘的外侧或里侧。'],
+  [14.6, 18.8, '第一步，把{o}后拨轻轻往前推{/}，链条就松了。'],
+  [19.2, 23.4, '第二步，把链条{o}搭在牙盘上面几颗齿上{/}。'],
+  [23.5, 27.8, '第三步，提起后轮，{o}慢慢往前转踏板{/}，链条自己就绕上去了。'],
+  [28.2, 32.4, '转几圈，换几个挡，确认链条走得顺。'],
+  [32.5, 36.8, '手脏了？找片树叶或者纸巾垫着捏链条。'],
+  [37.0, 41.2, '为什么会掉链？多半是踩得很重的时候换挡，'],
+  [41.3, 45.2, '或者前后都挂在最大、最小盘上，链条斜得太厉害。'],
+  [45.6, 50.4, '口诀：{o}推后拨、挂牙盘、慢转踏板{/}。'],
+  [50.8, 54.6, '你掉过链子吗？在哪掉的？'],
+  [54.7, 57.8, '评论区说说。']
+];
+// 侧面传动（车头朝右）：右边牙盘、左边飞轮、飞轮下面后拨两个导轮
+// st: 'off' 掉在外面耷拉着 / 'hook' 上面搭上几颗齿 / 'on' 整圈绕好；push 0~1 后拨往前推；rot 牙盘转角；wrap 0~1 绕上去的程度
+const CR = [740, 790], RR = 130, CS = [250, 760], RS = 52;
+function chainLine(pts, col) { g.save(); g.setLineDash([12, 7]); g.strokeStyle = col || '#5a5550'; g.lineWidth = 9; g.lineCap = 'round'; g.beginPath(); pts.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.stroke(); g.restore(); }
+function drivetrain(st, push, rot, wrap, hl) {
+  const pu = [CS[0] + 10 + push * 40, CS[1] + 100], pl = [CS[0] - 20 + push * 90, CS[1] + 190];
+  g.save(); g.strokeStyle = C.gray; g.lineWidth = 10; g.lineCap = 'round'; g.beginPath(); g.moveTo(CS[0], CS[1]); g.lineTo(pu[0], pu[1]); g.lineTo(pl[0], pl[1]); g.stroke(); g.restore();
+  gear(CR[0], CR[1], RR, 40, rot, C.ink, 5); gear(CS[0], CS[1], RS, 18, rot * 2.5, C.ink, 4);
+  [pu, pl].forEach(p => { g.save(); g.fillStyle = '#fff'; g.strokeStyle = C.ink; g.lineWidth = 4; g.beginPath(); g.arc(p[0], p[1], 18, 0, 6.283); g.fill(); g.stroke(); g.restore(); });
+  // 曲柄
+  g.save(); g.strokeStyle = C.ink; g.lineWidth = 16; g.lineCap = 'round'; g.beginPath(); g.moveTo(CR[0], CR[1]); g.lineTo(CR[0] + Math.cos(rot) * 170, CR[1] + Math.sin(rot) * 170); g.stroke(); g.restore();
+  const topS = [CS[0], CS[1] - RS], botP = [pl[0], pl[1] + 18];
+  if (st === 'on' || (st === 'hook' && wrap > 0)) {
+    const a0 = -Math.PI / 2 - .35, a1 = a0 + (st === 'on' ? Math.PI + .7 : (Math.PI + .7) * wrap);
+    const arc = []; for (let a = a0; a <= a1; a += .08) arc.push([CR[0] + Math.cos(a) * (RR + 4), CR[1] + Math.sin(a) * (RR + 4)]);
+    chainLine([topS, ...arc], hl);
+    const end = arc[arc.length - 1];
+    if (st === 'on') chainLine([end, botP, [pl[0] + 14, pl[1]], [pu[0] - 16, pu[1]], [CS[0] - RS, CS[1]]], hl);
+    else chainLine([end, [end[0] - 40, end[1] + 80], [CR[0] - 60, CR[1] + 210], botP, [pu[0] - 16, pu[1]], [CS[0] - RS, CS[1]]], hl);
+  } else {
+    const sag = st === 'off' ? 1 : 0, at = st === 'hook' ? [CR[0] - 60, CR[1] - RR - 2] : [CR[0] - RR - 30, CR[1] - 40];
+    const arc = st === 'hook' ? [[CR[0] - 110, CR[1] - 70], [CR[0] - 60, CR[1] - RR - 2], [CR[0] + 10, CR[1] - RR - 6]] : [at];
+    chainLine([topS, ...arc], hl);
+    const last = arc[arc.length - 1];
+    chainLine([last, [CR[0] - 110 + 40 * (1 - push), CR[1] + 120 + 60 * sag * (1 - push)], [CR[0] - 160, CR[1] + 220], botP, [pu[0] - 16, pu[1]], [CS[0] - RS, CS[1]]], hl);
+  }
+  txt('牙盘', CR[0], CR[1] + RR + 70, 40, C.sub, { align: 'center' }); txt('飞轮', CS[0], CS[1] - RS - 50, 40, C.sub, { align: 'center' }); txt('后拨', pl[0] - 70, pl[1] + 10, 36, C.sub, { align: 'center' });
+}
+shortRun({ src: SRC, seed: 968, lines: LINES, bgm: 'lofi',
+  title: { text: '掉链子{r}怎么装回去{/}', t: 0, small: '李财骑行小课堂' },
+  scenes: withShots([
+    [0, 5.7, (lt, t) => { if (t >= 2.6) tutPreview(t, 2.8, ['推后拨', '挂牙盘', '慢转踏板'], '吓一跳'); }],
+    [5.7, 14.5, (lt, t) => { if (t >= 10.0) { txt('链条掉在', 770, 600, 52, C.ink, { align: 'center', a: tk01(t, 10.4, 10.7) }); txt('牙盘外侧', 770, 700, 60, C.red, { align: 'center', a: tk01(t, 11.0, 11.3) }); txt('或里侧', 770, 800, 52, C.ink, { align: 'center', a: tk01(t, 11.6, 11.9) }); } }],
+    [14.5, 28.0, (lt, t) => {
+      if (t < 19.2) { const p = tk01(t, 15.2, 16.4); drivetrain('off', p, 0, 0); if (t > 15.2) { harrow(CS[0] - 120, CS[1] + 240, CS[0] - 20, CS[1] + 280, CS[0] + 90, CS[1] + 250, C.orange, tk01(t, 15.2, 15.6), 6); txt('往前推', CS[0] - 20, CS[1] + 330, 46, C.orange, { align: 'center', a: tk01(t, 15.4, 15.7) }); } if (t > 16.6) txt('链条松了', 540, 520, 56, C.green, { align: 'center', a: tk01(t, 16.6, 16.9) }); return; }
+      if (t < 23.5) { drivetrain('hook', 1, 0, 0, C.orange); hcircle(CR[0] - 50, CR[1] - RR, 90, 50, 981, C.red, 5, tk01(t, 19.8, 20.2)); txt('搭在上面几颗齿上', 540, 520, 54, C.orange, { align: 'center', a: tk01(t, 20.2, 20.5) }); return; }
+      const w = eout(tk01(t, 24.0, 26.6)); drivetrain(w >= 1 ? 'on' : 'hook', 1 - w, w * 6.283 * 1.2, w, w >= 1 ? C.green : null);
+      txt('慢慢往前转', 540, 520, 56, C.ink, { align: 'center', a: tk01(t, 23.6, 23.9) }); if (t > 26.6) tick(870, 500, 44, tk01(t, 26.6, 26.9));
+    }],
+    [28.0, 37.0, (lt, t) => {
+      if (t < 32.4) { txt('转几圈', 770, 600, 56, C.ink, { align: 'center', a: tk01(t, 28.6, 28.9) }); txt('换几个挡', 770, 720, 56, C.ink, { align: 'center', a: tk01(t, 29.4, 29.7) }); txt('走得顺 ✓', 770, 860, 60, C.green, { align: 'center', a: tk01(t, 30.4, 30.7) }); return; }
+      // 树叶垫手
+      g.save(); g.translate(540, 760); g.rotate(-.5); g.fillStyle = '#7fbf6a'; g.strokeStyle = C.ink; g.lineWidth = 4; g.beginPath(); g.ellipse(0, 0, 160, 70, 0, 0, 6.283); g.fill(); g.stroke(); g.beginPath(); g.moveTo(-160, 0); g.lineTo(160, 0); g.stroke(); g.restore();
+      txt('树叶 / 纸巾垫着捏', 540, 980, 56, C.ink, { align: 'center', a: tk01(t, 32.8, 33.1) }); cat('擦汗', 860, 560, 240, t - 33.4);
+    }],
+    [37.0, 45.4, (lt, t) => {
+      if (t < 41.3) return;
+      gear(760, 780, 130, 40, 0, C.ink, 5); gear(760, 780, 95, 30, 0, C.faint, 3); gear(260, 780, 70, 24, 0, C.faint, 3); gear(260, 780, 32, 11, 0, C.ink, 4);
+      chainLine([[260, 748], [760, 650]], C.red); chainLine([[260, 812], [760, 910]], C.red);
+      txt('大牙盘 + 最小飞轮', 540, 1020, 46, C.ink, { align: 'center', a: tk01(t, 41.6, 41.9) }); txt('链条斜得太厉害 ✗', 540, 540, 54, C.red, { align: 'center', a: tk01(t, 42.4, 42.7) });
+    }],
+    [45.4, 50.6, (lt, t) => tutSlogan(t, 46.4, ['推后拨', '挂牙盘', '慢转踏板'])],
+    [50.6, 58.4, (lt, t) => tutEnd(lt, t, 50.6, '在哪掉的？')]
+  ]),
+  cues: [['whoosh', .05], ['pop', 2.8], ['pop', 3.3], ['pop', 3.8], ['whoosh', 5.8], ['whoosh', 10.0], ['pop', 11.0], ['pop', 15.2], ['ding', 16.6], ['pop', 19.8], ['grow', 24.0, 2.6], ['ding', 26.6],
+    ['whoosh', 28.2], ['ding', 30.4], ['pop', 32.8], ['whoosh', 37.0], ['wrong', 42.4], ['stamp', 46.4], ['stamp', 47.3], ['stamp', 48.2], ['pop', 50.8], ['ding', 51.2]],
+  cover: (key, w, h) => epCover(key, w, h, { tag: '李财骑行小课堂', l1: '链条掉了？', l2: '一分钟装回去', sub: '推后拨 · 挂牙盘 · 慢转踏板', emo: '惊呆举爪', emoScale: .85,
+    art: (x, y, s) => { gear(x + 40 * s, y + 20 * s, 80 * s, 32, 0, C.ink, 4 * s); gear(x - 110 * s, y + 10 * s, 34 * s, 12, 0, C.ink, 3 * s); } })
+});
+
+})();
+</script>
+</body>
+</html>
