@@ -231,10 +231,12 @@ class Scene:
         bpy.ops.mesh.primitive_cube_add(size=1, location=(-0.10, 0.0, 0.019)); pad = bpy.context.object
         pad.scale = (0.12, 0.15, 0.004); pad.data.materials.append(M["binding"]); pad.parent = self.board
         self.bootR = self._boot("bootR"); self.bootL = self._boot("bootL")
-        # 裤子：髋-膝-踝两条腿 + 骨盆
-        # 顶点：0 骨盆 1 左髋 2 左膝 3 左踝 4 右髋 5 右膝 6 右踝
-        self.legs = self._skin_mesh("legs", 7, [(0, 1), (1, 2), (2, 3), (0, 4), (4, 5), (5, 6)],
-                                    [0.12, 0.10, 0.078, 0.07, 0.10, 0.078, 0.07], M["pants"])
+        # 裤子：两条腿各自一根不分叉的链（髋上-髋-膝-踝），骨盆单独一个椭球。
+        # 以前是从骨盆分叉的一张 Skin 网格，分叉处在屈膝/直立时会鼓出方块（“屁股炸”）。
+        self.legs = [self._skin_mesh("leg" + s, 4, [(0, 1), (1, 2), (2, 3)],
+                                     [0.095, 0.10, 0.078, 0.07], M["pants"]) for s in "LR"]
+        bpy.ops.mesh.primitive_uv_sphere_add(radius=1.0, segments=32, ring_count=16); pv = bpy.context.object
+        pv.data.materials.append(M["pants"]); _smooth(pv); pv.rotation_mode = "QUATERNION"; self.pelv = pv
         # 上衣：骨盆-胸-颈，肩-肘-腕
         # 0 腰 1 胸 2 颈 3 左肩 4 左肘 5 左腕 6 右肩 7 右肘 8 右腕
         self.coat = self._skin_mesh("coat", 9, [(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (2, 6), (6, 7), (7, 8)],
@@ -284,14 +286,21 @@ class Scene:
             if o.name not in used:
                 o.matrix_world = park
         up = (J["neck"] - J["pelvis"]).normalized()
-        legs = [J["pelvis"] - up * 0.02, J["hipL"], J["kneeL"], J["ankleL"] + up * 0.05, J["hipR"], J["kneeR"], J["ankleR"] + up * 0.05]
-        for i, v in enumerate(legs):
-            self.legs.data.vertices[i].co = v
+        for o, sd in zip(self.legs, "LR"):
+            hip = J["hip" + sd]
+            chain = [hip + up * 0.06 + (J["pelvis"] - hip) * 0.25, hip, J["knee" + sd], J["ankle" + sd] + up * 0.05]
+            for i, v in enumerate(chain):
+                o.data.vertices[i].co = v
+            o.data.update()
+        X = (J["hipR"] - J["hipL"]).normalized(); F = up.cross(X).normalized(); X = F.cross(up).normalized()
+        self.pelv.rotation_quaternion = Matrix((X, F, up)).transposed().to_quaternion()
+        self.pelv.location = J["pelvis"] - up * 0.005
+        self.pelv.scale = (0.205, 0.135, 0.125)
         coat = [J["pelvis"] + up * 0.04, J["chest"] + up * 0.04, J["neck"], J["shoL"], J["elbL"], J["handL"] - (J["handL"] - J["elbL"]).normalized() * 0.06,
                 J["shoR"], J["elbR"], J["handR"] - (J["handR"] - J["elbR"]).normalized() * 0.06]
         for i, v in enumerate(coat):
             self.coat.data.vertices[i].co = v
-        self.legs.data.update(); self.coat.data.update()
+        self.coat.data.update()
         for g, s in zip(self.gloves, "LR"):
             d = (J["hand" + s] - J["elb" + s]).normalized()
             g.location = J["hand" + s]; g.rotation_quaternion = d.to_track_quat("Y", "Z")
