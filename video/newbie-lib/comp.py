@@ -52,7 +52,7 @@ def base_frame(i):
     s = cairo.ImageSurface(cairo.FORMAT_ARGB32, W, H)
     c = cairo.Context(s)
     P = interp(ep.PERF[ep.SHOT_PERF[shot]], p)
-    pts = draw_scene(c, P, ep.cam(shot, p, P))
+    pts = draw_scene(c, P, ep.cam(shot, p, P), marks=getattr(ep, "MARKS", False), extra=getattr(ep, "extra_points", None))
     return s, None, pts
 
 
@@ -186,9 +186,122 @@ def stamp(c, s, x, y, t, t0, col=GREEN, a=1.0):
     c.restore()
 
 
+def hook_title(c, t, name, stamp_text=None, stamp_col=RED):
+    """开头：大标题“单板第N课 / 名字”，第二句字幕出来时盖一个章。"""
+    h0, h1, hs = SEC["hook"]
+    if t < h1 + 0.2:
+        big_title(c, [(f"单板{{w|第{ep.LESSON}课}}", 0.8), (name, 1.25)], t, 0.15, h1 + 0.1, y=560, size=110)
+        if stamp_text and len(hs) > 1 and t > hs[1][1]:
+            stamp(c, stamp_text, W / 2, 1180, t, hs[1][1] + 0.1, stamp_col)
+
+
+def end_card(c, t, nxt):
+    e0, e1, _ = SEC["end"]
+    if t > e0 - 0.2:
+        big_title(c, [("下一课", 0.6), ("{w|" + nxt + "}", 1.15)], t, e0 + 0.1, DUR + 1, y=720, size=110)
+        stroke_text(c, ep.SERIES, W / 2, 1080, 34, GOLD, window(t, e0 + 0.5, DUR + 1, 0.3), spacing=0.2, stroke=6)
+
+
+def sec_window(name, j=None, fade=0.3, lead=0.0):
+    """第 name 段（或段内第 j 句到下一句之前）的显示窗口 (t0, t1)。"""
+    a0, a1, ss = SEC[name]
+    if j is None:
+        return a0, a1
+    s0 = ss[j][1] - lead
+    s1 = ss[j + 1][1] - 0.1 if j + 1 < len(ss) else a1
+    return s0, s1
+
+
+def edge_diagram(c, t, a, slope, edge, side="heel", y=1030, title=None, stop_at=None):
+    """推坡原理图：坡面、水平线、板的横截面（立刃角相对坡面）。
+    edge > slope：板面翻过水平，刃卡进雪 → 停；0 < edge < slope：还在往下溜 → 滑；edge < 0：下坡那边的刃碰雪 → 摔。"""
+    if a <= 0:
+        return
+    x, w, h = 90, 900, 400
+    card(c, x, y, w, h, a, ICE)
+    stroke_text(c, title or ("后刃推坡：横截面" if side == "heel" else "前刃推坡：横截面"), x + 36, y + 56, 30, ICE, a, align="l", stroke=0)
+    # 坡面：左高右低（右边是下坡）；后刃推坡时人面朝下坡，后刃在左（上坡一侧）
+    ex, ey = x + 330, y + 250                       # 上坡一侧的刃（支点）
+    sa = math.radians(slope)
+    c.set_source_rgba(*SNOW_C, 0.95 * a)
+    c.new_path(); c.move_to(x + 30, ey - math.tan(sa) * (ex - x - 30)); c.line_to(x + w - 30, ey + math.tan(sa) * (x + w - 30 - ex))
+    c.line_to(x + w - 30, y + h - 20); c.line_to(x + 30, y + h - 20); c.close_path(); c.fill()
+    # 水平线
+    c.set_source_rgba(1, 1, 1, 0.5 * a); c.set_dash([8, 8]); c.set_line_width(2)
+    c.move_to(ex - 220, ey); c.line_to(ex + 470, ey); c.stroke(); c.set_dash([])
+    stroke_text(c, "水平", ex - 220, ey - 10, 22, DIM, a, bold=False, align="l", stroke=0)
+    stroke_text(c, f"坡度 {slope:.0f}°", x + w - 50, ey + math.tan(sa) * (x + w - 50 - ex) + 50, 24, (0.25, 0.3, 0.4), a, bold=False, align="r", stroke=0)
+    # 板：从支点往下坡方向伸出，角度 = 坡度 - 立刃角（相对水平，往下为正）
+    L = 380
+    ang = min(sa - math.radians(edge), sa + 0.04)          # 立刃为负时板“插进”坡里，画的时候贴着坡面
+    bx, by = ex + L * math.cos(ang), ey + L * math.sin(ang)
+    if edge > slope + 0.5:
+        col, lab = GREEN, "板面翻过水平，刃卡住 → 停"
+    elif edge > 0.5:
+        col, lab = GOLD, "板面还朝下坡，往下溜 → 滑"
+    else:
+        col, lab = RED, ("前刃碰雪 → 往前摔" if side == "heel" else "后刃碰雪 → 往后摔")
+    c.set_line_cap(cairo.LINE_CAP_ROUND)
+    c.set_source_rgba(0.08, 0.1, 0.16, a); c.set_line_width(34); c.move_to(ex, ey); c.line_to(bx, by); c.stroke()
+    c.set_source_rgba(*col, a); c.set_line_width(24); c.move_to(ex, ey); c.line_to(bx, by); c.stroke()
+    c.set_line_cap(cairo.LINE_CAP_BUTT)
+    # 角度弧：坡面 → 板
+    r = 140
+    c.set_source_rgba(*col, 0.9 * a); c.set_line_width(4); c.new_path()
+    a0, a1 = sorted((sa, ang)); c.arc(ex, ey, r, a0, a1); c.stroke()
+    stroke_text(c, f"立刃 {edge:.0f}°", ex + L + 30, by + 10, 30, col, a, align="l", stroke=5)
+    stroke_text(c, "上坡刃（" + ("后刃" if side == "heel" else "前刃") + "）", ex - 20, ey + 46, 24, INK, a, bold=False, align="r", stroke=4)
+    stroke_text(c, lab, x + w / 2, y + h - 36, 34, col, a, stroke=6)
+
+
+SNOW_C = (0.86, 0.90, 0.97)
+
+
+def dim(c, a, k=0.55):
+    """讲原理、看图表的时候把后面的画面压暗。"""
+    if a > 0:
+        c.set_source_rgba(0.02, 0.04, 0.09, k * a); c.rectangle(0, 0, W, H); c.fill()
+
+
+def bars(c, t, a, title, items, vmax, y=1020, h=420, unit="", edge=GOLD, foot=None):
+    """柱状图：items = [(标签, 数值, 颜色, 出现时刻, 小注)]"""
+    if a <= 0:
+        return
+    x, w = 90, 900
+    card(c, x, y, w, h, a, edge)
+    stroke_text(c, title, x + 36, y + 56, 30, edge, a, align="l", stroke=0)
+    n = len(items); base = y + h - 100; top = y + 110; sc = (base - top) / vmax
+    bw = min(170, (w - 160) / n - 50); gap = (w - 120 - n * bw) / max(1, n - 1) if n > 1 else 0
+    for i, (lab, v, col, t0, sub) in enumerate(items):
+        k = ease((t - t0) / 0.7)
+        bx = x + 60 + i * (bw + gap)
+        c.set_source_rgba(1, 1, 1, 0.08 * a); rrect(c, bx, top, bw, base - top, 12); c.fill()
+        if k > 0:
+            hh = max(4, v * sc * k)
+            c.set_source_rgba(*col, 0.95 * a); rrect(c, bx, base - hh, bw, hh, 12); c.fill()
+            stroke_text(c, f"{v * k:.0f}{unit}" if k > 0.95 else f"{v * k:.0f}", bx + bw / 2, base - hh - 16, 38, col, a, stroke=6)
+        stroke_text(c, lab, bx + bw / 2, base + 40, 30, INK, a, stroke=0)
+        if sub:
+            stroke_text(c, sub, bx + bw / 2, base + 76, 24, DIM, a * clamp(k * 3), bold=False, stroke=0)
+    if foot:
+        stroke_text(c, foot, x + 36, y + h + 40, 24, DIM, a, bold=False, align="l", stroke=4)
+
+
 # ------------------------------------------------------------------ 每帧叠加
 def overlay(c, t, i, pts):
     kind, shot, p = PLAN[i]
+    if hasattr(ep, "overlay"):
+        shade(c, 0.5, 0.65) if kind == "F" else shade(c, 0.35, 0.45)
+        header(c, t)
+        if kind == "R":
+            mode_tag(c)
+        ep.overlay(c, t, PLAN[i], pts, sys.modules[__name__])
+        if kind == "F":
+            stroke_text(c, f"实拍：Mixkit #{ep.FOOT[shot][0]}", W - 50, H - 70, 20, DIM, 0.75, bold=False, align="r", stroke=4)
+        for s, a0, a1 in SUBS:
+            if a0 - 0.2 < t < a1 + 0.2:
+                subtitle(c, s, t, a0, a1, y=1580, size=60)
+        return
     if kind == "F":
         shade(c, 0.5, 0.65)
     else:

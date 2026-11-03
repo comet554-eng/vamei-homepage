@@ -1,5 +1,7 @@
 """《单板新手课》封面（明亮风）：实拍雪山做底 + 人物（3D 渲染或 2D 插画）+ 大标题。
-python3 covers_nb.py EPDIR 2d|3d BG.jpg OUT_PREFIX [RIDER3D.png]"""
+python3 covers_nb.py EPDIR 2d|3d BG.jpg OUT_PREFIX [RIDER3D.png]
+第2课起每集 ep.py 里写 COVER = dict(title, sub, items, perf, p, cam, bg=(素材ID, 秒))；只出 竖版3x4 和 横版4x3（2026-11 起）。
+BG.jpg 写 auto 时，按 COVER["bg"] 从 Mixkit 原片里截一帧。"""
 import sys, os, math
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE); EP = os.path.abspath(sys.argv[1]); sys.path.insert(0, EP)
@@ -11,7 +13,17 @@ from vert import font, tw, rrect, stroke_text, GOLD, ICE, INK
 
 MODE, BG, OUT = sys.argv[2], sys.argv[3], sys.argv[4]
 R3D = sys.argv[5] if len(sys.argv) > 5 else None
-SIZES = {"竖版9x16": (1080, 1920), "竖版3x4": (1080, 1440), "横版16x9": (1920, 1080), "横版4x3": (1440, 1080)}
+SIZES = {"竖版3x4": (1080, 1440), "横版4x3": (1440, 1080)}
+if os.environ.get("ALL4"):
+    SIZES = {"竖版9x16": (1080, 1920), **SIZES, "横版16x9": (1920, 1080)}
+CV = getattr(ep, "COVER", None) or dict(title="基本站姿", sub="站对了，后面才不摔", items=["屈膝", "重心", "上身", "视线"],
+                                        perf="K", p=12.0, cam=ep.COVER3D["cam"])
+if BG == "auto":
+    import subprocess, tempfile
+    BG = os.path.join(tempfile.gettempdir(), f"cover_bg_{ep.LESSON}.jpg")
+    clips = os.environ.get("CLIPS", "")
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", str(CV["bg"][1]), "-i", os.path.join(clips, f"mixkit-{CV['bg'][0]}.mp4"),
+                    "-frames:v", "1", BG], check=True)
 
 
 def rider_image():
@@ -25,8 +37,10 @@ def rider_image():
     from rig3d import interp
     from draw2d import draw_rider, Cam
     s = cairo.ImageSurface(cairo.FORMAT_ARGB32, 1080, 1920); c = cairo.Context(s)
-    P = interp(ep.PERF["K"], 12.0)
-    draw_rider(c, P, Cam(*ep.COVER3D["cam"]), shadow=False)
+    P = interp(ep.PERF[CV["perf"]], CV["p"])
+    P.update(gx=0.0, gy=0.0, slope=0.0, trail=0.0)          # 封面：人物摆正，不要坡和雪痕
+    P.update(CV.get("set", {}))
+    draw_rider(c, P, Cam(*CV["cam"]), shadow=False)
     s.flush()
     a = np.ndarray((1920, 1080, 4), np.uint8, s.get_data()).copy()
     im = Image.fromarray(a[..., [2, 1, 0, 3]], "RGBA")
@@ -74,11 +88,12 @@ for name, (w, h) in SIZES.items():
         tx, ty, al = w / 2, h * (0.10 if h / w > 1.6 else 0.09), "c"
     else:
         tx, ty, al = 90 * u, 190 * u, "l"
-    stroke_text(c, ep.SERIES + " · 第1课", tx, ty + 30 * u, 44 * u, GOLD, 1, align=al, stroke=7 * u, spacing=0.12)
-    stroke_text(c, "基本站姿", tx, ty + 210 * u, 190 * u, INK, 1, align=al, stroke=16 * u, face="Noto Serif SC")
-    stroke_text(c, "站对了，后面才不摔", tx, ty + 320 * u, 62 * u, ICE, 1, align=al, stroke=9 * u)
+    stroke_text(c, ep.SERIES + f" · 第{ep.LESSON}课", tx, ty + 30 * u, 44 * u, GOLD, 1, align=al, stroke=7 * u, spacing=0.12)
+    fs = 190 if len(CV["title"]) <= 4 else 150
+    stroke_text(c, CV["title"], tx, ty + 210 * u, fs * u, INK, 1, align=al, stroke=16 * u, face="Noto Serif SC")
+    stroke_text(c, CV["sub"], tx, ty + 320 * u, 62 * u, ICE, 1, align=al, stroke=9 * u)
     # 四个要点小标签
-    items = ["屈膝", "重心", "上身", "视线"]
+    items = CV["items"]
     font(c, 36 * u, True)
     ws = [tw(c, it) + 50 * u for it in items]; gap = 16 * u
     total = sum(ws) + gap * 3

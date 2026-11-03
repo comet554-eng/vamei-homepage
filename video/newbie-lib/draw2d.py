@@ -2,7 +2,7 @@
 draw_scene(c, P, cam) -> 关节在画面上的像素坐标 {名字: (x, y)}"""
 import math
 import cairo
-from mathutils import Vector
+from mathutils import Vector, Matrix
 from rig3d import skeleton
 
 W, H = 1080, 1920
@@ -90,6 +90,63 @@ def background(c, cam):
     c.rectangle(0, max(0, hy), W, H); c.set_source(g); c.fill()
 
 
+def slope_plane(c, cam, slope):
+    """雪坡（过原点、绕 x 轴转 -slope 的平面）：它在画面上的“地平线”是一条直线，线下面都是坡面。"""
+    if abs(slope) < 1e-3:
+        return
+    a = math.radians(slope)
+    n = Vector((0, math.sin(a), math.cos(a)))
+    nf, nr, nu = n.dot(cam.f), n.dot(cam.r), n.dot(cam.u)
+    if nu <= 1e-4:
+        return
+    ys = [H / 2 + cam.fpx * (nf + (x - W / 2) / cam.fpx * nr) / nu for x in (-50, W + 50)]
+    top = min(ys)
+    g = cairo.LinearGradient(0, max(0, top), 0, H); g.add_color_stop_rgb(0, *SNOW2); g.add_color_stop_rgb(0.3, *SNOW); g.add_color_stop_rgb(1, *SNOW)
+    c.new_path(); c.move_to(-50, ys[0]); c.line_to(W + 50, ys[1]); c.line_to(W + 50, H + 50); c.line_to(-50, H + 50); c.close_path()
+    c.set_source(g); c.fill_preserve()
+    c.set_source_rgba(*MOUNT3, 0.9); c.set_line_width(3); c.new_path(); c.move_to(-50, ys[0]); c.line_to(W + 50, ys[1]); c.stroke()
+
+
+def snow_marks(c, cam, slope, center=(0.0, 0.0)):
+    """坡面上固定不动的小雪包/雪印：人一动，它们相对人往后走，看得出在滑。"""
+    S = Matrix.Rotation(math.radians(-slope), 3, "X")
+    cx, cy = center
+    for i in range(-16, 17):
+        for j in range(-16, 17):
+            h = (i * 73856093 ^ j * 19349663) & 0xffff
+            x = i * 0.9 + (h % 97) / 97 * 0.7; y = j * 0.9 + ((h >> 7) % 89) / 89 * 0.7
+            if abs(x - cx) > 9 or abs(y - cy) > 9:
+                continue
+            p = S @ Vector((x, y, 0.0))
+            if cam.depth(p) < 0.6:
+                continue
+            q = cam(p); k = cam.scale(p)
+            if not (-40 < q[0] < W + 40 and -40 < q[1] < H + 40):
+                continue
+            r = 0.035 + 0.03 * ((h >> 3) % 5) / 5
+            e = S @ Vector((x + r, y, 0.0)); f = S @ Vector((x, y + r, 0.0))
+            qe, qf = cam(e), cam(f)
+            c.save(); c.translate(*q)
+            m = cairo.Matrix(qe[0] - q[0], qe[1] - q[1], qf[0] - q[0], qf[1] - q[1], 0, 0)
+            try:
+                c.transform(m)
+            except cairo.Error:
+                c.restore(); continue
+            c.arc(0, 0, 1, 0, 2 * math.pi); c.restore()
+            c.set_source_rgba(0.66, 0.74, 0.87, 0.45); c.fill()
+
+
+def trails(c, cam, J):
+    """板在雪上推出来的痕（rig 里每段是一个 1×1 的面片的变换矩阵）。"""
+    for m in J.get("trails", []):
+        pts = [m @ Vector((x, y, 0.0)) for x, y in ((-0.5, -0.5), (0.5, -0.5), (0.5, 0.5), (-0.5, 0.5))]
+        if min(cam.depth(p) for p in pts) < 0.3:
+            continue
+        q = [cam(p) for p in pts]
+        c.new_path(); c.move_to(*q[0]); [c.line_to(*p) for p in q[1:]]; c.close_path()
+        c.set_source_rgba(0.72, 0.80, 0.92, 0.75); c.fill()
+
+
 def _board_outline(m, n=18):
     """板的轮廓（板局部坐标 -> 世界）：两头圆，带一点侧切。"""
     E, w = 0.66, 0.125                 # 有效刃长的一半、半宽
@@ -116,12 +173,17 @@ def draw_rider(c, P, cam, shadow=True):
     # 影子（太阳在左后方）
     if not shadow:
         return _draw_body(c, P, cam, J, pr, m)
-    sh = [cam(Vector((p.x + 0.25 + p.z * 0.6, p.y - 0.05 - p.z * 0.3, 0.0))) for p in _board_outline(m, 10)]
+    S = J["slope_m"].to_3x3(); Si = S.inverted()
+
+    def shp(p):                          # 影子落在坡面上：先转到坡面坐标，压扁到坡面，再转回来
+        l = Si @ Vector(p)
+        return cam(S @ Vector((l.x + 0.25 + l.z * 0.6, l.y - 0.05 - l.z * 0.3, 0.0)))
+    sh = [shp(p) for p in _board_outline(m, 10)]
     c.new_path(); c.move_to(*sh[0]); [c.line_to(*p) for p in sh[1:]]; c.close_path()
     c.set_source_rgba(0.35, 0.45, 0.65, 0.22); c.fill()
     for leg in ("L", "R"):
         a, k, hp = J["ankle" + leg], J["knee" + leg], J["hip" + leg]
-        pts = [cam(Vector((p.x + 0.25 + p.z * 0.6, p.y - 0.05 - p.z * 0.3, 0.0))) for p in (a, k, hp, J["chest"], J["head"])]
+        pts = [shp(p) for p in (a, k, hp, J["chest"], J["head"])]
         c.set_line_cap(cairo.LINE_CAP_ROUND); c.set_line_join(cairo.LINE_JOIN_ROUND)
         c.new_path(); c.move_to(*pts[0]); [c.line_to(*p) for p in pts[1:]]
         c.set_source_rgba(0.35, 0.45, 0.65, 0.07); c.set_line_width(0.13 * cam.scale(a)); c.stroke()
@@ -208,7 +270,15 @@ def _draw_body(c, P, cam, J, pr, m):
     return pts
 
 
-def draw_scene(c, P, cam_args):
+def draw_scene(c, P, cam_args, marks=False, extra=None):
     cam = Cam(*cam_args)
     background(c, cam)
-    return draw_rider(c, P, cam)
+    slope_plane(c, cam, P.get("slope", 0.0))
+    if marks:
+        snow_marks(c, cam, P.get("slope", 0.0), (P["gx"], P["gy"]))
+    J = skeleton(P)
+    trails(c, cam, J)
+    pts = draw_rider(c, P, cam)
+    if extra:
+        pts.update({k: cam(v) for k, v in extra(P, J).items()})
+    return pts
