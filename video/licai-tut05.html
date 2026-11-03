@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行小课堂 · 雨夜骑行</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;max-width:100vw;aspect-ratio:9/16;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/开车灯.js"></script>
+<script src="licai-seq/打招呼.js"></script>
+<script src="licai-seq/撑伞.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script src="shortkit.js"></script>
+<script src="tutkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 公共件里用到的动作（splitseq 按名字加载）：'打招呼' '叉腰得意'
+// 李财骑行小课堂 · 竖版教程 04《雨天和夜里怎么骑》：手绘 + Mixkit 实拍（见 video/素材/雨夜骑行/素材清单.md）
+// 说明：Mixkit 上“夜里骑车”的画面都是摩托车，没有用；实拍只放雨夜街景、水洼、路口这类环境画面
+const SHOTS = [
+  [0.0, 2.6, 'W', ''],
+  [5.8, 9.8, 'W', '路面湿了，刹车距离变长'],
+  [14.6, 18.8, 'W', '斑马线、井盖、铁板：下雨最滑'],
+  [23.5, 27.8, 'W', '夜里：司机要能看见你'],
+  [41.3, 45.2, 'W', '雨加夜：能不骑就不骑']
+];
+const withShots = tutFrames(SHOTS);
+const LINES = [
+  [0.1, 2.6, '下雨天、晚上，还要骑车？'],
+  [2.7, 5.4, '这几条一定要记住。'],
+  [5.8, 9.8, '下雨天刹车距离变长，{o}提前刹、慢慢刹{/}。'],
+  [10.0, 14.4, '尤其是圈刹，湿了要多捏一会儿才有劲。'],
+  [14.6, 18.8, '{o}斑马线、井盖、铁板{/}最滑，经过时别刹车、别转弯。'],
+  [19.2, 23.4, '跟前车多留点距离，转弯再慢一点。'],
+  [23.5, 27.8, '到了晚上，最重要的是{o}让别人看见你{/}。'],
+  [28.2, 32.4, '前面白灯，后面红灯，两个都要有。'],
+  [32.5, 36.8, '穿亮色或者带反光条的衣服，司机老远就能看到。'],
+  [37.0, 41.2, '车灯稍微朝下照，别晃到对面的人。'],
+  [41.3, 45.2, '又下雨又天黑，能不骑就换个方式回家。'],
+  [45.6, 50.4, '口诀：{o}雨天早刹车，夜里要亮灯{/}。'],
+  [50.8, 54.6, '你遇到过最惊险的雨夜是什么样？'],
+  [54.7, 57.8, '评论区说说。']
+];
+// 车灯：前白光锥，后红光晕；down = 光往下打
+function lights(x, y, s, a, down) {
+  if (a <= 0) return; const fx = x + 120 * s, fy = y - 60 * s, ang = down ? .22 : -.18;
+  g.save(); g.globalAlpha = a * .55; const gr = g.createLinearGradient(fx, fy, fx + 420 * s, fy); gr.addColorStop(0, 'rgba(255,240,170,.95)'); gr.addColorStop(1, 'rgba(255,240,170,0)');
+  g.fillStyle = gr; g.beginPath(); g.moveTo(fx, fy); g.lineTo(fx + 420 * s * Math.cos(ang - .2), fy + 420 * s * Math.sin(ang - .2)); g.lineTo(fx + 420 * s * Math.cos(ang + .2), fy + 420 * s * Math.sin(ang + .2)); g.closePath(); g.fill(); g.restore();
+  g.save(); g.globalAlpha = a; g.fillStyle = '#fff6c8'; g.strokeStyle = C.ink; g.lineWidth = 3; g.beginPath(); g.arc(fx, fy, 12 * s, 0, 6.283); g.fill(); g.stroke();
+  const rx = x - 125 * s, ry = y - 40 * s, rg = g.createRadialGradient(rx, ry, 2, rx, ry, 60 * s); rg.addColorStop(0, 'rgba(230,40,30,.9)'); rg.addColorStop(1, 'rgba(230,40,30,0)');
+  g.fillStyle = rg; g.beginPath(); g.arc(rx, ry, 60 * s, 0, 6.283); g.fill(); g.restore();
+}
+shortRun({ src: SRC, seed: 964, lines: LINES, bgm: 'lofi',
+  title: { text: '雨天和夜里{r}怎么骑{/}', t: 0, small: '李财骑行小课堂' },
+  scenes: withShots([
+    [0, 5.7, (lt, t) => { if (t >= 2.6) tutPreview(t, 2.8, ['提前刹车', '绕开湿滑处', '前白后红', '穿亮色'], '撑伞'); }],
+    [5.7, 14.5, (lt, t) => {
+      if (t < 10.0) return;
+      const y1 = 620, y2 = 860, x0 = 300, k = eout(tk01(t, 10.2, 11.2)), k2 = eout(tk01(t, 10.8, 12.4));
+      txt('干路面', 90, y1, 44, C.ink); txt('湿路面', 90, y2, 44, C.blue);
+      hatchBar(x0, y1 - 30, 300 * k, 60, C.green, 831); hatchBar(x0, y2 - 30, 560 * k2, 60, C.blue, 832);
+      txt('刹车距离', x0, 520, 40, C.sub, { a: tk01(t, 10.2, 10.5) });
+      if (t > 12.6) { txt('更长！', x0 + 560 + 20, y2, 48, C.red, { a: tk01(t, 12.6, 12.9) }); txt('圈刹：多捏一会儿才有劲', 540, 1020, 46, C.ink, { align: 'center', a: tk01(t, 13.0, 13.3) }); }
+      txt('长度为示意', 90, 1110, 28, C.sub, { font: BODY, a: tk01(t, 10.5, 10.8) });
+    }],
+    [14.5, 23.5, (lt, t) => {
+      if (t < 19.2) return;
+      const a = tk01(t, 19.3, 19.7);
+      g.save(); g.globalAlpha = a; bike(280, 760, .9, t * 5, C.ink); bike(760, 760, .9, t * 5, C.blue); g.restore();
+      if (t > 20.0) { harrow(400, 640, 520, 610, 640, 640, C.orange, tk01(t, 20.0, 20.4), 6); harrow(640, 640, 520, 610, 400, 640, C.orange, tk01(t, 20.0, 20.4), 6); txt('多留点距离', 520, 560, 54, C.orange, { align: 'center', a: tk01(t, 20.3, 20.6) }); }
+      if (t > 21.6) txt('转弯再慢一点', 540, 1000, 54, C.ink, { align: 'center', a: tk01(t, 21.6, 21.9) });
+    }],
+    [23.5, 37.0, (lt, t) => {
+      if (t < 28.0) return;
+      if (t < 32.5) {
+        g.save(); g.fillStyle = 'rgba(30,34,52,.88)'; g.fillRect(60, 430, 960, 640); g.restore();
+        bike(540, 820, 1.5, t * 4, '#cfd6e6'); lights(540, 820, 1.5, tk01(t, 28.4, 28.8), false);
+        txt('前：白灯', 820, 540, 48, '#fff6c8', { align: 'center', a: tk01(t, 28.8, 29.1) }); txt('后：红灯', 260, 540, 48, '#ff8a80', { align: 'center', a: tk01(t, 29.6, 29.9) });
+        return;
+      }
+      // 亮色 + 反光条 ✓ / 深色衣服 ✗
+      const dark = { head: [300, 560], neck: [300, 610], hip: [300, 820], el1: [250, 710], h1: [230, 800], el2: [350, 710], h2: [370, 800], k1: [280, 950], f1: [280, 1060], k2: [320, 950], f2: [320, 1060] };
+      const lite = {}; Object.keys(dark).forEach(k => lite[k] = [dark[k][0] + 460, dark[k][1]]);
+      g.save(); g.globalAlpha = .45; stick(dark, '#4a4a55', 26); g.restore(); bigX(300, 470, 50, tk01(t, 33.4, 33.7));
+      stick(lite, '#f2b233', 26); [700, 760, 820].forEach((y, i) => hline(720, y, 800, y, 840 + i, '#ffffff', 6, tk01(t, 33.0 + i * .15, 33.3 + i * .15)));
+      tick(760, 470, 44, tk01(t, 34.0, 34.3)); txt('深色衣服', 300, 1120, 44, C.sub, { align: 'center' }); txt('亮色 + 反光条', 760, 1120, 44, C.ink, { align: 'center' });
+    }],
+    [37.0, 45.4, (lt, t) => {
+      if (t >= 41.3) return;
+      g.save(); g.fillStyle = 'rgba(30,34,52,.88)'; g.fillRect(60, 430, 960, 640); g.restore();
+      const up = t < 39.0;
+      bike(380, 820, 1.2, t * 4, '#cfd6e6'); lights(380, 820, 1.2, 1, !up);
+      txt(up ? '往上照：晃眼 ✗' : '稍微朝下 ✓', 540, 520, 56, up ? '#ff8a80' : '#8ef0b8', { align: 'center' });
+      if (up) { g.save(); g.fillStyle = '#f3ead6'; g.beginPath(); g.ellipse(900, 610, 50, 28, 0, 0, 6.283); g.fill(); g.restore(); txt('对面的人', 900, 690, 36, '#f3ead6', { align: 'center' }); }
+    }],
+    [45.4, 50.6, (lt, t) => tutSlogan(t, 46.4, ['雨天早刹车', '夜里要亮灯'], '开车灯')],
+    [50.6, 58.4, (lt, t) => tutEnd(lt, t, 50.6, '惊险雨夜？')]
+  ]),
+  cues: [['whoosh', .05], ['pop', 2.8], ['pop', 3.3], ['pop', 3.8], ['pop', 4.3], ['whoosh', 5.8], ['grow', 10.2], ['ding', 12.6], ['whoosh', 14.6], ['pop', 19.3], ['pop', 20.3], ['pop', 21.6], ['whoosh', 23.5],
+    ['ding', 28.8], ['ding', 29.6], ['pop', 32.5], ['wrong', 33.4], ['ding', 34.0], ['wrong', 37.2], ['ding', 39.0], ['whoosh', 41.3], ['stamp', 46.4], ['stamp', 47.3], ['pop', 50.8], ['ding', 51.2]],
+  cover: (key, w, h) => epCover(key, w, h, { tag: '李财骑行小课堂', l1: '下雨天黑还骑车？', l2: '这几条要记住', sub: '雨天早刹车 · 夜里要亮灯', emo: '惊吓感叹', emoScale: .85,
+    art: (x, y, s) => { bike(x, y + 40 * s, .8 * s, 0, C.ink); lights(x, y + 40 * s, .8 * s, 1, true); } })
+});
+
+})();
+</script>
+</body>
+</html>

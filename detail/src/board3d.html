@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NUAGE Board Renders</title>
+<style>
+  html, body { margin: 0; padding: 0; background: transparent; overflow: hidden; }
+  canvas { display: block; }
+</style>
+<script type="importmap">{"imports":{"three":"../node_modules/three/build/three.module.js","three/addons/":"../node_modules/three/examples/jsm/"}}</script>
+</head>
+<body>
+<!-- 用法: node tools/render.mjs src/board3d.html out.png --w 1500 --h 1900 --scale 2 --transparent --query shot=hero
+     shot = hero | profile | layers | nose | base | top  (nose 另有 pass=depth 深度通道) -->
+<script type="module" src="./board3d.js"></script>
+</body>
+</html>

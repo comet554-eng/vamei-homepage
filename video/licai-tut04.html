@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行小课堂 · 长途吃喝</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;max-width:100vw;aspect-ratio:9/16;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/吃能量棒.js"></script>
+<script src="licai-seq/吃能量棒2.js"></script>
+<script src="licai-seq/打招呼.js"></script>
+<script src="licai-seq/骑车喝水.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script src="shortkit.js"></script>
+<script src="tutkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 公共件里用到的动作（splitseq 按名字加载）：'打招呼' '叉腰得意'
+// 李财骑行小课堂 · 竖版教程 03《长途骑行怎么吃喝》：手绘 + Mixkit 实拍（见 video/素材/长途吃喝/素材清单.md）
+const SHOTS = [
+  [0.0, 2.6, 'W', ''],
+  [5.8, 9.8, 'W', '一小时以内：一瓶水就够'],
+  [14.6, 18.8, 'V', ''],
+  [23.5, 27.8, 'W', '每 15～20 分钟，喝几口'],
+  [28.2, 32.4, 'W', '天热：加点盐或电解质'],
+  [41.3, 45.2, 'W', '骑完：主食 + 蛋白质']
+];
+const withShots = tutFrames(SHOTS);
+const LINES = [
+  [0.1, 2.6, '骑到一半突然没劲、手脚发软？'],
+  [2.7, 5.4, '多半是吃喝没跟上。'],
+  [5.8, 9.8, '骑一个小时以内，带一瓶水就够。'],
+  [10.0, 14.4, '超过一个半小时，就要{o}边骑边吃{/}。'],
+  [14.6, 18.8, '每小时 {o}30～60 克糖{/}，约一根香蕉加一根能量棒。'],
+  [19.2, 23.4, '别等饿了再吃，第一个小时就开始，少量多次。'],
+  [23.5, 27.8, '喝水也一样：每 15 到 20 分钟喝几口，别等渴了。'],
+  [28.2, 32.4, '天热出汗多，水里加点盐或者电解质。'],
+  [32.5, 36.8, '吃的选平时吃惯的：香蕉、面包、饭团都行。'],
+  [37.0, 41.2, '出发那天别尝试没吃过的，免得肠胃闹脾气。'],
+  [41.3, 45.2, '骑完一小时内，吃点主食加蛋白质，恢复更快。'],
+  [45.6, 50.4, '口诀：{o}早吃、少量、多次{/}。'],
+  [50.8, 54.6, '你骑车最爱带什么补给？'],
+  [54.7, 57.8, '评论区晒一晒。']
+];
+// 时间轴：0～3 小时
+const TX0 = 110, TX1 = 970, hx = h => TX0 + (TX1 - TX0) * h / 3;
+function timeAxis(y, a) { if (a <= 0) return; hline(TX0, y, TX1, y, 811, C.ink, 5, a); [0, 1, 1.5, 2, 3].forEach(h => { txt(h + ' 小时', hx(h), y + 46, 32, C.sub, { align: 'center', a: a }); hline(hx(h), y - 12, hx(h), y + 12, 812 + h * 10, C.ink, 4, a); }); }
+function banana(x, y, s) { g.save(); g.translate(x, y); g.scale(s, s); g.fillStyle = '#F5D76E'; g.strokeStyle = C.ink; g.lineWidth = 4; g.beginPath(); g.moveTo(-70, -20); g.quadraticCurveTo(0, 60, 80, -30); g.quadraticCurveTo(0, 25, -70, -20); g.fill(); g.stroke(); g.restore(); }
+function bar(x, y, s) { g.save(); g.translate(x, y); g.scale(s, s); g.rotate(-.15); g.fillStyle = C.orange; g.strokeStyle = C.ink; g.lineWidth = 4; g.beginPath(); g.roundRect(-75, -24, 150, 48, 10); g.fill(); g.stroke(); g.fillStyle = '#fff'; g.font = '26px ' + HAND; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('能量棒', 0, 2); g.restore(); }
+shortRun({ src: SRC, seed: 963, lines: LINES, bgm: 'lofi',
+  title: { text: '长途骑行{r}怎么吃喝{/}', t: 0, small: '李财骑行小课堂' },
+  scenes: withShots([
+    [0, 5.7, (lt, t) => { if (t >= 2.6) tutPreview(t, 2.8, ['早吃', '少量', '多次'], '吃能量棒2'); }],
+    [5.7, 14.5, (lt, t) => {
+      if (t < 10.0) return;
+      const a = tk01(t, 10.0, 10.4); timeAxis(820, a);
+      g.save(); g.globalAlpha = a; g.fillStyle = 'rgba(91,141,214,.25)'; g.fillRect(hx(0), 760, hx(1) - hx(0), 40); g.restore();
+      txt('只喝水', hx(.5), 720, 44, C.blue, { align: 'center', a: a });
+      const b = tk01(t, 11.4, 12.4); if (b > 0) { hatchBar(hx(1.5), 760, (hx(3) - hx(1.5)) * b, 40, C.orange, 821); txt('边骑边吃', hx(2.25), 720, 50, C.orange, { align: 'center', a: tk01(t, 12.0, 12.3) }); }
+      cat('骑车喝水', 540, 1040, 300, t - 10.6);
+    }],
+    [14.5, 23.5, (lt, t) => {
+      if (t < 19.2) {
+        txt('每小时', 770, 520, 48, C.ink, { align: 'center', a: tk01(t, 15.0, 15.3) });
+        txt('30～60 克糖', 770, 600, 60, C.orange, { align: 'center', a: tk01(t, 15.4, 15.7) });
+        if (t > 16.4) { banana(770, 760, 1.2); txt('香蕉 ≈ 25 克', 770, 840, 36, C.sub, { align: 'center', a: tk01(t, 16.4, 16.7) }); }
+        if (t > 17.2) { bar(770, 960, 1.1); txt('能量棒 ≈ 25～40 克', 770, 1040, 36, C.sub, { align: 'center', a: tk01(t, 17.2, 17.5) }); }
+        return;
+      }
+      const a = tk01(t, 19.3, 19.7); timeAxis(860, a);
+      [.5, 1, 1.5, 2, 2.5].forEach((h, i) => { if (t > 19.8 + i * .45) { banana(hx(h), 760, .55); txt('吃', hx(h), 690, 40, C.orange, { align: 'center' }); } });
+      if (t > 22.2) { txt('少量 · 多次', 540, 560, 64, C.orange, { align: 'center', a: tk01(t, 22.2, 22.5) }); }
+      txt('别等饿了才吃', 540, 1000, 44, C.ink, { align: 'center', a: tk01(t, 20.6, 20.9) });
+    }],
+    [23.5, 37.0, (lt, t) => { if (t >= 32.5) tutCompare(t, 32.5, '出发那天尝新', '肠胃不适应，路上容易闹肚子', '吃平时吃惯的', '香蕉、面包、饭团都行'); }],
+    [37.0, 45.4, (lt, t) => { if (t < 41.3) cat('吃能量棒', 540, 820, 520, t - 37.0); }],
+    [45.4, 50.6, (lt, t) => tutSlogan(t, 46.4, ['早吃', '少量', '多次'])],
+    [50.6, 58.4, (lt, t) => tutEnd(lt, t, 50.6, '带啥补给？')]
+  ]),
+  cues: [['whoosh', .05], ['pop', 2.8], ['pop', 3.3], ['pop', 3.8], ['whoosh', 5.8], ['pop', 10.0], ['pen', 11.4], ['ding', 12.0], ['whoosh', 14.6], ['pop', 15.4], ['pop', 16.4], ['pop', 17.2],
+    ['pop', 19.8], ['pop', 20.25], ['pop', 20.7], ['pop', 21.15], ['pop', 21.6], ['ding', 22.2], ['whoosh', 23.5], ['whoosh', 28.2], ['pop', 32.5], ['wrong', 33.5], ['pop', 34.7], ['ding', 35.3],
+    ['pop', 37.0], ['whoosh', 41.3], ['stamp', 46.4], ['stamp', 47.3], ['stamp', 48.2], ['pop', 50.8], ['ding', 51.2]],
+  cover: (key, w, h) => epCover(key, w, h, { tag: '李财骑行小课堂', l1: '骑到一半没劲？', l2: '长途这样吃喝', sub: '早吃 · 少量 · 多次', emo: '馋流口水', emoScale: .85,
+    art: (x, y, s) => { banana(x - 70 * s, y + 40 * s, 1.1 * s); bar(x + 110 * s, y + 70 * s, s); } })
+});
+
+})();
+</script>
+</body>
+</html>

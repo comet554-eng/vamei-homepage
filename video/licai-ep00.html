@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行记 EP.00</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;width:100vw;max-height:100vh;aspect-ratio:16/9;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1920px;height:1080px;max-height:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/侧面骑车.js"></script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/吓一跳.js"></script>
+<script src="licai-seq/打招呼.js"></script>
+<script src="licai-seq/探头.js"></script>
+<script src="licai-seq/摆爪否定.js"></script>
+<script src="licai-seq/点头指向.js"></script>
+<script src="licai-seq/站立拍手.js"></script>
+<script src="licai-seq/转身跑出.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script>
+/*
+ * 李财骑行记 EP.00《我是李财》自我介绍（60 秒，横版 16:9，无旁白，留给后期配音）
+ * 打招呼 → 为什么叫李财（不是爱钱）→ 跟妈妈姓 → 倒过来念是“彩狸” → 毛色柱状图 + 三花冷知识 → 性格测评 → 接下来去骑车 → 关注
+ */
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+const T = [0, 6, 13, 21, 30, 39, 47, 55, 60];
+const S = [];
+const CPS = 18;
+
+// A 打招呼
+S.push(lt => {
+  if (lt < 1.6) { seqDraw('探头', lt, 6, 540, 1080, 940, { once: true }); }
+  else seqDraw('打招呼', lt - 1.6, 6, 540, 1000, 860);
+  typeText('大家好，', 1010, 360, 110, lt - .7, { cps: 10 });
+  const r = typeText('我是{o}李财{/}！', 1010, 520, 160, lt - 1.3, { cps: 8 });
+  if (r.done) hline(1010 + 160 * 2.1, 615, 1010 + 160 * 4.15, 612, 12, C.orange, 9, (lt - 2.0) / .4);
+  txt('一只三花猫 · 以后带你们骑车', 1014, 700, 44, C.sub, { a: clamp((lt - 2.7) / .4, 0, 1) });
+  sparks(1010 + 160 * 4.6, 470, 30, clamp((lt - 2.2) / .2, 0, 1), 3);
+});
+
+// B 为什么叫李财
+S.push(lt => {
+  header(lt, '我为什么叫李财？', '先排除一个错误答案', C.orange);
+  const r = typeText('猜：因为李财{r}爱钱{/}？', 150, 420, 92, lt - 1.2, { cps: 10 });
+  txt('（铃铛上确实写着一个“财”字……）', 156, 530, 38, C.sub, { font: BODY, a: clamp((lt - 2.3) / .3, 0, 1) });
+  if (lt > 3.4) strike(140, 424, 150 + r.width + 10, 21, (lt - 3.4) / .35);
+  if (lt > 3.9) {
+    harrow(560, 760, 430, 720, 380, 600, C.red, (lt - 3.9) / .35);
+    typeText('才不是！', 590, 780, 84, lt - 4.1, { color: C.red, cps: 10 });
+  }
+  if (lt > 3.6) seqDraw('摆爪否定', lt - 3.6, 6, 1480, 1000, 640);
+  footnote('李财声明：本猫对钱没有兴趣，对小鱼干有', clamp((lt - 4.8) / .3, 0, 1));
+});
+
+// C 跟妈妈姓
+function nameBox(x, y, w, h, top, big, lt, seed) {
+  const k = clamp(lt / .5, 0, 1); if (k <= 0) return;
+  hrect(x, y, w, h, seed, C.ink, 3.5, k);
+  if (lt > .4) { txt(top, x + w / 2, y + 66, 46, C.sub, { align: 'center' }); txt(big, x + w / 2, y + 190, 130, C.ink, { align: 'center' }); }
+}
+S.push(lt => {
+  header(lt, '答案一：跟妈妈姓', '姓氏来源 = 妈妈', C.green);
+  nameBox(220, 330, 500, 300, '妈妈', '姓李', lt - 1.0, 41);
+  nameBox(1080, 330, 500, 300, '我', '李财', lt - 2.2, 47);
+  if (lt > 1.6) { harrow(740, 450, 900, 380, 1060, 450, C.ink, (lt - 1.6) / .5, 4); txt('跟着姓', 900, 360, 40, C.ink, { align: 'center', a: clamp((lt - 2) / .3, 0, 1) }); }
+  // 红圈圈出两个“李”
+  hcircle(470 + 65, 520, 78, 74, 51, C.red, 5, (lt - 3.4) / .4);
+  hcircle(1330 - 65, 520, 78, 74, 53, C.red, 5, (lt - 3.8) / .4);
+  if (lt > 2.6) seqDraw('点头指向', lt - 2.6, 4, 1740, 760, 380, { once: true, flip: true });
+  if (lt > 4.9) { tick(820, 750, 34, (lt - 4.9) / .3); typeText('所以我姓{r}李{/}！', 880, 750, 76, lt - 5.1, { cps: 10 }); }
+  footnote('注：李财的妈妈 = 铲屎官本人', clamp((lt - 5.6) / .3, 0, 1));
+});
+
+// D 倒过来念
+function tile(x, y, ch, py, col, seed, sx) {
+  g.save(); g.translate(x, y); g.scale(sx == null ? 1 : sx, 1);
+  g.fillStyle = '#fff8e8'; g.fillRect(-120, -120, 240, 240);
+  hrect(-120, -120, 240, 240, seed, C.ink, 4);
+  txt(ch, 0, 4, 160, col, { align: 'center' });
+  g.restore();
+  txt(py, x, y + 175, 52, C.sub, { align: 'center', font: BODY });
+}
+S.push(lt => {
+  header(lt, '答案二：倒过来念', '李财 → 财李 → 彩狸', C.blue);
+  const L = 640, R = 1000, Y = 460;
+  const sw = sm((lt - 3.0) / 1.0), ch = lt > 4.9;
+  const fl = Math.abs(Math.cos(clamp((lt - 4.6) / .6, 0, 1) * Math.PI)); // 翻牌
+  const ax = lerp(L, R, sw), ay = Y - Math.sin(sw * Math.PI) * 120;   // “李”从上面过去
+  const bx = lerp(R, L, sw), by = Y + Math.sin(sw * Math.PI) * 120;   // “财”从下面过去
+  if (lt > .9) tile(ax, ay, ch ? '狸' : '李', ch ? 'lí' : 'lǐ', ch ? C.brown : C.ink, 61, pop(lt - .9) * (lt > 4.6 ? fl : 1));
+  if (lt > 1.3) tile(bx, by, ch ? '彩' : '财', ch ? 'cǎi' : 'cái', ch ? C.orange : C.ink, 67, pop(lt - 1.3) * (lt > 4.6 ? fl : 1));
+  if (lt > 2.2 && lt < 4.4) { const a = clamp((lt - 2.2) / .3, 0, 1); g.save(); g.globalAlpha = a; harrow(L + 20, Y - 150, (L + R) / 2, Y - 260, R - 20, Y - 150, C.red, (lt - 2.2) / .5); harrow(R - 20, Y + 230, (L + R) / 2, Y + 330, L + 20, Y + 230, C.red, (lt - 2.4) / .5); g.restore(); txt('掉个头', (L + R) / 2, Y - 290, 40, C.red, { align: 'center', a }); }
+  if (lt > 5.5) {
+    typeText('{o}彩{/}{n}狸{/} = 彩色的狸花猫', 1240, 400, 64, lt - 5.5, { cps: 12 });
+    harrow(1300, 520, 1330, 640, 1430, 690, C.red, (lt - 6.4) / .4);
+    typeText('说的就是我！', 1460, 700, 60, lt - 6.7, { color: C.red, cps: 10 });
+  }
+  if (lt > 6.4) seqDraw('叉腰得意', lt - 6.4, 6, 1720, 1030, 300);
+  footnote('注：读音近似的谐音梗，较真你就输了', clamp((lt - 7.2) / .3, 0, 1));
+});
+
+// E 毛色柱状图
+S.push(lt => {
+  header(lt, '李财身上有几种颜色？', '条长 = 毛色占比（目测）', C.orange);
+  const rows = [['白色', 45, '#a89f90', '#ffffff'], ['橘色', 30, C.orange], ['灰棕虎斑', 25, C.brown]];
+  const X0 = 420, PX = 15, Y0 = 330, DY = 125;
+  hline(X0, Y0 - 50, X0, Y0 + DY * 2 + 60, 81, C.ink, 3.5, (lt - .6) / .4);
+  rows.forEach((r, i) => {
+    const y = Y0 + i * DY, a = clamp((lt - .8 - i * .25) / .3, 0, 1);
+    g.save(); g.globalAlpha = a; g.beginPath(); g.arc(120, y, 18, 0, 6.283); g.fillStyle = r[3] || r[2]; g.fill(); g.restore();
+    if (a > 0) hcircle(120, y, 18, 18, 83 + i, C.ink, 2.5, a);
+    txt(r[0], 156, y, 46, C.ink, { a });
+    const k = eout((lt - 1.2 - i * .45) / .8), w = r[1] * PX * k;
+    hatchBar(X0, y - 38, w, 76, r[2], 90 + i * 7);
+    if (k > 0) txt('≈' + Math.round(r[1] * k) + '%', X0 + w + 20, y, 50, C.ink);
+  });
+  if (lt > 1.2 + 1.3) crown(X0 + 45 * PX + 170, Y0 - 50, 1, clamp((lt - 2.5) / .3, 0, 1));
+  if (lt > 3.6) { typeText('三种颜色凑齐 → {r}三花猫{/}', 160, 735, 60, lt - 3.6, { cps: 14 }); }
+  if (lt > 5.0) {
+    const a = clamp((lt - 5.0) / .3, 0, 1);
+    g.save(); g.globalAlpha = a * .55; g.fillStyle = '#F8DE7E'; g.fillRect(150, 812, 880, 70); g.restore();
+    typeText('冷知识：三花猫{r}几乎都是女孩子{/}', 166, 848, 54, lt - 5.0, { cps: 14 });
+    txt('大约 3000 只三花里，才有 1 只男孩', 170, 930, 36, C.sub, { font: BODY, a: clamp((lt - 6.5) / .3, 0, 1) });
+  }
+  if (lt < 5.0) cat('stretch', 1580, 680, 560, lt - .4); else seqDraw('吓一跳', lt - 5.0, 7, 1580, 960, 560, { once: true });
+  footnote('口径：毛色占比为目测估算，精度粗，看个大概；三花公猫比例为常见说法', clamp((lt - 1) / .3, 0, 1));
+});
+
+// F 性格测评（铜钱堆）
+function coin(x, y, s, a) {
+  g.save(); g.globalAlpha = a; g.translate(x, y); g.scale(s, s);
+  g.beginPath(); g.arc(0, 0, 30, 0, 6.283); g.fillStyle = '#F3C75A'; g.fill(); g.lineWidth = 3; g.strokeStyle = '#a77a1c'; g.stroke();
+  g.beginPath(); g.arc(0, 0, 23, 0, 6.283); g.lineWidth = 1.5; g.stroke();
+  txt('财', 0, 2, 30, '#7a5410', { align: 'center' });
+  g.restore();
+}
+const TRAITS = [['活泼', 5], ['黏人', 4], ['好奇心', 5], ['治愈', 4], ['财运', 8]];
+const COIN_T0 = 1.0, COIN_DT = .09;
+S.push(lt => {
+  header(lt, '李财性格测评', '一枚铜钱 = 1 分　满分 5 分', C.purple);
+  const X0 = 400, DX = 74, Y0 = 330, DY = 100;
+  const fx = X0 + 4 * DX + 37;
+  let idx = 0;
+  TRAITS.forEach((r, i) => {
+    const y = Y0 + i * DY, la = clamp((lt - .6 - i * .15) / .3, 0, 1);
+    txt(r[0], 110, y, 50, i === 4 ? C.red : C.ink, { a: la });
+    for (let j = 0; j < r[1]; j++, idx++) {
+      const ct = lt - COIN_T0 - idx * COIN_DT - (i === 4 && j >= 5 ? .6 : 0);
+      if (ct < 0) continue;
+      const drop = (1 - eout(ct / .25)) * -60;
+      coin(X0 + j * DX, y + drop, pop(ct) * (i === 4 && j >= 5 ? 1 + .05 * Math.sin(lt * 9 + j) : 1), clamp(ct / .1, 0, 1));
+    }
+    const done = lt - COIN_T0 - (idx - 1) * COIN_DT - (i === 4 ? .6 : 0);
+    if (done > .3) txt(r[1] > 5 ? r[1] + ' 分？？' : r[1] + ' 分', r[1] > 5 ? X0 + r[1] * DX + 10 : fx + 28, y, 46, i === 4 ? C.red : C.ink, { a: clamp((done - .3) / .2, 0, 1) });
+  });
+  // 满分线
+  const ka = lt - 3.4;
+  if (ka > 0) { g.save(); g.setLineDash([12, 9]); g.strokeStyle = C.red; g.lineWidth = 3; g.globalAlpha = clamp(ka / .3, 0, 1); g.beginPath(); g.moveTo(fx, Y0 - 60); g.lineTo(fx, Y0 + DY * 4 + 50); g.stroke(); g.restore(); txt('满分线', fx, Y0 - 82, 34, C.red, { align: 'center', a: clamp(ka / .3, 0, 1) }); }
+  if (lt > 5.6) { crown(105, Y0 + DY * 4 - 52, .9, 1); harrow(1210, 870, 1090, 860, 1010, 780, C.red, (lt - 5.6) / .4); typeText('财运爆表（自称）', 1230, 880, 58, lt - 5.8, { color: C.red, cps: 10 }); }
+  if (lt > .5) seqDraw('站立拍手', lt - .5, 6, 1640, 680, 420);
+  txt('本猫自评，不接受反驳', 1640, 690, 38, C.sub, { align: 'center', a: clamp((lt - 1.2) / .3, 0, 1) });
+  footnote('口径：自评打分，铲屎官尚未审核', clamp((lt - 1) / .3, 0, 1));
+});
+
+// G 接下来去骑车
+const CHIPS = [['怎么选车', C.orange], ['怎么骑不累', C.blue], ['路上带什么', C.green], ['安全第一', C.red]];
+S.push(lt => {
+  header(lt, '接下来，我们干什么？', '李财的骑行科普，下期开讲', C.green);
+  const k = eout((lt - .6) / 1.6), bx = lerp(-400, 600, k);
+  if (lt > .6) {
+    seqDraw('侧面骑车', lt, 12 * (1 - k * .5), bx, 800, 560);
+    if (k < .98) { g.save(); g.globalAlpha = 1 - k; g.strokeStyle = C.faint; g.lineWidth = 5; g.lineCap = 'round'; for (let i = 0; i < 3; i++) { g.beginPath(); g.moveTo(bx - 380 - i * 30, 520 + i * 70); g.lineTo(bx - 520 - i * 30, 520 + i * 70); g.stroke(); } g.restore(); }
+    hline(150, 806, 1100, 806, 101, C.ink, 3, (lt - .6) / .6);
+  }
+  if (lt > 2.4) sparks(800, 380, 30, clamp((lt - 2.4) / .2, 0, 1), 7);
+  typeText('带你们去{g}骑车{/}！', 1140, 330, 92, lt - 2.4, { cps: 10, align: 'left' });
+  if (lt > 1.4) seqDraw('转身跑出', lt - 1.4, 0, 1490, 830, 400, { frame: 6 });
+  let x = 150; const y = 920;
+  CHIPS.forEach((c, i) => {
+    const ct = lt - 3.8 - i * .35, w = textW(c[0], 44) + 60;
+    if (ct > 0) { g.save(); g.translate(x + w / 2, y); g.scale(pop(ct), pop(ct)); g.fillStyle = c[1]; g.globalAlpha = .16; g.fillRect(-w / 2, -40, w, 80); g.globalAlpha = 1; hrect(-w / 2, -40, w, 80, 111 + i * 5, c[1], 3.5); txt(c[0], 0, 2, 44, C.ink, { align: 'center' }); g.restore(); }
+    x += w + 36;
+  });
+  if (lt > 5.6) typeText('下期见！', 1420, 960, 64, lt - 5.6, { color: C.red, cps: 8 });
+});
+
+// H 结尾
+S.push(lt => {
+  if (lt < 2.6) seqDraw('打招呼', lt, 6, 560, 1000, 840);
+  else { const q = lt - 2.6; seqDraw('转身跑出', q, 7, 560 - Math.max(0, q - .5) ** 2 * 1400, 1000, 760, { once: true, flip: true }); }
+  typeText('关注{o}李财{/}，', 1010, 400, 110, lt - .3, { cps: 12 });
+  typeText('一起去骑车！', 1010, 550, 110, lt - 1.0, { cps: 12 });
+  bike(1240, 790, .8, lt * 5, C.ink);
+  stamp('下期见', 1610, 800, 70, lt - 2.2);
+  confetti(lt - 1.8, 70, 5);
+});
+
+/* ───────── 封面 ───────── */
+function coverArt(key, w, h) {
+  paper();
+  const vert = h > w;
+  if (vert) {
+    const s = w / 1080;
+    txt('李财骑行记 · 第 0 集', 80 * s, 140 * s, 46 * s, C.sub);
+    txt('我是', 80 * s, 280 * s, 120 * s, C.ink);
+    txt('李财！', 80 * s, 440 * s, 190 * s, C.orange);
+    hline(90 * s, 560 * s, 640 * s, 556 * s, 12, C.orange, 12 * s);
+    txt('为什么叫“李财”？', 86 * s, 650 * s, 64 * s, C.ink);
+    txt('倒过来念试试', 86 * s, 740 * s, 52 * s, C.red);
+    const ch = Math.min(h - 820 * s, 1150 * s);
+    cat('wave', w * .55, h - ch / 2 - 30 * s, ch, 1, { noPop: true, bob: false });
+    g.save(); g.translate(w * .78, 300 * s); g.rotate(.08); bike(0, 0, 1.2 * s, .3, C.ink); g.restore();
+  } else {
+    const s = h / 1080;
+    const q = key === '4x3';
+    cat('wave', q ? w * .27 : h * .4, h * .53, h * (q ? .8 : .92), 1, { noPop: true, bob: false });
+    const x = w * (q ? .53 : .46);
+    txt('李财骑行记 · 第 0 集', x, 200 * s, 44 * s, C.sub);
+    txt('我是', x, 340 * s, 120 * s, C.ink);
+    txt('李财！', x, 510 * s, 190 * s, C.orange);
+    hline(x + 10 * s, 630 * s, x + 560 * s, 626 * s, 12, C.orange, 12 * s);
+    txt('为什么叫“李财”？', x, 740 * s, 70 * s, C.ink);
+    txt('倒过来念试试', x, 850 * s, 56 * s, C.red);
+    if (key !== '4x3') { g.save(); g.translate(w - 250 * s, 880 * s); bike(0, 0, 1.0 * s, .3, C.ink); g.restore(); }
+  }
+}
+
+/* ───────── 声音（无旁白：轻快背景乐 + 音效，留出配音空间） ───────── */
+function sound(K, c, DUR, T) {
+  // 背景乐：C G Am F，120 BPM，拨弦感，音量放低
+  const CH = [[261.63, 329.63, 392], [246.94, 293.66, 392], [220, 261.63, 329.63], [220, 261.63, 349.23]], BASS = [130.81, 98, 110, 87.31];
+  for (let t = .2, i = 0; t < DUR - 1; t += 2, i++) {
+    const ch = CH[i % 4];
+    K.tone(BASS[i % 4], t, 1.0, .09, 'sine', K.music, .01); K.tone(BASS[i % 4], t + 1, .9, .07, 'sine', K.music, .01);
+    [0, 1, 2, 1, 0, 2, 1, 2].forEach((n, j) => K.tone(ch[n] * 2, t + j * .25, .3, j % 2 ? .02 : .03, 'triangle', K.music, .004));
+    if (i % 2 === 1) K.tone(ch[2] * 4, t + 1.75, .5, .012, 'sine', K.music);
+    for (let b = 0; b < 4; b++) K.hat(t + b * .5 + .25, .35);
+  }
+  const mg = K.music.gain; mg.setValueAtTime(.8, 0); mg.setValueAtTime(.8, DUR - 2.5); mg.linearRampToValueAtTime(0, DUR);
+  // 打字声
+  const ticks = (t0, n, cps) => { for (let i = 0; i < n; i++) K.tone(1800 + K.ar() * 600, t0 + i / cps, .025, .018, 'square'); };
+  const popS = t => { K.tone(520, t, .08, .07, 'sine'); K.tone(880, t + .05, .12, .06, 'sine'); };
+  const pen = (t, d) => K.noise(t, d || .35, .05, 'bandpass', 3200, null, 1.4);
+  const coinS = t => { K.tone(2637, t, .18, .035); K.tone(3951, t + .02, .22, .025); };
+  const bell = t => { for (let i = 0; i < 2; i++) { K.tone(2093, t + i * .18, .5, .05); K.tone(2793, t + i * .18, .45, .03); } };
+  for (let i = 1; i < T.length - 1; i++) K.whoosh(T[i] - .08);
+  // A
+  popS(.15); ticks(.7, 4, 10); ticks(1.3, 6, 8); pen(2.0, .4); K.ding(2.3);
+  // B
+  let s = T[1]; ticks(s, 8, CPS); ticks(s + 1.2, 11, 10); pen(s + 3.4); K.wrong(s + 3.45); popS(s + 3.6); pen(s + 3.9); ticks(s + 4.1, 4, 10);
+  // C
+  s = T[2]; ticks(s, 8, CPS); pen(s + 1.0, .5); pen(s + 1.6, .5); pen(s + 2.2, .5); popS(s + 2.6); pen(s + 3.4, .4); pen(s + 3.8, .4); K.ding(s + 4.9); ticks(s + 5.1, 6, 10);
+  // D
+  s = T[3]; ticks(s, 8, CPS); popS(s + .9); popS(s + 1.3); pen(s + 2.2, .5); K.whoosh(s + 3.0); K.whoosh(s + 3.4); K.ding(s + 4.9); K.ding(s + 5.0); ticks(s + 5.5, 12, 12); popS(s + 6.4); ticks(s + 6.7, 6, 10);
+  // E
+  s = T[4]; ticks(s, 10, CPS); popS(s + .4); for (let i = 0; i < 3; i++) K.riser(s + 1.2 + i * .45, s + 2.0 + i * .45, .03); K.ding(s + 2.5); ticks(s + 3.6, 12, 14); K.ding(s + 5.0); ticks(s + 5.0, 15, 14);
+  // F
+  s = T[5]; ticks(s, 6, CPS); popS(s + .5);
+  let idx = 0; TRAITS.forEach((r, i) => { for (let j = 0; j < r[1]; j++, idx++) coinS(s + COIN_T0 + idx * COIN_DT + (i === 4 && j >= 5 ? .6 : 0)); });
+  K.wrong(s + 5.6); ticks(s + 5.8, 8, 10);
+  // G
+  s = T[6]; ticks(s, 10, CPS); bell(s + 1.6); bell(s + 2.6); popS(s + 1.4); ticks(s + 2.4, 7, 10); for (let i = 0; i < 4; i++) popS(s + 3.8 + i * .35); K.ding(s + 5.6);
+  // H
+  s = T[7]; ticks(s + .3, 5, 12); ticks(s + 1.0, 6, 12); K.thud(s + 2.2, .5); K.ding(s + 2.25); for (let i = 0; i < 6; i++) K.noise(s + 1.8 + i * .08, .1, .04, 'highpass', 5000);
+}
+
+licaiRun({ T, S, seed: 520, allText: SRC.replace(/[\x00-\x7f]/g, '') + 'lǐcáicǎilí', audio: sound, cover: coverArt });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行实验室 EP.12</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;width:100vw;max-height:100vh;aspect-ratio:16/9;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1920px;height:1080px;max-height:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/举手欢迎.js"></script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/打招呼.js"></script>
+<script src="licai-seq/指向.js"></script>
+<script src="licai-seq/爬坡吃力.js"></script>
+<script src="licai-seq/跑步.js"></script>
+<script src="licai-seq/骑车喝水.js"></script>
+<script src="licai-seq/骑车摇摆.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script src="labkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财骑行实验室 EP.12《爬坡时，站起来骑还是坐着骑？》（第二季最终集）
+labRun({ ep: 12, src: SRC, cover: { l1: '爬坡', l2: '站着还是坐着？', sub: '省力 vs 爆发力', emo: '冲刺扬尘', art: (x, y, s) => bikeType(x, y, 1.0 * s, 'road', 0, C.red) },
+  pages: [
+    { type: 'open', dur: 6, emo: '爬坡吃力', l1: '爬坡，', l2: '站着还是{o}坐着{/}？' },
+    { type: 'list', dur: 10, title: '两种骑法，用的肌肉不一样', sub: '', col: C.blue,
+      items: [['{b}坐着骑{/}：主要靠腿', '上半身放松，屁股坐稳'], ['{o}站着骑{/}：腿 + 体重 + 上半身', '能把体重压到踏板上'], ['站着时，手臂和腰也在{r}出力扶车{/}', '多出来的肌肉也要耗能']], emo: '指向', opt: { cx: 1640, cy: 680, ch: 440 } },
+    { type: 'bars', dur: 11, title: '中等强度爬坡：谁更省？', sub: '条长 = 同样速度下的消耗（坐着 = 100）', col: C.green, unit: '', x0: 560, wmax: 900, max: 110,
+      rows: [{ l: '坐着骑', v: 100, c: C.green }, { l: '站着骑', v: 105, c: C.orange, txt: '≈ 105' }], dy: 200, y0: 400, crown: 0,
+      notes: [{ t: 3.8, text: '长坡：{g}坐着更省力{/}', x: 560, y: 820, size: 54 }],
+      emo: { n: '骑车喝水', x: 1780, y: 880, h: 220, t: 4.8 }, foot: '口径：研究的常见结论（站立骑在中等强度下多耗约 5%），示意' },
+    { type: 'bars', dur: 11, title: '要爆发的时候呢？', sub: '条长 = 能踩出的最大功率（坐着 = 100）', col: C.red, unit: '', x0: 560, wmax: 900, max: 120,
+      rows: [{ l: '坐着骑', v: 100, c: C.gray }, { l: '站着骑', v: 115, c: C.red, txt: '≈ 110～120' }], dy: 200, y0: 400, crown: 1,
+      notes: [{ t: 3.8, text: '陡坡、起步、冲刺：{r}站起来更有劲{/}', x: 560, y: 820, size: 52 }],
+      emo: { n: '骑车摇摆', x: 1780, y: 880, h: 220, t: 4.8 }, foot: '口径：研究的常见结论范围，因人而异，示意' },
+    { type: 'list', dur: 11, title: '李财的爬坡口诀', sub: '', col: C.orange,
+      items: [['{g}长坡坐着{/}，挡位轻一点，稳稳踩', '第一季 EP.07：坡前就换好挡'], ['{r}陡的一小段{/}，站起来顶过去', '起步、冲坡顶也可以站'], ['坐久了屁股麻：{o}站一会儿{/}换换姿势', '']], emo: '握拳加油', opt: { cx: 1640, cy: 680, ch: 440 } },
+    { type: 'end', dur: 10, items: ['长坡：{g}坐着更省{/}', '陡坡、起步、冲刺：{g}站着更有劲{/}', '两种换着用，最不累'] },
+    { type: 'draw', dur: 12, title: '这一季，实验室里我们拆了', sub: '李财骑行实验室 EP.01～EP.12', col: C.orange,
+      fn: lt => { const E = ['自行车为什么不会倒', '过弯为什么要压车', '下坡谁更快', '轮子轻 100 克有多值', '人这台发动机效率多高', '骑车比跑步省多少', '骑车为什么不伤膝盖', '心率 150 在烧什么', '跟着别人骑能省多少', '匀速还是忽快忽慢', '宽胎为什么更快', '爬坡站着还是坐着'];
+        E.forEach((t, i) => { const x = 110 + (i % 2) * 760, y = 290 + Math.floor(i / 2) * 105, ct = lt - .5 - i * .38; if (ct < 0) return; g.save(); g.globalAlpha = clamp(ct / .3, 0, 1); txt('EP.' + String(i + 1).padStart(2, '0'), x, y, 32, C.sub, { font: BODY }); txt(t, x + 110, y, 42, C.ink); g.restore(); if (ct > .3) tick(x + 660, y, 18, (ct - .3) / .3); });
+        stamp('第二季完结', 1640, 920, 60, lt - 6.0, -.1); cat('双手比心', 1720, 540, 280, lt - 5.0); },
+      cues: [['ding', 1.0], ['ding', 2.5], ['ding', 4.0], ['ding', 5.0], ['stamp', 6.0]] },
+    { type: 'next', dur: 7, emo: '打招呼', l1: '实验室', l2: '下季{o}再开门{/}！', bk: 'gravel', bc: C.brown }
+  ] });
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行小课堂 · 过弯更稳</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;max-width:100vw;aspect-ratio:9/16;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/举手欢迎.js"></script>
+<script src="licai-seq/侧面骑车.js"></script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/打招呼.js"></script>
+<script src="licai-seq/骑车开心2.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script src="shortkit.js"></script>
+<script src="tutkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 公共件里用到的动作（splitseq 按名字加载）：'打招呼' '叉腰得意'
+// 李财骑行小课堂 · 竖版教程 02《过弯怎么骑才稳》：手绘 + Mixkit 实拍（片段由 tut-comp.py 叠进相框，见 video/素材/过弯更稳/素材清单.md）
+const SHOTS = [
+  [0.0, 2.6, 'W', ''],
+  [5.8, 9.8, 'W', '直道上先把速度降下来'],
+  [14.6, 18.8, 'W', '眼睛看向要去的地方'],
+  [37.0, 41.2, 'W', '井盖：一湿就滑'],
+  [41.3, 45.2, 'W', '下雨的路面最滑']
+];
+const withShots = tutFrames(SHOTS);
+const LINES = [
+  [0.1, 2.6, '过弯总是心里发慌？'],
+  [2.7, 5.4, '记住四步，弯道稳稳过。'],
+  [5.8, 9.8, '第一，{o}入弯前减速{/}，刹车在直道上做完。'],
+  [10.0, 14.4, '弯道里急刹，轮胎抓地力不够，很容易滑出去。'],
+  [14.6, 18.8, '第二，{o}眼睛看出口{/}，看哪里，车就往哪里走。'],
+  [19.2, 23.4, '第三，{o}外脚踩到最低{/}，里面那只脚抬起来。'],
+  [23.5, 27.8, '内侧踏板不会刮地，重心压在外脚上更稳。'],
+  [28.2, 32.4, '第四，{o}身体放松{/}，跟着车子一起往弯里倒。'],
+  [32.5, 36.8, '手轻握车把，别死死拽着，弯里也别猛蹬。'],
+  [37.0, 41.2, '井盖、斑马线、沙子，弯道上要更小心。'],
+  [41.3, 45.2, '下雨天路面最滑，速度慢一点比什么都管用。'],
+  [45.6, 50.4, '口诀：{o}直道刹、看出口、外脚低{/}。'],
+  [50.8, 54.6, '你在哪个弯道吓到过？'],
+  [54.7, 57.8, '评论区说说，提醒更多骑友。']
+];
+// 正面看的曲柄：外侧（右）踏板在下，内侧（左）在上；bad = 内脚在下刮地
+function crankFront(x, y, bad, k) {
+  const g0 = 1080, lean = -.32;
+  g.save(); g.translate(x, y); g.scale(1.35, 1.35); g.rotate(lean);
+  g.strokeStyle = C.ink; g.lineWidth = 10; g.lineCap = 'round';
+  g.beginPath(); g.moveTo(0, -260); g.lineTo(0, 120); g.stroke();                       // 车身（正面看是一条竖线）
+  gear(0, 0, 46, 14, 0, C.ink, 4);
+  const up = bad ? 1 : -1;                                                               // 内侧（左）踏板的方向
+  g.lineWidth = 14; g.strokeStyle = bad ? C.red : C.green;
+  g.beginPath(); g.moveTo(-10, 0); g.lineTo(-60, up * 110); g.stroke(); g.fillStyle = C.ink; g.fillRect(-100, up * 110 - 8, 60, 16);
+  g.strokeStyle = C.green; g.beginPath(); g.moveTo(10, 0); g.lineTo(60, -up * 110); g.stroke(); g.fillRect(40, -up * 110 - 8, 60, 16);
+  g.restore();
+}
+shortRun({ src: SRC, seed: 962, lines: LINES, bgm: 'lofi',
+  title: { text: '过弯{r}更稳{/}的四步', t: 0, small: '李财骑行小课堂' },
+  scenes: withShots([
+    [0, 5.7, (lt, t) => { if (t >= 2.6) tutPreview(t, 2.8, ['直道刹车', '眼看出口', '外脚踩低', '身体放松'], '骑车开心2'); }],
+    [5.7, 19.0, (lt, t) => { if (t >= 10.0 && t < 14.5) tutCompare(t, 10.0, '弯道里急刹', '轮胎抓地力不够 → 容易打滑', '直道上刹好再进弯', '进了弯就别再猛捏刹车'); }],
+    [19.0, 28.0, (lt, t) => {
+      const a = tk01(t, 19.4, 19.8);
+      g.save(); g.globalAlpha = a; crankFront(300, 760, false); g.restore();
+      if (a > 0) { hline(80, 960, 560, 1030, 801, C.ink, 5, 1); txt('外脚 ↓', 390, 900, 46, C.green, { a: tk01(t, 20.2, 20.5) }); txt('内脚 ↑', 110, 560, 46, C.green, { a: tk01(t, 20.8, 21.1) }); tick(470, 520, 40, tk01(t, 21.4, 21.7)); }
+      if (t > 23.5) {
+        const b = tk01(t, 23.6, 24.0);
+        g.save(); g.globalAlpha = b; crankFront(780, 760, true); g.restore();
+        hline(560, 960, 1040, 1030, 802, C.ink, 5, b);
+        if (t > 24.4) { txt('内脚在下', 690, 560, 46, C.red, { a: tk01(t, 24.4, 24.7) }); bang('刮地!', 700, 980, t - 24.8, 44); bigX(900, 560, 50, tk01(t, 25.2, 25.5)); }
+      }
+    }],
+    [28.0, 37.0, (lt, t) => {
+      const tilt = -.28 * eout(tk01(t, 28.4, 29.4));
+      seqDraw('侧面骑车', lt, 12, 520, 1000, 440, { rot: tilt });
+      if (t > 29.4) { harrow(760, 560, 820, 700, 760, 860, C.orange, tk01(t, 29.4, 29.8), 7); txt('人和车一起倒', 540, 470, 56, C.orange, { align: 'center', a: tk01(t, 29.6, 29.9) }); }
+      if (t > 32.5) { boxNote(140, 1080, 800, 110, 803, C.green, tk01(t, 32.5, 32.8)); txt('手放松 · 弯里别猛蹬', 540, 1136, 50, C.ink, { align: 'center', a: tk01(t, 32.6, 32.9) }); }
+    }],
+    [37.0, 45.4, () => {}],
+    [45.4, 50.6, (lt, t) => tutSlogan(t, 46.4, ['直道刹', '看出口', '外脚低'])],
+    [50.6, 58.4, (lt, t) => tutEnd(lt, t, 50.6, '哪个弯？')]
+  ]),
+  cues: [['whoosh', .05], ['pop', 2.8], ['pop', 3.3], ['pop', 3.8], ['pop', 4.3], ['whoosh', 5.8], ['pop', 10.0], ['wrong', 11.0], ['pop', 12.2], ['ding', 12.8], ['whoosh', 14.6],
+    ['pop', 19.4], ['ding', 21.4], ['pop', 23.6], ['wrong', 24.8], ['whoosh', 28.4], ['pop', 29.6], ['pop', 32.5], ['whoosh', 37.0], ['whoosh', 41.3],
+    ['stamp', 46.4], ['stamp', 47.3], ['stamp', 48.2], ['pop', 50.8], ['ding', 51.2]],
+  cover: (key, w, h) => epCover(key, w, h, { tag: '李财骑行小课堂', l1: '过弯总发慌？', l2: '四步稳稳过', sub: '直道刹 · 看出口 · 外脚低', emo: '握拳加油', emoScale: .85,
+    art: (x, y, s) => { g.save(); g.strokeStyle = C.ink; g.lineWidth = 10 * s; g.lineCap = 'round'; g.beginPath(); g.arc(x - 60 * s, y + 160 * s, 200 * s, -1.9, -.5); g.stroke(); g.restore(); harrow(x - 140 * s, y - 20 * s, x - 20 * s, y - 60 * s, x + 90 * s, y + 10 * s, C.orange, 1, 6 * s); } })
+});
+
+})();
+</script>
+</body>
+</html>

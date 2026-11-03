@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行小课堂 EP.01</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;width:100vw;max-height:100vh;aspect-ratio:16/9;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1920px;height:1080px;max-height:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/下车推车.js"></script>
+<script src="licai-seq/举手欢迎.js"></script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/委屈难过.js"></script>
+<script src="licai-seq/打气.js"></script>
+<script src="licai-seq/指向.js"></script>
+<script src="licai-seq/摆爪否定.js"></script>
+<script src="licai-seq/擦汗.js"></script>
+<script src="licai-seq/放大镜.js"></script>
+<script src="licai-seq/检查车轮.js"></script>
+<script src="licai-seq/检查车轮2.js"></script>
+<script src="licai-seq/点头指向.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script src="labkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财骑行小课堂 EP.01《路上扎胎了：15 分钟自己换内胎》
+const PI = Math.PI, TOP = -PI / 2, BOT = PI / 2, CX = 520, CY = 640, R = 250;
+const k01 = (lt, a, b) => clamp((lt - a) / (b - a), 0, 1);
+// 侧视车轮：辐条、轮圈、外胎；o.off = [a0, a1] 这段胎边脱出轮圈；o.tube = [a0, a1] 露出的内胎；o.tw 外胎粗细
+function wheelSide(cx, cy, r, o) {
+  o = o || {}; g.save(); g.lineCap = 'round';
+  g.strokeStyle = C.faint; g.lineWidth = 3;
+  for (let i = 0; i < 16; i++) { const a = (o.rot || 0) + i * PI / 8; g.beginPath(); g.moveTo(cx + Math.cos(a) * 20, cy + Math.sin(a) * 20); g.lineTo(cx + Math.cos(a) * (r - 36), cy + Math.sin(a) * (r - 36)); g.stroke(); }
+  g.fillStyle = C.ink; g.beginPath(); g.arc(cx, cy, 18, 0, 6.283); g.fill();
+  g.strokeStyle = '#a49b90'; g.lineWidth = 16; g.beginPath(); g.arc(cx, cy, r - 30, 0, 6.283); g.stroke();
+  g.strokeStyle = '#7d756c'; g.lineWidth = 8; g.beginPath(); g.moveTo(cx + Math.cos(o.valve || BOT) * (r - 36), cy + Math.sin(o.valve || BOT) * (r - 36)); g.lineTo(cx + Math.cos(o.valve || BOT) * (r - 78), cy + Math.sin(o.valve || BOT) * (r - 78)); g.stroke();
+  if (o.tube && o.tube[1] > o.tube[0]) { g.strokeStyle = C.red; g.lineWidth = 12; g.beginPath(); g.arc(cx, cy, r - 8, o.tube[0], o.tube[1]); g.stroke(); }
+  const off = o.off && o.off[1] - o.off[0] > .01 ? o.off : null, tw = o.tw || 30;
+  g.strokeStyle = C.ink; g.lineWidth = tw;
+  if (!off) { g.beginPath(); g.arc(cx, cy, r, 0, 6.283); g.stroke(); }
+  else {
+    if (off[1] - off[0] < 6.28) { g.beginPath(); g.arc(cx, cy, r, off[1], off[0] + 6.283); g.stroke(); }
+    g.strokeStyle = '#6f665d'; g.lineWidth = tw - 4; g.beginPath(); g.arc(cx, cy, r + 24, off[0], off[1]); g.stroke();
+  }
+  g.restore();
+}
+// 撬胎棒：底端在 (x, y)，ang=0 时朝上
+function lever(x, y, ang, a) {
+  g.save(); g.globalAlpha = a == null ? 1 : a; g.translate(x, y); g.rotate(ang); g.fillStyle = C.blue;
+  g.beginPath(); g.roundRect(-14, -170, 28, 180, 13); g.fill();
+  g.strokeStyle = C.blue; g.lineWidth = 12; g.lineCap = 'round'; g.beginPath(); g.arc(-12, 6, 14, 0, PI); g.stroke(); g.restore();
+}
+// 小号打气筒（工具卡和第 6 步用），pump 0~1 是手柄高度
+function pumpIcon(x, y, s, pump, gauge) {
+  g.save(); g.translate(x, y); g.scale(s, s); g.lineCap = 'round';
+  g.fillStyle = C.ink; g.fillRect(-70, 150, 140, 20);
+  g.fillStyle = C.orange; g.beginPath(); g.roundRect(-26, -110, 52, 265, 10); g.fill();
+  const hy = -110 - 30 - (pump == null ? .5 : pump) * 70;
+  g.strokeStyle = C.ink; g.lineWidth = 8; g.beginPath(); g.moveTo(0, -100); g.lineTo(0, hy); g.stroke();
+  g.lineWidth = 16; g.beginPath(); g.moveTo(-60, hy); g.lineTo(60, hy); g.stroke();
+  if (gauge != null) { g.fillStyle = '#fff'; g.strokeStyle = C.ink; g.lineWidth = 4; g.beginPath(); g.arc(0, 40, 34, 0, 6.283); g.fill(); g.stroke();
+    const na = PI * .8 + gauge * PI * 1.4; g.strokeStyle = C.red; g.beginPath(); g.moveTo(0, 40); g.lineTo(Math.cos(na) * 26, 40 + Math.sin(na) * 26); g.stroke(); }
+  g.restore();
+}
+function tubeIcon(x, y, r) { g.save(); g.strokeStyle = C.red; g.lineWidth = 14; g.beginPath(); g.arc(x, y, r, 0, 6.283); g.stroke(); g.strokeStyle = '#7d756c'; g.lineWidth = 9; g.lineCap = 'round'; g.beginPath(); g.moveTo(x, y + r - 6); g.lineTo(x, y + r - 44); g.stroke(); g.restore(); }
+function glass(x, y, a) { g.save(); g.globalAlpha = a; g.fillStyle = '#7fc3d8'; g.strokeStyle = C.ink; g.lineWidth = 2; g.beginPath(); g.moveTo(x - 9, y + 8); g.lineTo(x + 2, y - 16); g.lineTo(x + 10, y + 6); g.closePath(); g.fill(); g.stroke(); g.restore(); }
+const KEYS = ['卸', '撬', '摸', '塞', '压', '打'];
+const tw = (lt, n) => ({ type: 'step', dur: 9, n: n, keys: KEYS });
+
+labRun({ ep: 1, src: SRC, series: '李财骑行小课堂',
+  cover: { l1: '路上扎胎了', l2: '15分钟自己换', sub: '换内胎 6 字口诀', emo: '握拳加油', art: (x, y, s) => { const r = 120 * s, a = TOP + .9; wheelSide(x, y, r, { off: [TOP - .2, TOP + 1.2], tw: 22 * s }); g.save(); g.translate(x + Math.cos(a) * r, y + Math.sin(a) * r); g.scale(.55 * s, .55 * s); lever(0, 0, a + PI / 2); g.restore(); } },
+  pages: [
+    { type: 'open', dur: 6, emo: '委屈难过', l1: '路上扎胎了，', l2: '{o}15 分钟{/}自己换！' },
+    { type: 'tools', dur: 10, title: '出门带上这三样', sub: '加起来不到半斤，放进座包', col: C.blue,
+      items: [['备用内胎', '尺寸、气嘴要对', (x, y) => tubeIcon(x, y - 20, 90)],
+              ['撬胎棒 ×2', '塑料的，不伤轮圈', (x, y) => { lever(x - 30, y + 90, -.15); lever(x + 30, y + 90, .15); }],
+              ['打气筒', '或者 CO₂ 气瓶', (x, y) => pumpIcon(x, y - 30, .8, .5)]],
+      notes: [{ t: 5.4, text: '买内胎：看外胎侧面的{o}尺寸{/}，比如 700×25C', x: 140, y: 900, size: 42 }],
+      emo: { n: '指向', x: 1760, y: 960, h: 260, t: 4.6 }, foot: '气嘴分法式（细长）和美式（汽车同款），买错了打不进气' },
+    { ...tw(0, 1), title: '卸轮子', sub: '先松刹车，再开快拆', col: C.orange,
+      fn: lt => { const drop = k01(lt, 4.4, 5.6) * 150, qr = k01(lt, 3.0, 3.6);
+        g.save(); g.strokeStyle = C.ink; g.lineWidth = 16; g.lineCap = 'round'; g.beginPath(); g.moveTo(CX - 120, CY - R - 120); g.lineTo(CX, CY); g.stroke(); g.restore();
+        wheelSide(CX, CY + drop, R);
+        const sp = k01(lt, 1.2, 1.8) * 26; g.fillStyle = C.ink; g.fillRect(CX - 40 - sp, CY - R - 8 - drop * 0 - 30, 22, 46); g.fillRect(CX + 18 + sp, CY - R - 38, 22, 46);
+        g.save(); g.translate(CX, CY + drop); g.rotate(-PI / 2 * qr); g.fillStyle = C.green; g.beginPath(); g.roundRect(-8, -12, 110, 24, 12); g.fill(); g.restore();
+        if (lt > 1.2) txt('刹车松开', CX + 80, CY - R - 20, 32, C.red, { a: k01(lt, 1.2, 1.5) });
+        if (lt > 3.0) txt('快拆', CX + 130, CY + 10, 34, C.green, { a: k01(lt, 3.0, 3.3) });
+        if (lt > 4.4) harrow(CX + 300, CY - 40, CX + 330, CY + 60, CX + 300, CY + 160, C.blue, k01(lt, 4.4, 5.0), 6); },
+      lines: [{ text: '刹车先松开', small: 'V 刹、圈刹打开刹车快拆；碟刹不用' }, { text: '后轮：先换到最小的飞轮', small: '链条松了，轮子才好拿', t: 2.8 }, { text: '打开快拆，取下轮子', small: '桶轴就拧松拔出来', t: 4.4 }],
+      emo: { n: '检查车轮', x: 1720, y: 980, h: 230, t: 6.4 } },
+    { ...tw(0, 2), title: '撬开一边胎', sub: '只撬一边，另一边留在轮圈上', col: C.orange,
+      fn: lt => { const k = k01(lt, 4.6, 6.4);
+        wheelSide(CX, CY, R, { off: k > 0 ? [TOP + .35 - k * 2.6, TOP + .35] : null });
+        if (lt < 1.8) { for (let i = 0; i < 3; i++) { const p = ((lt * 1.6 + i / 3) % 1); g.save(); g.globalAlpha = (1 - p) * k01(lt, .2, .5); g.strokeStyle = C.sub; g.lineWidth = 3; g.beginPath(); g.arc(CX, CY + R - 90 - p * 70, 10 + p * 20, PI * 1.1, PI * 1.9); g.stroke(); g.restore(); }
+          txt('嘶——', CX + 30, CY + R - 150, 34, C.sub, { a: k01(lt, .3, .6) }); }
+        if (lt > 2.2) { const r1 = PI * .92 * k01(lt, 2.6, 3.2); lever(CX, CY - R - 4, r1, k01(lt, 2.2, 2.5)); }
+        if (lt > 3.6) { const a2 = TOP + .35 - k * 2.6, r2 = PI * .92 * k01(lt, 3.9, 4.4); lever(CX + Math.cos(a2) * (R + 4), CY + Math.sin(a2) * (R + 4), a2 + PI / 2 + r2, k01(lt, 3.6, 3.9)); } },
+      lines: [{ text: '把剩下的气放光', t: .6 }, { text: '气嘴对面插第一根，勾住辐条', t: 2.2 }, { text: '隔一掌宽插第二根，沿边一划', small: '一侧胎边就整圈出来了', t: 3.6 }],
+      emo: { n: '检查车轮2', x: 1720, y: 980, h: 220, t: 6.6 } },
+    { ...tw(0, 3), title: '摸出“凶手”', sub: '最容易忘、也最重要的一步', col: C.red,
+      fn: lt => { const out = k01(lt, .3, 1.6), ta = TOP + .6 + PI, pa = TOP + k01(lt, 2.6, 5.0) * (PI * .5 + .6 + PI * .5);
+        wheelSide(CX, CY, R, { off: [TOP - 2.25, TOP + .35] });
+        g.save(); g.globalAlpha = 1 - out * .3; tubeIcon(CX - out * 370, CY - out * 170, R - 8 - out * 172); g.restore();
+        if (lt > 1.6) txt('旧内胎', CX - 370, CY - 170 + 125, 30, C.red, { align: 'center', a: k01(lt, 1.6, 1.9) });
+        const tx = CX + Math.cos(ta) * (R - 4), ty = CY + Math.sin(ta) * (R - 4), pulled = k01(lt, 6.2, 6.8) * 90;
+        glass(tx + Math.cos(ta) * pulled, ty + Math.sin(ta) * pulled, 1);
+        if (lt > 2.6 && lt < 6.2) paw(CX + Math.cos(pa) * (R - 6), CY + Math.sin(pa) * (R - 6), 1.1, 1, C.pink);
+        if (lt > 5.0) { hcircle(tx, ty, 46, 46, 5301, C.red, 5, k01(lt, 5.0, 5.4)); txt('！', tx + 60, ty - 30, 70, C.red, { a: k01(lt, 5.0, 5.2) }); } },
+      lines: [{ text: '拉出旧内胎', t: .6 }, { text: '手指沿外胎内侧慢慢摸一圈', small: '慢一点，小心划手', t: 2.6 }, { text: '摸到玻璃、钉子，{r}拔掉！{/}', small: '不拔，新内胎马上又扎', t: 5.2 }],
+      emo: { n: '放大镜', x: 1720, y: 980, h: 230, t: 6.8 } },
+    { ...tw(0, 4), title: '塞进新内胎', sub: '气嘴先进，整圈跟上', col: C.orange,
+      fn: lt => { const k = k01(lt, 3.6, 6.0);
+        wheelSide(CX, CY, R, { off: [TOP - 2.25, TOP + .35], tube: [BOT - k * PI, BOT + k * PI] });
+        if (lt < 3.6) { const s = .6 + .1 * k01(lt, .6, 1.6); g.save(); g.globalAlpha = k01(lt, .2, .5); tubeIcon(CX - 370, CY - 170, 110 * s); g.restore(); txt('先打一点气', CX - 370, CY - 170 + 110 * s + 50, 30, C.red, { align: 'center', a: k01(lt, .8, 1.1) }); }
+        if (lt > 2.2) { harrow(CX + 170, CY + R + 40, CX + 80, CY + R + 10, CX + 14, CY + R - 50, C.blue, k01(lt, 2.2, 2.7), 6); txt('气嘴先插进孔', CX + 180, CY + R + 60, 32, C.blue, { a: k01(lt, 2.4, 2.7) }); } },
+      lines: [{ text: '新内胎先打一点点气', small: '鼓起一个圆，不容易拧麻花', t: .6 }, { text: '气嘴先插进轮圈的孔', t: 2.2 }, { text: '再整圈塞进外胎里', t: 3.8 }],
+      emo: { n: '点头指向', x: 1720, y: 980, h: 230, t: 6.6 } },
+    { ...tw(0, 5), title: '用手压回胎边', sub: '从气嘴开始，往两边推', col: C.orange,
+      fn: lt => { const s = k01(lt, 1.0, 5.6), a0 = BOT + s * PI, a1 = BOT + 2 * PI - s * PI;
+        wheelSide(CX, CY, R, { off: s < 1 ? [a0, a1] : null, tube: s < 1 ? [a0, a1] : null });
+        if (lt > 1.0 && lt < 6.0) { paw(CX + Math.cos(a0) * (R + 10), CY + Math.sin(a0) * (R + 10), 1.3, 1, C.pink); paw(CX + Math.cos(a1) * (R + 10), CY + Math.sin(a1) * (R + 10), 1.3, 1, C.pink); }
+        if (lt > 4.4 && lt < 6.4) txt('最后一段：掌根推', CX + 150, CY - R - 10, 34, C.red, { a: k01(lt, 4.4, 4.7) });
+        if (lt > 6.4) { tick(CX - 150, CY + R + 70, 30, k01(lt, 6.4, 6.8)); txt('内胎没夹在胎边下', CX - 100, CY + R + 76, 32, C.green, { a: k01(lt, 6.5, 6.8) }); } },
+      lines: [{ text: '从气嘴开始，两手往两边压', t: .8 }, { text: '最后一段用掌根推上去', small: '尽量别用撬胎棒，容易夹破新内胎', t: 3.0 }, { text: '捏一圈，看内胎没被夹住', t: 5.4 }],
+      emo: { n: '擦汗', x: 1720, y: 980, h: 230, t: 6.8 } },
+    { ...tw(0, 6), title: '打气、装回去', sub: '最后检查一遍再出发', col: C.green,
+      fn: lt => { const k = k01(lt, .5, 5.0), pz = lt > .5 && lt < 5 ? (Math.sin(lt * 7) + 1) / 2 : .5;
+        wheelSide(CX - 60, CY, R, { tw: 22 + 10 * k });
+        g.save(); g.strokeStyle = C.ink; g.lineWidth = 6; g.beginPath(); g.moveTo(CX - 60, CY + R - 70); g.quadraticCurveTo(CX + 200, CY + R + 60, CX + 330, CY + 200); g.stroke(); g.restore();
+        pumpIcon(CX + 340, CY + 40, 1, pz, k);
+        if (lt > 2.4) txt('先打一半', CX + 260, CY - 230, 34, C.blue, { a: k01(lt, 2.4, 2.7) });
+        if (lt > 5.0) { tick(CX + 220, CY - 180, 26, k01(lt, 5.0, 5.4)); txt('胎边线一圈均匀', CX + 260, CY - 174, 32, C.green, { a: k01(lt, 5.1, 5.4) }); } },
+      lines: [{ text: '先打一半，看胎边线是否均匀', small: '歪了就放点气，捏一捏摆正', t: .8 }, { text: '再打到胎侧写的气压范围', t: 3.0 }, { text: '装回轮子：锁快拆、{r}关刹车{/}', small: '转一圈、捏一下刹车再出发', t: 5.0 }],
+      emo: { n: '打气', x: 1720, y: 980, h: 230, t: 6.8 } },
+    { type: 'mistakes', dur: 9, title: '新手最常踩的坑', emo: '摆爪否定',
+      items: [['没找扎胎的东西', '先摸一圈外胎内侧，拔掉玻璃、钉子'], ['用撬胎棒装胎', '最后一段用掌根推，别夹破新内胎'], ['忘了关刹车快拆', '装好后捏一下刹车再走']] },
+    { type: 'end', dur: 9, title: '6 字口诀', stampText: '学会了',
+      items: ['{o}卸{/}轮子 → {o}撬{/}胎边 → {o}摸{/}异物', '{o}塞{/}内胎 → {o}压{/}胎边 → {o}打{/}气', '内胎、撬胎棒、打气筒，{g}出门常带{/}'] },
+    { type: 'next', dur: 6, emo: '下车推车', l1: '掉链子了', l2: '怎么{o}装回去{/}？', bk: 'flat', bc: C.green }
+  ] });
+
+})();
+</script>
+</body>
+</html>

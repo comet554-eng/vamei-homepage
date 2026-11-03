@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行记 EP.04</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;width:100vw;max-height:100vh;aspect-ratio:16/9;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1920px;height:1080px;max-height:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/吓一跳.js"></script>
+<script src="licai-seq/思考怀疑.js"></script>
+<script src="licai-seq/打气.js"></script>
+<script src="licai-seq/摆爪否定.js"></script>
+<script src="licai-seq/放大镜.js"></script>
+<script src="licai-seq/背包出发.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+/*
+ * 李财骑行记 EP.04《胎压打多少？》（76 秒，横版 16:9，无旁白）
+ * 开场 → 太低/太高 → 六种车推荐胎压 → 看懂轮胎侧面 → 体重越重打越高 → 多久打一次 → 三个错误 → 下集
+ */
+const T = [0, 6, 16, 28, 38, 50, 60, 70, 76];
+const S = [];
+
+// 轮胎截面：squash 0 圆 → 1 压扁
+function tireSec(x, y, s, squash, col) {
+  const R = 90, rx = R * (1 + squash * .32), ry = R * (1 - squash * .3);
+  g.save(); g.translate(x, y); g.scale(s, s);
+  g.fillStyle = '#4a433d'; g.beginPath(); g.ellipse(0, -ry, rx, ry, 0, 0, 6.283); g.fill();
+  g.fillStyle = PAPER; g.beginPath(); g.ellipse(0, -ry, rx - 16, ry - 16, 0, 0, 6.283); g.fill();
+  g.fillStyle = '#9a948c'; g.fillRect(-34, -2 * ry - 18, 68, 30);
+  const cw = 20 + squash * 110; g.strokeStyle = col || C.red; g.lineWidth = 8; g.beginPath(); g.moveTo(-cw / 2, 2); g.lineTo(cw / 2, 2); g.stroke();
+  g.restore();
+}
+
+// A
+S.push(lt => openScene(lt, '打气', '胎压，', '打多{o}少{/}？', 4));
+
+// B 太低 / 刚好 / 太高
+const TP = [['太低', .9, C.red, ['骑着费劲', '容易“蛇咬”扎胎', '过弯发软']], ['刚好', .32, C.green, ['略微有点形变', '又省力又稳']], ['太高', 0, C.red, ['颠得手发麻', '抓地差，湿地易滑', '也快不了多少']]];
+S.push(lt => {
+  header(lt, '胎压太低、太高，会怎样？', '轮胎截面 · 红线 = 和地面接触的地方', C.orange);
+  TP.forEach((t, i) => {
+    const x = 360 + i * 600, ct = lt - .8 - i * 1.1; if (ct < 0) return;
+    const bounce = i === 2 ? Math.abs(Math.sin(lt * 5)) * 18 : 0;
+    g.save(); g.globalAlpha = clamp(ct / .3, 0, 1); tireSec(x, 560 - bounce, 1.1, t[1], t[2]); g.restore();
+    hline(x - 200, 566, x + 200, 566, 1201 + i, C.ink, 3, ct / .4);
+    txt(t[0], x, 640, 60, t[2], { align: 'center', a: clamp(ct / .3, 0, 1) });
+    t[3].forEach((s, j) => txt(s, x, 712 + j * 50, 34, C.ink, { align: 'center', font: BODY, a: clamp((ct - .5 - j * .25) / .3, 0, 1) }));
+  });
+  cat('惊呆举爪', 1790, 960, 220, lt - 4.4);
+  footnote('“蛇咬”：气太少，压到坎时内胎被轮圈夹出两个小口', clamp((lt - 1) / .3, 0, 1));
+});
+
+// C 六种车推荐胎压
+const PR = [['road', '公路车', C.blue, '25–28 毫米', [70, 90]], ['gravel', '瓜车', C.brown, '38–45 毫米', [35, 50], 1], ['flat', '平把公路车', C.green, '32–35 毫米', [50, 70]], ['mtb', '山地车', C.orange, '2.2 寸', [25, 35]], ['fold', '折叠车', C.purple, '20 寸', [50, 70]], ['city', '通勤车', C.gray, '35–40 毫米', [40, 60]]];
+const RY = i => 300 + i * 104;
+S.push(lt => {
+  header(lt, '不同的车，打多少？', '条 = 常见推荐胎压（psi）', C.blue);
+  const X0 = 640, PX = 10;
+  hline(X0, 250, X0, RY(5) + 60, 1211, C.ink, 3.5, (lt - .6) / .4);
+  PR.forEach((p, i) => {
+    const a = clamp((lt - .5 - i * .12) / .3, 0, 1); if (a <= 0) return;
+    g.save(); g.globalAlpha = a; bikeType(150, RY(i) - 6, .3, p[0], 0, p[2]); g.restore();
+    txt(p[1], 240, RY(i) - 14, 42, C.ink, { a }); txt(p[3], 242, RY(i) + 26, 26, C.sub, { font: BODY, a });
+    const k = eout((lt - 1.2 - i * .35) / .8), x1 = X0 + p[4][0] * PX, w = (p[4][1] - p[4][0]) * PX * k; if (k <= 0) return;
+    g.save(); g.setLineDash([6, 8]); g.strokeStyle = C.faint; g.lineWidth = 2.5; g.beginPath(); g.moveTo(X0, RY(i)); g.lineTo(x1, RY(i)); g.stroke(); g.restore();
+    hatchBar(x1, RY(i) - 30, w, 60, p[2], 1220 + i * 7);
+    if (k > .9) txt(p[4][0] + '–' + p[4][1], x1 + w + 18, RY(i), 42, C.ink);
+    if (p[5] && lt > 4.2) txt('← 我妈妈同款', x1 + w + 170, RY(i), 34, C.red, { a: clamp((lt - 4.2) / .3, 0, 1) });
+  });
+  if (lt > 5.4) { typeText('胎越{r}宽{/}，气越{r}少{/}', 1080, 960, 52, lt - 5.4, { cps: 10 }); }
+  cat('托腮疑问', 1790, 900, 240, lt - 6.4);
+  footnote('口径：体重约 60–75 公斤、有内胎时的经验值；以轮胎侧面标注的范围为准，不要超过最大值', clamp((lt - 1) / .3, 0, 1));
+});
+
+// D 看懂轮胎侧面
+S.push(lt => {
+  header(lt, '轮胎侧面，写着答案', '每条轮胎都印着能打的范围', C.green);
+  const k = eout((lt - .4) / .8);
+  g.save(); g.translate(960, 1150); g.rotate((1 - k) * .4);
+  g.fillStyle = '#3d3732'; g.beginPath(); g.arc(0, 0, 820, Math.PI * 1.08, Math.PI * 1.92); g.arc(0, 0, 640, Math.PI * 1.92, Math.PI * 1.08, true); g.closePath(); g.fill();
+  g.restore();
+  // 侧面文字（平铺在弧上方）
+  if (lt > 1.4) {
+    const a = clamp((lt - 1.4) / .4, 0, 1);
+    txt('700 × 40C', 410, 600, 38, '#e9e1cf', { a, font: BODY, weight: 700 });
+    txt('MIN 40 – MAX 70 PSI', 960, 430, 50, '#e9e1cf', { align: 'center', a, font: BODY, weight: 700 });
+    txt('(2.8 – 4.8 BAR)', 1515, 600, 34, '#e9e1cf', { a, font: BODY, weight: 700, align: 'right' });
+  }
+  if (lt > 2.6) hcircle(960, 430, 300, 50, 1231, C.red, 6, (lt - 2.6) / .5);
+  if (lt > 3.4) typeText('在这个范围里打，{r}别超过 MAX{/}', 560, 260, 54, lt - 3.4, { cps: 12 });
+  if (lt > 5.6) { g.save(); g.globalAlpha = clamp((lt - 5.6) / .3, 0, 1); g.fillStyle = '#fff8e8'; g.fillRect(1380, 230, 420, 150); g.restore(); hrect(1380, 230, 420, 150, 1233, C.ink, 3, (lt - 5.6) / .4); txt('1 bar ≈ 14.5 psi', 1590, 280, 40, C.ink, { align: 'center', a: clamp((lt - 5.8) / .3, 0, 1) }); txt('70 psi ≈ 4.8 bar', 1590, 336, 34, C.sub, { align: 'center', a: clamp((lt - 6.1) / .3, 0, 1) }); }
+  cat('放大镜', 1790, 520, 230, lt - 7.0);
+  footnote('示意：不同品牌的写法略有不同，有的只标最大值', clamp((lt - 1) / .3, 0, 1));
+});
+
+// E 体重
+const WT = [['50 公斤', 32], ['65 公斤', 38], ['80 公斤', 44], ['95 公斤', 50]];
+S.push(lt => {
+  header(lt, '体重越重，打得越高', '以 40 毫米宽的瓜车胎为例（psi）', C.purple);
+  const X0 = 420, PX = 22;
+  hline(X0, 280, X0, 300 + 3 * 130 + 60, 1241, C.ink, 3.5, (lt - .6) / .4);
+  WT.forEach((r, i) => {
+    const y = 340 + i * 130, a = clamp((lt - .8 - i * .2) / .3, 0, 1); if (a <= 0) return;
+    txt(r[0], 110, y, 48, C.ink, { a });
+    const k = eout((lt - 1.2 - i * .45) / .8), w = r[1] * PX * k;
+    hatchBar(X0, y - 34, w, 68, [C.green, C.blue, C.purple, C.orange][i], 1250 + i * 7);
+    if (k > 0) txt('≈' + Math.round(r[1] * k), X0 + w + 18, y, 48, C.ink);
+  });
+  if (lt > 4.4) { harrow(1600, 320, 1700, 520, 1580, 720, C.red, (lt - 4.4) / .4); typeText('每重 15 公斤，多打约 6 psi', 1130, 290, 44, lt - 4.4, { color: C.red, cps: 12 }); }
+  if (lt > 6.4) { cat('揣手手发呆', 1700, 880, 230, lt - 6.4); typeText('李财 ≈ 4 公斤：先长大再说', 900, 960, 42, lt - 6.6, { cps: 12 }); }
+  footnote('口径：示意值，有内胎、普通路面；具体以轮胎标注和厂家建议为准', clamp((lt - 1) / .3, 0, 1));
+});
+
+// F 多久打一次
+const WK = [100, 92, 85, 78, 72];
+S.push(lt => {
+  header(lt, '多久打一次气？', '不骑也会慢慢漏气 · 条 = 剩下的胎压', C.orange);
+  const X0 = 260, BW = 190, GAP = 80, Y0 = 860, PY = 5.2;
+  hline(200, Y0, 1400, Y0, 1261, C.ink, 3.5, (lt - .6) / .4);
+  WK.forEach((v, i) => {
+    const x = X0 + i * (BW + GAP), k = eout((lt - 1.0 - i * .4) / .7), h = v * PY * k; if (k <= 0) return;
+    hatchBar(x, Y0 - h, BW, h, v < 85 ? C.red : C.green, 1270 + i * 7);
+    txt(v + '%', x + BW / 2, Y0 - h - 34, 42, C.ink, { align: 'center' });
+    txt(i === 0 ? '刚打完' : '第 ' + i + ' 周', x + BW / 2, Y0 + 40, 36, C.sub, { align: 'center', font: BODY });
+  });
+  if (lt > 3.4) { const y = Y0 - 85 * PY; g.save(); g.setLineDash([12, 9]); g.strokeStyle = C.red; g.lineWidth = 3; g.beginPath(); g.moveTo(220, y); g.lineTo(1400, y); g.stroke(); g.restore(); txt('该打气了', 1420, y, 36, C.red); }
+  if (lt > 4.6) typeText('建议：{g}每周打一次{/}', 1300, 300, 56, lt - 4.6, { cps: 10 });
+  cat('打气', 1740, 620, 300, lt - 5.6);
+  footnote('示意：普通丁基内胎的大致漏气速度，因胎、因气温而异', clamp((lt - 1) / .3, 0, 1));
+});
+
+// G 三个错误
+const MIS = [['只靠手捏判断', '60 和 90 psi 捏起来差不多，用带表的打气筒'], ['直接打到最大值', 'MAX 是上限，不是推荐值'], ['几个月不打气', '胎压一低，更容易扎胎']];
+S.push(lt => {
+  header(lt, '打气最常见的三个错误', '', C.red);
+  MIS.forEach((p, i) => {
+    const y = 360 + i * 190, ct = lt - .8 - i * 2.2; if (ct < 0) return;
+    numDot(i + 1, 170, y, ct, C.red);
+    const r = typeText(p[0], 250, y - 14, 58, ct - .2, { cps: 12 });
+    if (ct > 1.2) strike(240, y - 10, 250 + r.width + 12, 1281 + i, (ct - 1.2) / .3);
+    if (ct > 1.5) { tick(270, y + 58, 18, (ct - 1.5) / .3); txt(p[1], 310, y + 58, 36, C.green, { a: clamp((ct - 1.6) / .3, 0, 1) }); }
+  });
+  cat('无语', 1560, 660, 500, lt - .6);
+});
+
+// H
+S.push(lt => nextScene(lt, '背包出发', '骑 10 公里，', '谁最{o}划算{/}？', 'city', C.gray));
+
+function coverArt(key, w, h) {
+  epCover(key, w, h, { ep: 4, l1: '胎压', l2: '打多少？', sub: '6 种车推荐值 · 看懂轮胎侧面', emo: '被吓一跳',
+    art: (x, y, s, vert) => [.9, .32, 0].forEach((q, i) => tireSec(x + (i - 1) * 230 * s, y + 80 * s, .7 * s, q, i === 1 ? C.green : C.red)) });
+}
+
+function sound(K, c, DUR, T) {
+  const X = licaiSound(K, DUR);
+  for (let i = 1; i < T.length - 1; i++) { X.whoosh(T[i] - .08); X.ticks(T[i], 9); }
+  const pump = t => { for (let i = 0; i < 3; i++) K.noise(t + i * .32, .22, .07, 'bandpass', 900 + i * 120, null, 2); };
+  X.pop(.15); pump(.4); X.ticks(.7, 3, 10); X.ticks(1.4, 4, 8); X.pen(2.0, .4); X.ding(2.4);
+  let s = T[1]; for (let i = 0; i < 3; i++) { X.pop(s + .8 + i * 1.1); i === 1 ? X.ding(s + 1.4 + i * 1.1) : X.wrong(s + 1.4 + i * 1.1); } X.pop(s + 4.4);
+  s = T[2]; for (let i = 0; i < 6; i++) X.grow(s + 1.2 + i * .35); X.pop(s + 4.2); X.ticks(s + 5.4, 8, 10); X.pop(s + 6.4);
+  s = T[3]; X.whoosh(s + .4); X.pen(s + 2.6, .5); X.ticks(s + 3.4, 15, 12); X.pop(s + 5.6); X.ding(s + 5.8); X.pop(s + 7.0);
+  s = T[4]; for (let i = 0; i < 4; i++) X.grow(s + 1.2 + i * .45); X.pen(s + 4.4, .4); X.ticks(s + 4.4, 14, 12); X.pop(s + 6.4); X.ticks(s + 6.6, 12, 12);
+  s = T[5]; for (let i = 0; i < 5; i++) X.grow(s + 1.0 + i * .4, .6); X.wrong(s + 3.4); X.ticks(s + 4.6, 9, 10); X.ding(s + 5.2); pump(s + 5.4); X.pop(s + 5.6);
+  s = T[6]; X.pop(s + .6); for (let i = 0; i < 3; i++) { const t = s + .8 + i * 2.2; X.pop(t); X.ticks(t + .2, 7, 12); X.wrong(t + 1.2); X.ding(t + 1.5); }
+  s = T[7]; X.ticks(s + .4, 5, 10); X.ticks(s + 1.0, 6, 10); X.bell(s + 1.4); X.stamp(s + 2.4); for (let i = 0; i < 6; i++) K.noise(s + 2.0 + i * .08, .1, .04, 'highpass', 5000);
+}
+
+licaiRun({ T, S, seed: 524, allText: SRC.replace(/[\x00-\x7f]/g, '') + '–～°≈×→“”', audio: sound, cover: coverArt, encode: { b: '4M', maxrate: '6M', bufsize: '12M' } });
+
+})();
+</script>
+</body>
+</html>

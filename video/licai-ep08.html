@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行记 EP.08</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;width:100vw;max-height:100vh;aspect-ratio:16/9;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1920px;height:1080px;max-height:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/戴头盔.js"></script>
+<script src="licai-seq/按车铃.js"></script>
+<script src="licai-seq/摆爪否定.js"></script>
+<script src="licai-seq/看书.js"></script>
+<script src="licai-seq/看地图.js"></script>
+<script src="licai-seq/背包出发.js"></script>
+<script src="licai-seq/骑车喝水.js"></script>
+<script src="licai-seq/骑车摇摆.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+/*
+ * 李财骑行记 EP.08《骑车要带什么？》（78 秒，横版 16:9，无旁白）
+ * 开场 → 头盔数据 → 车灯 → 骑多远带什么 → 喝多少水 → 补胎小包 → 三个错误 → 下集
+ */
+const T = [0, 6, 18, 29, 41, 52, 62, 72, 78];
+const S = [];
+
+function bottle(x, y, s, a, col) {
+  g.save(); g.globalAlpha = a == null ? 1 : a; g.translate(x, y); g.scale(s, s);
+  g.fillStyle = col || C.blue; g.strokeStyle = C.ink; g.lineWidth = 3;
+  g.beginPath(); g.roundRect(-22, -50, 44, 100, 12); g.fill(); g.stroke();
+  g.fillStyle = C.ink; g.fillRect(-10, -64, 20, 14); g.fillStyle = 'rgba(255,255,255,.5)'; g.fillRect(-14, -30, 8, 60);
+  g.restore();
+}
+
+// A
+S.push(lt => openScene(lt, '背包出发', '骑车，', '要带{o}什么{/}？', 8));
+
+// B 头盔
+const HM = [['头部受伤', 51], ['严重头部受伤', 69], ['致命头部受伤', 65]];
+S.push(lt => {
+  header(lt, '第一件：头盔，到底有多大用？', '不戴头盔 = 100 · 条长 = 受伤风险', C.red);
+  const X0 = 560, PX = 9;
+  hline(X0, 280, X0, 300 + 2 * 200 + 110, 1801, C.ink, 3.5, (lt - .6) / .4);
+  HM.forEach((h, i) => {
+    const y = 340 + i * 200, a = clamp((lt - .6 - i * .2) / .3, 0, 1); if (a <= 0) return;
+    txt(h[0], 110, y + 30, 46, C.ink, { a });
+    const k1 = eout((lt - 1.0 - i * .9) / .6), k2 = eout((lt - 1.6 - i * .9) / .8);
+    if (k1 > 0) { hatchBar(X0, y - 10, 100 * PX * k1, 44, C.gray, 1810 + i * 7); txt('不戴', X0 + 100 * PX * k1 + 16, y + 12, 32, C.sub, { font: BODY }); }
+    if (k2 > 0) { const v = 100 - h[1]; hatchBar(X0, y + 44, v * PX * k2, 44, C.green, 1820 + i * 7); txt('戴头盔 ≈ ' + Math.round(v * k2), X0 + v * PX * k2 + 16, y + 66, 34, C.green); }
+    if (lt > 1.6 + i * .9 + 1) txt('↓ 约 ' + h[1] + '%', 1580, y + 40, 46, C.red, { a: clamp((lt - 2.6 - i * .9) / .3, 0, 1) });
+  });
+  cat('戴头盔', 1800, 960, 190, lt - 4.4, { bob: false });
+  footnote('数据：Olivier & Creighton 2017 荟萃分析（约 6.4 万名骑车受伤者）；由比值比换算的通俗说法', clamp((lt - 1) / .3, 0, 1));
+});
+
+// C 车灯
+S.push(lt => {
+  header(lt, '第二件：前后车灯', '车灯不是为了看路，是为了让别人看见你', C.orange);
+  const night = clamp((lt - .4) / .6, 0, 1);
+  g.save(); g.globalAlpha = night; g.fillStyle = '#2c3446'; g.beginPath(); g.roundRect(110, 260, 1200, 640, 30); g.fill();
+  for (let i = 0; i < 30; i++) { g.fillStyle = 'rgba(255,255,255,' + (.3 + rnd(i) * .5) + ')'; g.beginPath(); g.arc(140 + rnd(i * 3) * 1140, 290 + rnd(i * 7) * 200, 2, 0, 6.283); g.fill(); }
+  g.fillStyle = '#3b4357'; g.fillRect(110, 720, 1200, 180);
+  g.restore();
+  const on = lt > 1.6, blink = Math.sin(lt * 9) > -.2;
+  if (on) {
+    const gr = g.createLinearGradient(820, 0, 1250, 0); gr.addColorStop(0, 'rgba(255,248,220,.85)'); gr.addColorStop(1, 'rgba(255,248,220,0)');
+    g.fillStyle = gr; g.beginPath(); g.moveTo(820, 640); g.lineTo(1290, 560); g.lineTo(1290, 760); g.closePath(); g.fill();
+    if (blink) glow(470, 640, 90, '255,60,60', .9);
+  }
+  bikeType(650, 680, 1.4, 'flat', lt * 4, C.green);
+  g.fillStyle = '#fff'; g.beginPath(); g.arc(800, 600, 10, 0, 6.283); g.fill(); g.fillStyle = C.red; g.beginPath(); g.arc(490, 610, 9, 0, 6.283); g.fill();
+  if (lt > 2.6) typeText('{b}前白{/}{r}后红{/}', 1380, 360, 64, lt - 2.6, { cps: 8 });
+  if (lt > 4.0) txt('天一暗就开，阴雨天也开', 1384, 450, 38, C.ink, { font: BODY, a: clamp((lt - 4) / .3, 0, 1) });
+  if (lt > 5.4) txt('尾灯用闪烁模式，更显眼', 1384, 510, 38, C.ink, { font: BODY, a: clamp((lt - 5.4) / .3, 0, 1) });
+  if (lt > 6.8) typeText('司机看见你，才会让你', 1380, 640, 46, lt - 6.8, { color: C.red, cps: 12 });
+  cat('骑车摇摆', 1660, 880, 240, lt - 7.8);
+  footnote('提示：前灯别直射对面人的眼睛，稍微往下压一点', clamp((lt - 1) / .3, 0, 1));
+});
+
+// D 骑多远带什么
+const ITEMS = [['头盔', [2, 2, 2]], ['前后车灯', [2, 2, 2]], ['手机、钱、证件', [2, 2, 2]], ['水', [1, 2, 2]], ['补胎工具 + 气筒', [0, 2, 2]], ['零食', [0, 1, 2]], ['风衣、手套', [0, 1, 2]]];
+const DC = [['10 公里', 900], ['30 公里', 1180], ['60 公里以上', 1460]];
+S.push(lt => {
+  header(lt, '骑多远，带什么？', '✓ 要带　~ 看情况', C.blue);
+  DC.forEach((c, ci) => { const a = clamp((lt - .6 - ci * .2) / .3, 0, 1); txt(c[0], c[1], 260, 40, C.ink, { align: 'center', a }); if (a > 0) hline(c[1] - 110, 292, c[1] + 110, 292, 1831 + ci, C.ink, 2.5, a); });
+  ITEMS.forEach((it, i) => {
+    const y = 350 + i * 86, a = clamp((lt - .8 - i * .15) / .3, 0, 1); if (a <= 0) return;
+    txt(it[0], 140, y, 44, i < 3 ? C.red : C.ink, { a });
+    DC.forEach((c, ci) => { const ct = lt - 1.6 - ci * 1.0 - i * .1; if (ct < 0) return; const v = it[1][ci]; if (v === 2) tick(c[1], y, 22, ct / .3); else if (v === 1) txt('~', c[1], y, 50, C.orange, { align: 'center', a: clamp(ct / .3, 0, 1) }); });
+  });
+  if (lt > 5.4) { hrect(110, 310, 1500, 3 * 86 - 10, 1841, C.red, 4, (lt - 5.4) / .5); txt('这三样，多近都要带', 1640, 400, 38, C.red, { a: clamp((lt - 5.8) / .3, 0, 1) }); }
+  cat('看地图', 1760, 860, 260, lt - 6.6);
+});
+
+// E 喝多少水
+S.push(lt => {
+  header(lt, '带多少水？', '一瓶 ≈ 500 毫升', C.blue);
+  const R = [['骑 1 小时', 1], ['骑 2 小时', 2], ['骑 3 小时', 3]];
+  R.forEach((r, i) => {
+    const y = 380 + i * 170, a = clamp((lt - .6 - i * .3) / .3, 0, 1); if (a <= 0) return;
+    txt(r[0], 140, y, 50, C.ink, { a });
+    for (let j = 0; j < r[1]; j++) { const ct = lt - 1.2 - i * .8 - j * .2; if (ct > 0) bottle(520 + j * 90, y, pop(ct), 1); }
+    if (lt > 4.2) { const ct = lt - 4.2 - i * .2; if (ct > 0) bottle(520 + r[1] * 90, y, pop(ct), .45, C.orange); }
+  });
+  if (lt > 4.2) txt('天热：再加半瓶到一瓶', 900, 720, 38, C.orange, { a: clamp((lt - 4.4) / .3, 0, 1) });
+  if (lt > 5.4) typeText('{b}小口多次{/}，别等渴了再喝', 140, 900, 56, lt - 5.4, { cps: 12 });
+  cat('骑车喝水', 1640, 620, 380, lt - 2.0);
+  footnote('口径：常见经验值，约每小时 500 毫升，因人、因天气而异；骑 2 小时以上可以加电解质', clamp((lt - 1) / .3, 0, 1));
+});
+
+// F 补胎小包
+function kitItem(k, x, y) {
+  g.save(); g.translate(x, y); g.lineCap = 'round';
+  if (k === 0) { g.strokeStyle = '#4a433d'; g.lineWidth = 16; g.beginPath(); g.ellipse(0, 0, 70, 40, 0, 0, 6.283); g.stroke(); }
+  else if (k === 1) { g.fillStyle = C.blue; [-14, 14].forEach(o => { g.beginPath(); g.roundRect(o - 9, -60, 18, 120, 8); g.fill(); }); }
+  else if (k === 2) { g.fillStyle = '#9a948c'; g.beginPath(); g.roundRect(-70, -16, 140, 32, 10); g.fill(); g.fillStyle = C.ink; g.fillRect(70, -6, 22, 12); }
+  else if (k === 3) { g.fillStyle = C.orange; for (let i = 0; i < 3; i++) { g.beginPath(); g.arc(-34 + i * 34, 0, 18, 0, 6.283); g.fill(); } }
+  else { g.fillStyle = C.red; g.beginPath(); g.roundRect(-50, -24, 100, 48, 10); g.fill(); g.fillStyle = '#ddd'; for (let i = 0; i < 3; i++) g.fillRect(-40 + i * 30, -40, 10, 20); }
+  g.restore();
+}
+const KIT = ['备用内胎', '撬胎棒', '迷你气筒', '补胎片', '多功能工具'];
+S.push(lt => {
+  header(lt, '骑远一点：带个补胎小包', '巴掌大的包就装得下', C.green);
+  KIT.forEach((n, i) => {
+    const x = 220 + i * 300, ct = lt - .8 - i * .6; if (ct < 0) return;
+    g.save(); g.translate(x, 500); g.scale(pop(ct), pop(ct)); kitItem(i, 0, 0); g.restore();
+    txt(n, x, 640, 42, C.ink, { align: 'center', a: clamp(ct / .3, 0, 1) });
+  });
+  if (lt > 4.4) typeText('扎胎了不慌：{g}换内胎{/}比补胎快', 220, 820, 54, lt - 4.4, { cps: 12 });
+  if (lt > 6.4) txt('出发前在家练一次换胎，路上就不手忙脚乱', 224, 900, 36, C.sub, { font: BODY, a: clamp((lt - 6.4) / .3, 0, 1) });
+  cat('看书', 1700, 820, 300, lt - 5.4);
+});
+
+// G
+S.push(lt => mistakesPage(lt, '出门最常见的三个错误', [['就骑一会儿，不戴头盔', '意外不挑距离，短途也要戴'], ['天黑了还不开灯', '车灯是让别人看见你'], ['骑远了不带补胎工具', '扎胎了只能推着走']], '无语', 1851));
+
+// H
+S.push(lt => nextScene(lt, '按车铃', '路上', '怎么骑才{o}安全{/}？', 'city', C.gray));
+
+function coverArt(key, w, h) {
+  epCover(key, w, h, { ep: 8, l1: '骑车', l2: '要带什么？', sub: '头盔 · 车灯 · 水 · 补胎小包', emo: '纸箱里', emoScale: .72,
+    art: (x, y, s, vert) => { bottle(x - 160 * s, y, 1.2 * s, 1); g.save(); g.translate(x, y); g.scale(s, s); kitItem(0, 0, 0); kitItem(1, 160, 0); g.restore(); } });
+}
+
+function sound(K, c, DUR, T) {
+  const X = licaiSound(K, DUR);
+  for (let i = 1; i < T.length - 1; i++) { X.whoosh(T[i] - .08); X.ticks(T[i], 9); }
+  X.pop(.15); X.ticks(.7, 3, 10); X.ticks(1.4, 5, 8); X.pen(2.0, .4); X.ding(2.4);
+  let s = T[1]; for (let i = 0; i < 3; i++) { X.grow(s + 1.0 + i * .9, .6); X.grow(s + 1.6 + i * .9, .8); X.ding(s + 2.6 + i * .9); } X.pop(s + 4.4);
+  s = T[2]; X.whoosh(s + .4); X.ding(s + 1.6); X.ticks(s + 2.6, 4, 8); X.ticks(s + 6.8, 10, 12); X.pop(s + 7.8);
+  s = T[3]; for (let ci = 0; ci < 3; ci++) for (let i = 0; i < 7; i++) if (ITEMS[i][1][ci]) X.pen(s + 1.6 + ci + i * .1, .12); X.pen(s + 5.4, .5); X.pop(s + 6.6);
+  s = T[4]; for (let i = 0; i < 6; i++) X.pop(s + 1.2 + i * .45); X.pop(s + 4.2); X.ticks(s + 5.4, 12, 12); X.pop(s + 2.0);
+  s = T[5]; for (let i = 0; i < 5; i++) X.pop(s + .8 + i * .6); X.ticks(s + 4.4, 15, 12); X.pop(s + 5.4); X.ding(s + 6.4);
+  s = T[6]; X.pop(s + .6); for (let i = 0; i < 3; i++) { const t = s + .8 + i * 2.2; X.pop(t); X.ticks(t + .2, 9, 12); X.wrong(t + 1.2); X.ding(t + 1.5); }
+  s = T[7]; X.ticks(s + .4, 2, 10); X.ticks(s + 1.0, 7, 10); X.bell(s + 1.4); X.stamp(s + 2.4); for (let i = 0; i < 6; i++) K.noise(s + 2.0 + i * .08, .1, .04, 'highpass', 5000);
+}
+
+licaiRun({ T, S, seed: 528, allText: SRC.replace(/[\x00-\x7f]/g, '') + '–～°≈×→↓✓~', audio: sound, cover: coverArt, encode: { b: '4M', maxrate: '6M', bufsize: '12M' } });
+
+})();
+</script>
+</body>
+</html>

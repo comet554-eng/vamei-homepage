@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行小课堂 · 锁车防盗</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;max-width:100vw;aspect-ratio:9/16;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/思考怀疑.js"></script>
+<script src="licai-seq/打招呼.js"></script>
+<script src="licai-seq/点头指向.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script src="shortkit.js"></script>
+<script src="tutkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财骑行小课堂 · 竖版教程 10《锁车防盗》：手绘 + Mixkit 实拍（见 video/素材/锁车防盗/素材清单.md）
+// 没有找到锁车动作的实拍，锁、锁法用手绘；实拍只放停车架、街边停车、取车画面
+// 公共件里用到的动作（splitseq 按名字加载）：'打招呼' '叉腰得意'
+const SHOTS = [
+  [0.0, 2.6, 'W', ''],
+  [5.8, 9.8, 'W', '停车之前，先选对锁'],
+  [14.6, 18.8, 'W', '锁到牢固的停车架上'],
+  [28.2, 32.4, 'W', '停在人多、亮堂的地方'],
+  [41.3, 45.2, 'W', '贵的车，过夜别放外面']
+];
+const withShots = tutFrames(SHOTS);
+const LINES = [
+  [0.1, 2.6, '车停楼下一会儿，就没了？'],
+  [2.7, 5.4, '这样锁车，小偷会绕着走。'],
+  [5.8, 9.8, '第一，{o}锁要选对{/}：U 型锁、粗链锁，比细钢丝锁难剪得多。'],
+  [10.0, 14.4, '细钢丝锁很快就能剪断，只适合临时停一下。'],
+  [14.6, 18.8, '第二，{o}锁车架和后轮{/}，锁到牢固的车架或柱子上。'],
+  [19.2, 23.4, '别只锁前轮，前轮一拆，车就被推走了。'],
+  [23.5, 27.8, '第三，锁离地高一点，锁孔朝下，不好撬也不好砸。'],
+  [28.2, 32.4, '第四，停在{o}人多、有监控{/}的地方，别停在角落。'],
+  [32.5, 36.8, '快拆的轮子和座管，停久了最好一起锁或者带走。'],
+  [37.0, 41.2, '最后，拍一张车架号的照片，丢了报警用得上。'],
+  [41.3, 45.2, '贵的车，过夜别放在外面。'],
+  [45.6, 50.4, '口诀：{o}好锁、锁车架、停亮处{/}。'],
+  [50.8, 54.6, '你丢过车吗？'],
+  [54.7, 57.8, '评论区说说，提醒大家。']
+];
+function uLock(x, y, s, col) { g.save(); g.translate(x, y); g.scale(s, s); g.strokeStyle = col || C.ink; g.lineWidth = 22; g.lineCap = 'round'; g.beginPath(); g.moveTo(-60, 40); g.lineTo(-60, -60); g.arc(0, -60, 60, Math.PI, 0); g.lineTo(60, 40); g.stroke(); g.fillStyle = C.ink; g.beginPath(); g.roundRect(-95, 30, 190, 50, 16); g.fill(); g.restore(); }
+function cableLock(x, y, s) { g.save(); g.translate(x, y); g.scale(s, s); g.strokeStyle = C.red; g.lineWidth = 6; for (let i = 0; i < 4; i++) { g.beginPath(); g.ellipse(0, -20 + i * 6, 90 - i * 6, 70 - i * 4, 0, 0, 6.283); g.stroke(); } g.fillStyle = C.ink; g.fillRect(-30, 50, 60, 36); g.restore(); }
+function post(x, y) { g.save(); g.fillStyle = C.gray; g.fillRect(x - 14, y - 320, 28, 320); g.restore(); hrect(x - 14, y - 320, 28, 320, 701, C.ink, 3, 1); }
+shortRun({ src: SRC, seed: 970, lines: LINES, bgm: 'lofi',
+  title: { text: '锁车{r}防盗{/}四招', t: 0, small: '李财骑行小课堂' },
+  scenes: withShots([
+    [0, 5.7, (lt, t) => { if (t >= 2.6) tutPreview(t, 2.8, ['选好锁', '锁车架', '锁高一点', '停亮处'], '思考怀疑'); }],
+    [5.7, 14.5, (lt, t) => {
+      if (t < 10.0) return;
+      uLock(300, 760, 1.4, C.ink); tick(300, 540, 44, tk01(t, 10.4, 10.7)); txt('U 型锁 / 粗链锁', 300, 960, 46, C.green, { align: 'center', a: tk01(t, 10.4, 10.7) });
+      cableLock(780, 760, 1.4); bigX(780, 540, 50, tk01(t, 11.2, 11.5)); txt('细钢丝锁', 780, 960, 46, C.red, { align: 'center', a: tk01(t, 11.2, 11.5) });
+      txt('只适合临时停一下', 780, 1030, 36, C.sub, { align: 'center', a: tk01(t, 12.2, 12.5) });
+    }],
+    [14.5, 23.5, (lt, t) => {
+      if (t < 19.2) return;
+      // 左：车架 + 后轮锁在柱子上 ✓；右：只锁前轮 ✗（前轮还在，车没了）
+      post(180, 1000); bike(330, 870, .8, 0, C.ink); uLock(210, 870, .6, C.green); tick(300, 560, 44, tk01(t, 19.5, 19.8)); txt('车架 + 后轮', 300, 1080, 44, C.green, { align: 'center', a: tk01(t, 19.5, 19.8) });
+      post(660, 1000); g.save(); g.strokeStyle = C.ink; g.lineWidth = 5; g.beginPath(); g.arc(745, 900, 50, 0, 6.283); g.stroke(); g.restore(); uLock(690, 880, .5, C.red);
+      const k = tk01(t, 20.4, 21.6); g.save(); g.globalAlpha = 1 - k; bike(860 + 160 * k, 870, .8, 0, C.ink); g.restore();
+      bigX(780, 560, 44, tk01(t, 21.0, 21.3)); txt('只锁前轮', 780, 1080, 44, C.red, { align: 'center', a: tk01(t, 21.0, 21.3) });
+    }],
+    [23.5, 37.0, (lt, t) => {
+      if (t < 28.0) {
+        hline(80, 1080, 1000, 1080, 711, C.ink, 5, 1); post(540, 1080); uLock(540, 760, .9, C.green);
+        harrow(700, 980, 720, 860, 700, 760, C.orange, tk01(t, 24.0, 24.4), 6); txt('离地高一点', 820, 860, 46, C.orange, { align: 'center', a: tk01(t, 24.2, 24.5) });
+        txt('锁孔朝下', 300, 860, 46, C.ink, { align: 'center', a: tk01(t, 25.2, 25.5) }); harrow(380, 860, 440, 840, 480, 830, C.ink, tk01(t, 25.2, 25.6), 4);
+        return;
+      }
+      if (t < 32.4) return;
+      txt('快拆轮子', 300, 640, 56, C.ink, { align: 'center', a: tk01(t, 32.6, 32.9) }); txt('快拆座管', 780, 640, 56, C.ink, { align: 'center', a: tk01(t, 33.0, 33.3) });
+      txt('一起锁，或者带走', 540, 860, 60, C.orange, { align: 'center', a: tk01(t, 33.8, 34.1) }); cat('点头指向', 540, 1080, 220, t - 34.0);
+    }],
+    [37.0, 45.4, (lt, t) => {
+      if (t >= 41.3) return;
+      // 手机拍车架号
+      g.save(); g.fillStyle = C.ink; g.beginPath(); g.roundRect(380, 480, 320, 560, 40); g.fill(); g.fillStyle = '#f3ead6'; g.fillRect(400, 540, 280, 420); g.restore();
+      gear(540, 760, 80, 26, 0, C.ink, 4); txt('车架号', 540, 880, 44, C.ink, { align: 'center' }); txt('WSD1234567', 540, 930, 32, C.sub, { align: 'center', font: BODY });
+      if (t > 38.4) { g.save(); g.globalAlpha = Math.max(0, 1 - (t - 38.4) / .3); g.fillStyle = '#fff'; g.fillRect(400, 540, 280, 420); g.restore(); txt('丢了报警用得上', 540, 1100, 54, C.orange, { align: 'center', a: tk01(t, 38.8, 39.1) }); }
+    }],
+    [45.4, 50.6, (lt, t) => tutSlogan(t, 46.4, ['好锁', '锁车架', '停亮处'])],
+    [50.6, 58.4, (lt, t) => tutEnd(lt, t, 50.6, '丢过车吗？')]
+  ]),
+  cues: [['whoosh', .05], ['pop', 2.8], ['pop', 3.3], ['pop', 3.8], ['pop', 4.3], ['whoosh', 5.8], ['ding', 10.4], ['wrong', 11.2], ['whoosh', 14.6], ['ding', 19.5], ['whoosh', 20.4], ['wrong', 21.0],
+    ['pop', 24.2], ['pop', 25.2], ['whoosh', 28.2], ['pop', 32.6], ['pop', 33.0], ['ding', 33.8], ['pop', 37.2], ['bell', 38.4], ['whoosh', 41.3], ['stamp', 46.4], ['stamp', 47.3], ['stamp', 48.2], ['pop', 50.8], ['ding', 51.2]],
+  cover: (key, w, h) => epCover(key, w, h, { tag: '李财骑行小课堂', l1: '车总被偷？', l2: '锁车防盗四招', sub: '好锁 · 锁车架 · 停亮处', emo: '叉腰自信', emoScale: .85,
+    art: (x, y, s) => { uLock(x, y + 20 * s, .9 * s, C.ink); } })
+});
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财动起来 · 动作测试</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;width:100vw;max-height:100vh;aspect-ratio:16/9;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1920px;height:1080px;max-height:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script>
+/* 李财动起来：动作测试片（28 秒）——骑 / 跑 / 滑 / 跳 */
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+const T = [0, 7, 13, 19, 25, 29];
+const S = [];
+const GY = 900;
+
+// ① 骑起来
+S.push(lt => {
+  const v = lt < 5.4 ? 520 : 520 + (lt - 5.4) * 900, off = lt * 520 + Math.max(0, lt - 5.4) ** 2 * 450;
+  scrollGround(GY, off);
+  const x = lt < 1.2 ? lerp(-300, 820, eout(lt / 1.2)) : lt < 5.4 ? 820 + Math.sin(lt * 1.3) * 40 : 820 + (lt - 5.4) ** 2 * 900;
+  catRide('戴头盔骑车', x, GY + 8, 600, lt, { cad: 1.5, speed: v });
+  header(lt - .2, '① {o}骑起来{/}', '车轮在转 · 上身跟着踩踏晃 · 路和树往后跑');
+});
+// ② 跑起来
+S.push(lt => {
+  scrollGround(GY, lt * 700);
+  if (lt < 4.2) {
+    const x = lt < .8 ? lerp(-260, 760, eout(lt / .8)) : 760 + Math.sin(lt * 1.6) * 60;
+    catRun('哭着狂奔', x, GY + 6, 380, lt, { hz: 3.2, speed: 700 });
+  } else {
+    const q = lt - 4.2, x = 800 + q * q * 900;
+    catRun('趴地冲刺', x, GY + 8, 330, lt, { hz: 5, hop: 18, lean: 0, speed: 1200 });
+  }
+  header(lt - .2, '② {r}跑起来{/}', '一蹦一蹦 · 落地压扁 · 腿往后甩 · 身后有残影和扬尘');
+});
+// ③ 滑起来
+S.push(lt => {
+  scrollGround(GY, lt * 600, { trees: true });
+  const x = lt < 1 ? lerp(-300, 860, eout(lt)) : lt < 5 ? 860 + Math.sin(lt * 1.2) * 50 : 860 + (lt - 5) ** 2 * 1100;
+  catSkate('叉腰自信', x, GY - 40, 440, lt, { jump: [2.4, .9, 230] });
+  if (lt > 3.3 && lt < 4.4) { sparks(x - 160, GY - 120, 30, 1, 5); sparks(x + 200, GY - 120, 30, 1, 9); }
+  if (lt > 2.6 && lt < 3.4) typeText('{o}嘿！{/}', x + 240, GY - 420, 90, lt - 2.6, { cps: 8 });
+  header(lt - .2, '③ {b}滑起来{/}', '滑板轮子会转 · 身体前后压 · 起跳腾空再落地');
+});
+// ④ 跳起来
+S.push(lt => {
+  hline(0, GY, W, GY + 2, 52, C.ink, 5);
+  const i = flipbook(['唱歌跳舞', '蹦跳庆祝', '跳起欢呼', '举旗欢呼'], 960, GY + 6, 560, lt, 2, { sway: 1 });
+  for (let k = 0; k < 6; k++) {
+    const q = ((lt * .6 + k / 6) % 1), nx = 520 + k * 180 + Math.sin(lt * 2 + k) * 30;
+    txt(k % 2 ? '♪' : '♫', nx, GY - 200 - q * 520, 64, [C.orange, C.blue, C.purple][k % 3], { a: Math.sin(Math.PI * q), font: BODY });
+  }
+  header(lt - .2, '④ {g}跳起来{/}', '几张表情按节拍切换 = 简易逐帧动画');
+});
+// 结尾
+S.push(lt => {
+  scrollGround(GY, lt * 520);
+  const x = lt < 1.2 ? lerp(-300, 560, eout(lt / 1.2)) : 560;
+  catRide('骑车冲坡', x, GY + 30, 560, lt, { cad: 1.2, speed: 520 });
+  typeText('李财', 980, 380, 120, lt - .6, { cps: 8 });
+  typeText('{o}动起来啦！{/}', 980, 540, 140, lt - 1.0, { cps: 8 });
+  stamp('动作测试', 1560, 740, 64, lt - 2.2);
+});
+
+function sound(K, c, DUR, T) {
+  const s = licaiSound(K, DUR);
+  T.slice(1, -1).forEach(t => s.whoosh(t - .05));
+  s.whoosh(5.4); s.whoosh(7 + 4.2); s.whoosh(13 + 5);
+  s.grow(13 + 2.0, .4); s.pop(13 + 2.4); K.thud(13 + 3.3, .35); s.ding(13 + 3.35);
+  for (let k = 0; k < 12; k++) s.pop(19 + k * .5);
+  for (let k = 0; k < 13; k++) K.tone(300, 7 + .8 + k / 3.2, .05, .03, 'sine');
+  s.stamp(25 + 2.2);
+}
+function coverArt(key, w, h) {
+  paper(); const s = Math.min(w, h) / 1080;
+  cat('戴头盔骑车', w / 2, h * .55, h * .7, 1, { noPop: true, bob: false });
+  txt('李财动起来', w / 2, 120 * s, 100 * s, C.orange, { align: 'center' });
+}
+licaiRun({ T, S, seed: 77, allText: SRC.replace(/[\x00-\x7f]/g, ''), audio: sound, cover: coverArt });
+})();
+</script>
+</body>
+</html>
