@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行小课堂 · 夏天防中暑</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;max-width:100vw;aspect-ratio:9/16;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/喝茶.js"></script>
+<script src="licai-seq/打招呼.js"></script>
+<script src="licai-seq/擦汗.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script src="shortkit.js"></script>
+<script src="tutkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财骑行小课堂 · 竖版教程 19《夏天骑车防中暑》：手绘 + Mixkit 实拍（见 video/素材/夏天防中暑/素材清单.md）
+// 中暑信号是常见的科普说法，不是诊断；时间段是一般建议
+// 公共件里用到的动作（splitseq 按名字加载）：'打招呼' '叉腰得意'
+const k01 = tk01;
+const SHOTS = [
+  [0.0, 2.6, 'V', ''],
+  [14.6, 18.8, 'W', '墨镜、袖套、防晒霜'],
+  [28.2, 32.4, 'W', '往脖子、手臂上浇点水'],
+  [41.3, 45.2, 'W', '热了就歇一歇，喝口水']
+];
+const withShots = tutFrames(SHOTS);
+const LINES = [
+  [0.1, 2.6, '夏天骑车，晒到头晕？'],
+  [2.7, 5.4, '这几条，帮你扛过大热天。'],
+  [5.8, 9.8, '{o}避开最热的时候{/}：11 点到 15 点，尽量别出门。'],
+  [10.0, 14.4, '早上或者傍晚骑，凉快很多。'],
+  [14.6, 18.8, '{o}防晒{/}：浅色透气的衣服、袖套、墨镜，出门前涂好防晒霜。'],
+  [19.2, 23.4, '头盔照样要戴，选透气孔多的，里面可以垫块吸汗头巾。'],
+  [23.5, 27.8, '{o}多喝水{/}：每 15 分钟喝几口，出汗多就加点电解质。'],
+  [28.2, 32.4, '水还可以往脖子、手臂上浇一点，降温很快。'],
+  [32.5, 36.8, '{o}看信号{/}：头晕、恶心、不怎么出汗、心跳特别快，'],
+  [37.0, 41.2, '马上停下来，到阴凉处休息、喝水，严重就打 120。'],
+  [41.3, 45.2, '别硬撑，今天骑不完，明天还能骑。'],
+  [45.6, 50.4, '口诀：{o}避开正午、防晒、多喝水{/}。'],
+  [50.8, 54.6, '你夏天几点出门骑车？'],
+  [54.7, 57.8, '评论区说说。']
+];
+function sun(x, y, r, t, col) { g.save(); g.translate(x, y); g.rotate(t * .4); g.strokeStyle = col || C.orange; g.lineWidth = 6; g.lineCap = 'round'; for (let i = 0; i < 10; i++) { const a = i / 10 * 6.283; g.beginPath(); g.moveTo(Math.cos(a) * (r + 12), Math.sin(a) * (r + 12)); g.lineTo(Math.cos(a) * (r + 34), Math.sin(a) * (r + 34)); g.stroke(); } g.fillStyle = col || C.orange; g.beginPath(); g.arc(0, 0, r, 0, 6.283); g.fill(); g.restore(); }
+// 一天的时间条：6 点到 21 点
+function dayBar(t, showGood) {
+  const X = h => 110 + (h - 6) / 15 * 860, y = 760;
+  g.save(); g.fillStyle = '#efe6d2'; g.fillRect(X(6), y - 40, X(21) - X(6), 80); g.restore();
+  hatchBar(X(11), y - 40, (X(15) - X(11)) * eout(k01(t, 6.2, 7.0)), 80, C.red, 1901);
+  if (showGood) { const a = eout(k01(t, 10.2, 10.9)); hatchBar(X(6), y - 40, (X(9) - X(6)) * a, 80, C.green, 1902); hatchBar(X(17), y - 40, (X(20) - X(17)) * a, 80, C.green, 1903); }
+  hrect(X(6), y - 40, X(21) - X(6), 80, 1904, C.ink, 4, 1);
+  [6, 9, 12, 15, 18, 21].forEach(h => txt(h + '点', X(h), y + 80, 34, C.sub, { align: 'center', font: BODY }));
+  return X;
+}
+shortRun({ src: SRC, seed: 979, lines: LINES, bgm: 'lofi',
+  title: { text: '夏天骑车{r}防中暑{/}', t: 0, small: '李财骑行小课堂' },
+  scenes: withShots([
+    [0, 5.7, (lt, t) => {
+      if (t < 2.6) { sun(780, 620, 70, t); txt('38°C', 780, 860, 90, C.red, { align: 'center' }); return; }
+      tutPreview(t, 2.8, ['避开正午', '防晒', '多喝水', '看身体信号'], '擦汗');
+    }],
+    [5.7, 14.6, (lt, t) => {
+      const X = dayBar(t, t >= 10.0);
+      sun(X(13), 560, 50, t, C.red); txt('11～15 点最热', X(13), 930, 50, C.red, { align: 'center', a: k01(t, 6.6, 6.9) }); bigX(X(13), 470, 30, k01(t, 7.4, 7.7));
+      if (t >= 10.0) { txt('早上', X(7.5), 640, 50, C.green, { align: 'center', a: k01(t, 10.4, 10.7) }); txt('傍晚', X(18.5), 640, 50, C.green, { align: 'center', a: k01(t, 10.8, 11.1) }); txt('凉快多了', 540, 1060, 56, C.green, { align: 'center', a: k01(t, 11.4, 11.7) }); }
+    }],
+    [14.6, 28.0, (lt, t) => {
+      if (t < 18.8) return;
+      if (t < 23.5) {
+        // 透气头盔 + 风
+        g.save(); g.translate(540, 820); g.fillStyle = C.red; g.strokeStyle = C.ink; g.lineWidth = 6; g.beginPath(); g.moveTo(-260, 60); g.quadraticCurveTo(-250, -220, 0, -230); g.quadraticCurveTo(250, -220, 260, 60); g.closePath(); g.fill(); g.stroke();
+        g.fillStyle = '#fffdf6'; [[-150, -60], [-60, -130], [60, -130], [150, -60], [-60, -20], [60, -20]].forEach(p => { g.beginPath(); g.ellipse(p[0], p[1], 34, 22, 0, 0, 6.283); g.fill(); g.stroke(); }); g.restore();
+        for (let i = 0; i < 3; i++) { const k = (t * .8 + i / 3) % 1; harrow(300 + i * 240, 600 - k * 40, 310 + i * 240, 550 - k * 40, 300 + i * 240, 500 - k * 40, C.blue, 1, 5); }
+        txt('头盔照样戴', 540, 960, 58, C.ink, { align: 'center', a: k01(t, 19.3, 19.6) }); txt('选透气孔多的', 540, 1040, 52, C.green, { align: 'center', a: k01(t, 20.0, 20.3) });
+        return;
+      }
+      // 水壶 + 15 分钟
+      g.save(); g.fillStyle = C.blue; g.strokeStyle = C.ink; g.lineWidth = 6; g.beginPath(); g.roundRect(220, 560, 170, 400, 40); g.fill(); g.stroke(); g.fillStyle = C.ink; g.fillRect(270, 520, 70, 44); g.restore();
+      const a = k01(t, 23.8, 26.0); g.save(); g.strokeStyle = C.ink; g.lineWidth = 6; g.beginPath(); g.arc(730, 700, 120, 0, 6.283); g.stroke(); g.fillStyle = 'rgba(79,179,134,.35)'; g.beginPath(); g.moveTo(730, 700); g.arc(730, 700, 120, -Math.PI / 2, -Math.PI / 2 + Math.PI / 2 * a); g.closePath(); g.fill(); g.restore();
+      txt('15 分钟', 730, 700, 48, C.green, { align: 'center', a: k01(t, 23.8, 24.1) }); txt('喝几口', 730, 880, 52, C.ink, { align: 'center', a: k01(t, 24.4, 24.7) });
+      txt('出汗多：加电解质', 540, 1060, 50, C.orange, { align: 'center', a: k01(t, 25.6, 25.9) });
+    }],
+    [28.0, 41.3, (lt, t) => {
+      if (t < 32.4) return;
+      if (t < 37.0) {
+        txt('中暑信号', 540, 480, 60, C.red, { align: 'center', a: k01(t, 32.6, 32.9) });
+        ['头晕', '恶心', '不怎么出汗', '心跳特别快'].forEach((s, i) => { const a = k01(t, 32.8 + i * .9, 33.1 + i * .9); if (a <= 0) return; boxNote(i % 2 ? 560 : 90, 560 + Math.floor(i / 2) * 200, 430, 150, 1910 + i, C.red, a); txt(s, (i % 2 ? 560 : 90) + 215, 635 + Math.floor(i / 2) * 200, 54, C.ink, { align: 'center', a: a }); });
+        txt('示意：常见表现，不能代替诊断', 540, 1000, 30, C.sub, { align: 'center', font: BODY, a: k01(t, 35.0, 35.3) });
+        return;
+      }
+      [['停下来', 37.1], ['到阴凉处', 37.8], ['休息、喝水', 38.5], ['严重：打 120', 39.6]].forEach((s, i) => { const a = k01(t, s[1], s[1] + .3); if (a <= 0) return; numDot(i + 1, 150, 540 + i * 140, t - s[1], i === 3 ? C.red : C.green); txt(s[0], 220, 540 + i * 140, 58, i === 3 ? C.red : C.ink, { a: a }); });
+      cat('喝茶', 830, 1000, 260, t - 37.4);
+    }],
+    [41.3, 45.4, () => {}],
+    [45.4, 50.6, (lt, t) => tutSlogan(t, 46.4, ['避开正午', '防晒', '多喝水'])],
+    [50.6, 58.4, (lt, t) => tutEnd(lt, t, 50.6, '几点出门？')]
+  ]),
+  cues: [['whoosh', .05], ['pop', 2.8], ['pop', 3.3], ['pop', 3.8], ['pop', 4.3], ['grow', 6.2], ['wrong', 7.4], ['grow', 10.2], ['ding', 11.4], ['whoosh', 14.6], ['pop', 19.3], ['pop', 20.0], ['pop', 23.8], ['ding', 24.4], ['pop', 25.6],
+    ['whoosh', 28.2], ['pop', 32.8], ['pop', 33.7], ['pop', 34.6], ['pop', 35.5], ['pop', 37.1], ['pop', 37.8], ['pop', 38.5], ['wrong', 39.6], ['whoosh', 41.3], ['stamp', 46.4], ['stamp', 47.3], ['stamp', 48.2], ['pop', 50.8], ['ding', 51.2]],
+  cover: (key, w, h) => epCover(key, w, h, { tag: '李财骑行小课堂', l1: '夏天骑车晒到晕？', l2: '防中暑这样做', sub: '避开正午 · 防晒 · 多喝水', emo: '尴尬流汗', emoScale: .68,
+    art: (x, y, s) => { sun(x, y + 20 * s, 34 * s, 0, C.orange); } })
+});
+
+})();
+</script>
+</body>
+</html>

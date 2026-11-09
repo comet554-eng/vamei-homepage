@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行小课堂 · 洗车</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;max-width:100vw;aspect-ratio:9/16;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/打招呼.js"></script>
+<script src="licai-seq/检查车轮.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script src="shortkit.js"></script>
+<script src="tutkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财骑行小课堂 · 竖版教程 20《自行车怎么洗》：手绘 + Mixkit 实拍（见 video/素材/洗车/素材清单.md）
+// 没有找到洗自行车的实拍，冲、刷、擦、上油都是手绘示意；水滴实拍只当“用水”的示意画面
+// 公共件里用到的动作（splitseq 按名字加载）：'打招呼' '叉腰得意'
+const k01 = tk01;
+const SHOTS = [
+  [0.0, 2.6, 'W', ''],
+  [5.8, 9.8, 'W', '小水流冲，别用高压水枪'],
+  [41.3, 45.2, 'W', '雨天、泥路骑完，就洗一次']
+];
+const withShots = tutFrames(SHOTS);
+const LINES = [
+  [0.1, 2.6, '车脏成这样，还能好好骑吗？'],
+  [2.7, 5.4, '在家洗车，四步就够。'],
+  [5.8, 9.8, '{o}冲{/}：先用小水流把泥冲掉，别用高压水枪对着轴承冲。'],
+  [10.0, 14.4, '高压水会把轴承里的油冲走，进了水还会生锈。'],
+  [14.6, 18.8, '{o}刷{/}：清洁剂兑水，软刷子从上往下刷车架。'],
+  [19.2, 23.4, '链条和飞轮最脏，用旧牙刷单独刷。'],
+  [23.5, 27.8, '刹车面别沾油，碟刹盘也别用手摸。'],
+  [28.2, 32.4, '{o}擦干{/}：再冲一遍，用干布擦干，链条尤其要擦干。'],
+  [32.5, 36.8, '{o}上油{/}：链条干了以后，滴油、再擦掉外面多余的。'],
+  [37.0, 41.2, '最后捏捏刹车、转转轮子，检查一遍。'],
+  [41.3, 45.2, '雨天、泥路骑完，就该洗一次了。'],
+  [45.6, 50.4, '口诀：{o}冲、刷、擦、上油{/}。'],
+  [50.8, 54.6, '你多久洗一次车？'],
+  [54.7, 57.8, '评论区说说。']
+];
+function drops(x, y, w, t, col, n) { g.save(); g.fillStyle = col || C.blue; for (let i = 0; i < (n || 8); i++) { const k = (t * 1.3 + i * .37) % 1, dx = x + ((i * 97) % w); g.globalAlpha = 1 - k; g.beginPath(); g.ellipse(dx, y + k * 160, 7, 12, 0, 0, 6.283); g.fill(); } g.restore(); }
+function hub(x, y, r) { g.save(); g.strokeStyle = C.ink; g.lineWidth = 6; g.beginPath(); g.arc(x, y, r, 0, 6.283); g.stroke(); g.lineWidth = 2; for (let i = 0; i < 12; i++) { const a = i / 12 * 6.283; g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r); g.stroke(); } g.fillStyle = C.gray; g.beginPath(); g.arc(x, y, 34, 0, 6.283); g.fill(); g.stroke(); g.restore(); }
+function brush(x, y, rot, col) { g.save(); g.translate(x, y); g.rotate(rot); g.fillStyle = col || C.orange; g.strokeStyle = C.ink; g.lineWidth = 4; g.beginPath(); g.roundRect(-110, -14, 160, 28, 12); g.fill(); g.stroke(); g.fillStyle = '#fffdf6'; g.fillRect(50, -22, 60, 44); g.strokeRect(50, -22, 60, 44); g.strokeStyle = C.ink; g.lineWidth = 2; for (let i = 0; i < 8; i++) { g.beginPath(); g.moveTo(54 + i * 7, -22); g.lineTo(54 + i * 7, -40); g.stroke(); } g.restore(); }
+shortRun({ src: SRC, seed: 980, lines: LINES, bgm: 'lofi',
+  title: { text: '自行车{r}怎么洗{/}', t: 0, small: '李财骑行小课堂' },
+  scenes: withShots([
+    [0, 5.7, (lt, t) => { if (t >= 2.6) tutPreview(t, 2.8, ['小水流冲', '软刷刷', '擦干', '上油'], '检查车轮'); }],
+    [5.7, 14.5, (lt, t) => {
+      if (t < 10.0) return;
+      hub(540, 790, 230);
+      const bad = t < 12.6;
+      if (bad) { for (let i = 0; i < 4; i++) { const k = (t * 3 + i / 4) % 1; hline(120 + k * 300, 560 + i * 12, 200 + k * 300, 640 + i * 12, 1990 + i, C.red, 5, 1); } txt('高压水枪', 260, 500, 50, C.red, { align: 'center', a: k01(t, 10.1, 10.4) }); bigX(860, 520, 44, k01(t, 10.6, 10.9)); txt('轴承的油被冲走', 540, 1080, 54, C.red, { align: 'center', a: k01(t, 11.0, 11.3) }); txt('进水生锈', 540, 1160, 50, C.red, { align: 'center', a: k01(t, 11.6, 11.9) }); }
+      else { drops(330, 560, 420, t, C.blue, 9); txt('小水流，冲泥就行', 540, 1080, 54, C.green, { align: 'center', a: k01(t, 12.6, 12.9) }); tick(860, 520, 44, k01(t, 12.8, 13.1)); }
+      hcircle(540, 790, 60, 60, 1999, bad ? C.red : C.green, 5, k01(t, 10.4, 10.8));
+    }],
+    [14.5, 28.0, (lt, t) => {
+      if (t < 19.2) {
+        g.save(); g.translate(560, 820); bike(0, 0, 2.3, 0, C.ink); g.restore();
+        [[400, 560, 760], [650, 560, 760]].forEach((p, i) => harrow(p[0], p[1], p[0] + 10, (p[1] + p[2]) / 2, p[0], p[2], C.blue, k01(t, 15.2 + i * .4, 15.6 + i * .4), 6));
+        brush(380 + Math.sin(t * 6) * 30, 560 + ((t * 120) % 200), .6, C.orange);
+        txt('清洁剂兑水 + 软刷子', 540, 480, 52, C.ink, { align: 'center', a: k01(t, 14.7, 15.0) }); txt('从上往下刷', 540, 1120, 54, C.blue, { align: 'center', a: k01(t, 15.4, 15.7) });
+        return;
+      }
+      if (t < 23.5) {
+        gear(400, 780, 150, 40, t * .5, C.ink, 6); gear(820, 780, 70, 18, t * 1.1, C.ink, 5);
+        g.save(); g.strokeStyle = C.brown; g.lineWidth = 9; g.setLineDash([18, 8]); g.lineDashOffset = -t * 60; g.beginPath(); g.moveTo(400, 630); g.lineTo(820, 710); g.moveTo(400, 930); g.lineTo(820, 850); g.stroke(); g.restore();
+        brush(600 + Math.sin(t * 10) * 40, 640, .2, C.green);
+        txt('链条、飞轮', 540, 480, 56, C.ink, { align: 'center', a: k01(t, 19.3, 19.6) }); txt('旧牙刷单独刷', 540, 1080, 54, C.green, { align: 'center', a: k01(t, 19.8, 20.1) });
+        return;
+      }
+      // 碟刹盘
+      g.save(); g.strokeStyle = C.ink; g.lineWidth = 8; g.fillStyle = '#d9d2c4'; g.beginPath(); g.arc(400, 800, 210, 0, 6.283); g.fill(); g.stroke(); g.fillStyle = '#fffdf6'; g.beginPath(); g.arc(400, 800, 90, 0, 6.283); g.fill(); g.stroke();
+      for (let i = 0; i < 12; i++) { const a = i / 12 * 6.283; g.beginPath(); g.arc(400 + Math.cos(a) * 150, 800 + Math.sin(a) * 150, 14, 0, 6.283); g.fill(); g.stroke(); } g.restore();
+      txt('刹车面', 400, 520, 52, C.ink, { align: 'center', a: k01(t, 23.6, 23.9) });
+      txt('别沾油', 800, 700, 58, C.red, { align: 'center', a: k01(t, 24.0, 24.3) }); txt('别用手摸', 800, 820, 58, C.red, { align: 'center', a: k01(t, 25.2, 25.5) }); bigX(800, 960, 40, k01(t, 25.6, 25.9));
+    }],
+    [28.0, 41.3, (lt, t) => {
+      if (t < 32.5) {
+        g.save(); g.translate(560, 820); bike(0, 0, 2.3, 0, C.ink); g.restore();
+        if (t < 29.8) drops(300, 560, 520, t, C.blue, 10);
+        else { const x = 300 + ((t * 260) % 480); g.save(); g.fillStyle = C.gold; g.strokeStyle = C.ink; g.lineWidth = 4; g.beginPath(); g.roundRect(x - 60, 760, 120, 80, 14); g.fill(); g.stroke(); g.restore(); }
+        txt(t < 29.8 ? '再冲一遍' : '干布擦干', 540, 480, 58, t < 29.8 ? C.blue : C.ink, { align: 'center' }); txt('链条尤其要擦干', 540, 1120, 54, C.orange, { align: 'center', a: k01(t, 30.4, 30.7) });
+        return;
+      }
+      if (t < 37.0) {
+        gear(420, 800, 150, 40, t * .4, C.ink, 6); g.save(); g.strokeStyle = C.brown; g.lineWidth = 9; g.setLineDash([18, 8]); g.lineDashOffset = -t * 40; g.beginPath(); g.moveTo(420, 650); g.lineTo(960, 650); g.stroke(); g.restore();
+        const k = (t * 1.2) % 1; g.save(); g.fillStyle = C.gold; g.beginPath(); g.moveTo(640, 520 + k * 100); g.quadraticCurveTo(660, 560 + k * 100, 640, 575 + k * 100); g.quadraticCurveTo(620, 560 + k * 100, 640, 520 + k * 100); g.fill(); g.restore();
+        txt('链条干了再滴油', 540, 1050, 54, C.ink, { align: 'center', a: k01(t, 32.6, 32.9) }); txt('再擦掉外面多余的', 540, 1130, 48, C.orange, { align: 'center', a: k01(t, 34.4, 34.7) });
+        txt('方法见：链条保养那集', 540, 480, 38, C.sub, { align: 'center', font: BODY, a: k01(t, 33.2, 33.5) });
+        return;
+      }
+      [['捏捏刹车', 37.2], ['转转轮子', 38.2], ['没异响，再出发', 39.2]].forEach((s, i) => { const a = k01(t, s[1], s[1] + .3); if (a <= 0) return; boxNote(90, 520 + i * 170, 620, 130, 2001 + i, C.green, a); txt(s[0], 140, 585 + i * 170, 56, C.ink, { a: a }); tick(640, 585 + i * 170, 30, k01(t, s[1] + .4, s[1] + .7)); });
+      cat('检查车轮', 860, 1000, 260, t - 37.4);
+    }],
+    [41.3, 45.4, () => {}],
+    [45.4, 50.6, (lt, t) => tutSlogan(t, 46.4, ['冲', '刷', '擦', '上油'])],
+    [50.6, 58.4, (lt, t) => tutEnd(lt, t, 50.6, '多久洗一次？')]
+  ]),
+  cues: [['whoosh', .05], ['pop', 2.8], ['pop', 3.3], ['pop', 3.8], ['pop', 4.3], ['whoosh', 5.8], ['wrong', 10.6], ['ding', 12.8], ['pop', 14.7], ['whoosh', 15.2], ['pop', 19.3], ['pop', 23.6], ['wrong', 25.6],
+    ['whoosh', 28.2], ['pop', 29.8], ['pop', 32.6], ['pop', 37.2], ['pop', 38.2], ['ding', 39.2], ['whoosh', 41.3], ['stamp', 46.4], ['stamp', 47.3], ['stamp', 48.2], ['stamp', 49.1], ['pop', 50.8], ['ding', 51.2]],
+  cover: (key, w, h) => epCover(key, w, h, { tag: '李财骑行小课堂', l1: '车脏成这样？', l2: '在家洗车四步', sub: '冲 · 刷 · 擦 · 上油', emo: '舔爪洗脸', emoScale: .85,
+    art: (x, y, s) => { g.save(); g.translate(x, y + 30 * s); bike(0, 0, .7 * s, 0, C.ink); g.restore(); } })
+});
+
+})();
+</script>
+</body>
+</html>
