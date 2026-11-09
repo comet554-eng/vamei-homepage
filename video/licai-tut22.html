@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行小课堂 · 胎压</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;max-width:100vw;aspect-ratio:9/16;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/思考怀疑.js"></script>
+<script src="licai-seq/打招呼.js"></script>
+<script src="licai-seq/打气.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script src="shortkit.js"></script>
+<script src="tutkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财骑行小课堂 · 竖版教程 21《胎压打多少才对》：手绘 + Mixkit 实拍（见 video/素材/胎压/素材清单.md）
+// 气压表、轮胎压扁程度都是手绘示意，不是测量数据；具体数值以胎侧标注为准
+// 公共件里用到的动作（splitseq 按名字加载）：'打招呼' '叉腰得意'
+const k01 = tk01;
+const SHOTS = [
+  [0.0, 2.6, 'V', ''],
+  [23.5, 27.8, 'W', '柏油路：气足一点更省力'],
+  [41.3, 45.2, 'W', '每周补补气，骑着更顺']
+];
+const withShots = tutFrames(SHOTS);
+const LINES = [
+  [0.1, 2.6, '车胎打多少气，你是凭感觉吗？'],
+  [2.7, 5.4, '看懂这几点，打得刚刚好。'],
+  [5.8, 9.8, '{o}先看胎侧{/}：轮胎侧面印着气压范围，单位是 PSI 或 BAR。'],
+  [10.0, 14.4, '最低和最高之间就是能用的范围，别超过最高值。'],
+  [14.6, 18.8, '{o}体重大的，往高打一点{/}；体重轻的，低一点也行。'],
+  [19.2, 23.4, '{o}土路、碎石路{/}，气少一点，抓地更好、更舒服。'],
+  [23.5, 27.8, '{o}平整的柏油路{/}，气足一点，骑着更省力。'],
+  [28.2, 32.4, '{o}下雨天{/}，比平时少打一点，轮胎抓地更稳。'],
+  [32.5, 36.8, '气太少：容易夹破内胎，骑着还特别费劲。'],
+  [37.0, 41.2, '气太多：颠得手麻，过弯容易打滑。'],
+  [41.3, 45.2, '轮胎每周都会慢慢漏气，骑前用带表的打气筒补一补。'],
+  [45.6, 50.4, '口诀：{o}看胎侧、按路况、每周补{/}。'],
+  [50.8, 54.6, '你的车胎多久打一次气？'],
+  [54.7, 57.8, '评论区说说。']
+];
+shortRun({ src: SRC, seed: 981, lines: LINES, bgm: 'lofi',
+  title: { text: '胎压{r}打多少{/}才对', t: 0, small: '李财骑行小课堂' },
+  scenes: withShots([
+    [0, 5.7, (lt, t) => {
+      if (t < 2.6) { txt('凭感觉', 770, 620, 64, C.ink, { align: 'center' }); txt('打气？', 770, 720, 64, C.red, { align: 'center' }); return; }
+      tutPreview(t, 2.8, ['看胎侧', '按体重', '按路况', '每周补'], '打气');
+    }],
+    [5.7, 14.5, (lt, t) => {
+      if (t < 10.0) {
+        tireFlat(540, 820, 300, 0, C.ink);
+        boxNote(300, 520, 480, 100, 2101, C.orange, k01(t, 6.2, 6.5)); txt('50–80 PSI  ·  3.5–5.5 BAR', 540, 570, 40, C.ink, { align: 'center', font: BODY, a: k01(t, 6.3, 6.6) });
+        hcircle(540, 570, 270, 70, 2102, C.red, 5, k01(t, 6.8, 7.3)); txt('胎侧印的范围（示意数字）', 540, 1170, 40, C.orange, { align: 'center', a: k01(t, 7.4, 7.7) });
+        return;
+      }
+      gaugeDial(540, 900, 300, .1 + .55 * eout(k01(t, 10.2, 11.4)));
+      txt('最低', 230, 960, 44, C.orange, { align: 'center', a: k01(t, 10.4, 10.7) }); txt('最高', 850, 960, 44, C.red, { align: 'center', a: k01(t, 10.6, 10.9) });
+      txt('绿区：能用的范围', 540, 1040, 52, C.green, { align: 'center', a: k01(t, 11.4, 11.7) }); txt('别超过最高值', 540, 1120, 52, C.red, { align: 'center', a: k01(t, 12.2, 12.5) });
+    }],
+    [14.5, 23.5, (lt, t) => {
+      if (t < 19.2) {
+        [[300, .72, '体重大', '高一点', C.orange, 14.7], [780, .45, '体重轻', '低一点也行', C.green, 15.8]].forEach(s => { const a = k01(t, s[5], s[5] + .3); if (a <= 0) return; gaugeDial(s[0], 820, 170, s[1] * eout(k01(t, s[5], s[5] + .8)), a); txt(s[2], s[0], 560, 56, C.ink, { align: 'center', a: a }); txt(s[3], s[0], 900, 48, s[4], { align: 'center', a: k01(t, s[5] + .6, s[5] + .9) }); });
+        return;
+      }
+      const gy = tireFlat(540, 780, 230, 34, C.ink);
+      g.save(); g.strokeStyle = C.brown; g.lineWidth = 6; g.beginPath(); for (let x = 100; x <= 980; x += 10) { const yy = gy + Math.sin(x * .05) * 8; x === 100 ? g.moveTo(x, yy) : g.lineTo(x, yy); } g.stroke(); g.restore();
+      hline(430, gy + 30, 650, gy + 30, 2103, C.green, 8, k01(t, 19.8, 20.3)); txt('触地面积大', 540, gy + 80, 44, C.green, { align: 'center', a: k01(t, 20.2, 20.5) });
+      txt('土路：气少一点', 540, 500, 56, C.green, { align: 'center', a: k01(t, 19.3, 19.6) }); tick(880, 500, 34, k01(t, 20.8, 21.1));
+    }],
+    [23.5, 28.0, () => {}],
+    [28.0, 41.3, (lt, t) => {
+      if (t < 32.5) {
+        for (let i = 0; i < 14; i++) { const k = (t * .9 + i * .13) % 1; g.save(); g.globalAlpha = .7; g.strokeStyle = C.blue; g.lineWidth = 4; const x = 120 + (i * 67) % 860, y = 480 + k * 300; g.beginPath(); g.moveTo(x, y); g.lineTo(x - 8, y + 30); g.stroke(); g.restore(); }
+        gaugeDial(540, 960, 260, .62 - .14 * eout(k01(t, 28.8, 30.0)));
+        txt('下雨天：少打一点', 540, 1060, 56, C.blue, { align: 'center', a: k01(t, 28.4, 28.7) });
+        return;
+      }
+      if (t < 37.0) {
+        const gy = tireFlat(540, 830, 240, 120, C.red); hline(100, gy, 980, gy, 2104, C.ink, 5, 1);
+        txt('气太少', 540, 460, 62, C.red, { align: 'center', a: k01(t, 32.6, 32.9) }); bigX(880, 460, 36, k01(t, 33.0, 33.3));
+        txt('容易夹破内胎、费劲', 540, gy + 90, 50, C.red, { align: 'center', a: k01(t, 33.6, 33.9) });
+        return;
+      }
+      const b = Math.abs(Math.sin(t * 9)) * 40, gy = tireFlat(540, 820 - b, 240, 4, C.red); hline(100, 1086, 980, 1086, 2105, C.ink, 5, 1);
+      for (let i = 0; i < 3; i++) hline(250 - i * 30, 720 + i * 60, 290 - i * 30, 740 + i * 60, 2106 + i, C.red, 5, 1);
+      txt('气太多', 540, 460, 62, C.red, { align: 'center', a: k01(t, 37.1, 37.4) }); bigX(880, 460, 36, k01(t, 37.5, 37.8));
+      txt('颠得手麻、过弯打滑', 540, 1160, 50, C.red, { align: 'center', a: k01(t, 38.2, 38.5) });
+    }],
+    [41.3, 45.4, () => {}],
+    [45.4, 50.6, (lt, t) => tutSlogan(t, 46.4, ['看胎侧', '按路况', '每周补'])],
+    [50.6, 58.4, (lt, t) => tutEnd(lt, t, 50.6, '多久打一次？')]
+  ]),
+  cues: [['whoosh', .05], ['pop', 2.8], ['pop', 3.3], ['pop', 3.8], ['pop', 4.3], ['pop', 6.2], ['ding', 6.8], ['grow', 10.2], ['pop', 11.4], ['wrong', 12.2], ['pop', 14.7], ['pop', 15.8], ['pop', 19.3], ['ding', 20.8], ['whoosh', 23.5],
+    ['pop', 28.4], ['pop', 32.6], ['wrong', 33.0], ['pop', 37.1], ['wrong', 37.5], ['whoosh', 41.3], ['stamp', 46.4], ['stamp', 47.3], ['stamp', 48.2], ['pop', 50.8], ['ding', 51.2]],
+  cover: (key, w, h) => epCover(key, w, h, { tag: '李财骑行小课堂', l1: '车胎凭感觉打气？', l2: '胎压这样打', sub: '看胎侧 · 按路况 · 每周补', emo: '托腮疑问', emoScale: .8,
+    art: (x, y, s) => { gaugeDial(x, y + 50 * s, 70 * s, .6); } })
+});
+
+})();
+</script>
+</body>
+</html>

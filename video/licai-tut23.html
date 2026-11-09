@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行小课堂 · 骑行包</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;max-width:100vw;aspect-ratio:9/16;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/打招呼.js"></script>
+<script src="licai-seq/背包出发.js"></script>
+<script src="licai-seq/背包出发2.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script src="shortkit.js"></script>
+<script src="tutkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财骑行小课堂 · 竖版教程 22《骑车包里带什么》：手绘 + Mixkit 实拍（见 video/素材/骑行包/素材清单.md）
+// 物品图标都是手绘示意，不指定品牌
+// 公共件里用到的动作（splitseq 按名字加载）：'打招呼' '叉腰得意'
+const k01 = tk01;
+const SHOTS = [
+  [0.0, 2.6, 'W', ''],
+  [19.2, 23.4, 'W', '一壶水，一点吃的'],
+  [41.3, 45.2, 'W', '带齐了，放心骑远一点']
+];
+const withShots = tutFrames(SHOTS);
+const LINES = [
+  [0.1, 2.6, '骑到半路扎胎、没电、没水，怎么办？'],
+  [2.7, 5.4, '包里带这几样，心里不慌。'],
+  [5.8, 9.8, '{o}修车三件套{/}：备用内胎、撬胎棒、迷你打气筒。'],
+  [10.0, 14.4, '再带一个{o}多功能工具{/}，螺丝松了能自己拧。'],
+  [14.6, 18.8, '{o}手机{/}充好电，带一点现金或者交通卡。'],
+  [19.2, 23.4, '{o}水和吃的{/}：一壶水，一根香蕉或者能量棒。'],
+  [23.5, 27.8, '{o}车灯{/}：哪怕白天出门，也可能骑到天黑。'],
+  [28.2, 32.4, '天气不好，带一件薄外套或者雨衣。'],
+  [32.5, 36.8, '小东西放进{o}座包{/}或者骑行服后兜，别挂在车把上晃。'],
+  [37.0, 41.2, '出门前再看一眼：内胎、打气筒、手机、水。'],
+  [41.3, 45.2, '带齐了，就能放心骑远一点。'],
+  [45.6, 50.4, '口诀：{o}修车的、联系的、吃喝的{/}。'],
+  [50.8, 54.6, '你的包里一定会带什么？'],
+  [54.7, 57.8, '评论区说说。']
+];
+function icon(name, x, y, s) {
+  g.save(); g.translate(x, y); g.scale(s, s); g.lineCap = 'round'; g.lineJoin = 'round'; g.strokeStyle = C.ink; g.lineWidth = 5;
+  if (name === 'tube') { g.lineWidth = 16; g.beginPath(); g.arc(0, 0, 60, 0, 6.283); g.stroke(); g.lineWidth = 8; g.beginPath(); g.moveTo(0, 60); g.lineTo(0, 95); g.stroke(); }
+  if (name === 'lever') { g.fillStyle = C.blue; [-20, 20].forEach(dx => { g.beginPath(); g.roundRect(dx - 12, -70, 24, 140, 12); g.fill(); g.stroke(); }); }
+  if (name === 'pump') { g.fillStyle = C.gray; g.beginPath(); g.roundRect(-18, -60, 36, 120, 10); g.fill(); g.stroke(); g.beginPath(); g.moveTo(-34, -70); g.lineTo(34, -70); g.moveTo(0, -60); g.lineTo(0, -70); g.stroke(); g.beginPath(); g.moveTo(0, 60); g.quadraticCurveTo(40, 90, 60, 50); g.stroke(); }
+  if (name === 'tool') { g.fillStyle = C.red; g.beginPath(); g.roundRect(-30, -10, 60, 80, 12); g.fill(); g.stroke(); g.fillStyle = C.gray; [-.5, 0, .5].forEach(a => { g.save(); g.rotate(a); g.beginPath(); g.roundRect(-6, -80, 12, 80, 4); g.fill(); g.stroke(); g.restore(); }); }
+  if (name === 'phone') { g.fillStyle = C.ink; g.beginPath(); g.roundRect(-40, -70, 80, 140, 14); g.fill(); g.fillStyle = C.blue; g.fillRect(-32, -58, 64, 108); }
+  if (name === 'card') { g.fillStyle = C.green; g.beginPath(); g.roundRect(-60, -38, 120, 76, 10); g.fill(); g.stroke(); g.fillStyle = C.ink; g.fillRect(-60, -18, 120, 14); }
+  if (name === 'bottle') { g.fillStyle = C.blue; g.beginPath(); g.roundRect(-28, -55, 56, 120, 16); g.fill(); g.stroke(); g.fillStyle = C.ink; g.fillRect(-14, -72, 28, 18); }
+  if (name === 'banana') { g.strokeStyle = C.gold; g.lineWidth = 26; g.beginPath(); g.arc(0, -40, 70, .5, 2.6); g.stroke(); }
+  if (name === 'light') { g.fillStyle = C.ink; g.beginPath(); g.roundRect(-50, -24, 70, 48, 10); g.fill(); g.strokeStyle = C.gold; g.lineWidth = 6; [-.4, 0, .4].forEach(a => { g.beginPath(); g.moveTo(30 + Math.cos(a) * 10, Math.sin(a) * 10); g.lineTo(30 + Math.cos(a) * 60, Math.sin(a) * 60); g.stroke(); }); }
+  if (name === 'jacket') { g.fillStyle = C.blue; g.beginPath(); g.moveTo(-40, -60); g.lineTo(-80, -30); g.lineTo(-62, 0); g.lineTo(-45, -12); g.lineTo(-45, 65); g.lineTo(45, 65); g.lineTo(45, -12); g.lineTo(62, 0); g.lineTo(80, -30); g.lineTo(40, -60); g.quadraticCurveTo(0, -40, -40, -60); g.fill(); g.stroke(); g.beginPath(); g.moveTo(0, -48); g.lineTo(0, 65); g.stroke(); }
+  g.restore();
+}
+function card(name, label, x, y, a, col) { if (a <= 0) return; boxNote(x, y, 280, 290, 2200 + x + y, col || C.ink, a); g.save(); g.globalAlpha = a; icon(name, x + 140, y + 120, 1); g.restore(); txt(label, x + 140, y + 250, 44, C.ink, { align: 'center', a: a }); }
+shortRun({ src: SRC, seed: 982, lines: LINES, bgm: 'lofi',
+  title: { text: '骑车包里{r}带什么{/}', t: 0, small: '李财骑行小课堂' },
+  scenes: withShots([
+    [0, 5.7, (lt, t) => { if (t >= 2.6) tutPreview(t, 2.8, ['修车三件套', '手机和钱', '水和吃的', '车灯外套'], '背包出发'); }],
+    [5.7, 14.5, (lt, t) => {
+      txt('修车三件套', 540, 480, 58, C.orange, { align: 'center', a: k01(t, 5.9, 6.2) });
+      card('tube', '备用内胎', 80, 560, k01(t, 6.2, 6.5), C.orange); card('lever', '撬胎棒', 400, 560, k01(t, 7.0, 7.3), C.orange); card('pump', '迷你打气筒', 720, 560, k01(t, 7.8, 8.1), C.orange);
+      if (t > 10.0) { card('tool', '多功能工具', 400, 900, k01(t, 10.1, 10.4), C.green); txt('螺丝松了自己拧', 860, 1060, 36, C.green, { align: 'center', a: k01(t, 11.0, 11.3) }); }
+    }],
+    [14.5, 19.2, (lt, t) => {
+      txt('能联系、能回家', 540, 480, 58, C.blue, { align: 'center', a: k01(t, 14.6, 14.9) });
+      card('phone', '手机充满电', 230, 600, k01(t, 14.8, 15.1), C.blue); card('card', '现金、交通卡', 570, 600, k01(t, 16.0, 16.3), C.blue);
+    }],
+    [19.2, 23.5, () => {}],
+    [23.5, 28.0, (lt, t) => {
+      card('light', '前后车灯', 230, 600, k01(t, 23.6, 23.9), C.gold);
+      const k = k01(t, 24.6, 26.0); g.save(); g.fillStyle = k < .5 ? C.orange : C.ink; g.globalAlpha = k01(t, 24.4, 24.7); g.beginPath(); g.arc(720, 740, 70, 0, 6.283); g.fill(); if (k >= .5) { g.fillStyle = PAPER; g.beginPath(); g.arc(750, 715, 62, 0, 6.283); g.fill(); } g.restore();
+      txt(k < .5 ? '白天出门' : '骑到天黑', 720, 880, 48, C.ink, { align: 'center', a: k01(t, 24.4, 24.7) });
+    }],
+    [28.0, 41.3, (lt, t) => {
+      if (t < 32.5) { card('jacket', '薄外套 / 雨衣', 400, 600, k01(t, 28.3, 28.6), C.blue); txt('天气不好时', 540, 500, 54, C.ink, { align: 'center', a: k01(t, 28.3, 28.6) }); return; }
+      if (t < 37.0) {
+        g.save(); g.translate(540, 840); bike(0, 0, 2.3, 0, C.ink); g.restore();
+        g.save(); g.fillStyle = C.green; g.strokeStyle = C.ink; g.lineWidth = 4; g.globalAlpha = k01(t, 32.8, 33.1); g.beginPath(); g.roundRect(380, 640, 90, 60, 14); g.fill(); g.stroke(); g.restore();
+        txt('座包', 300, 600, 50, C.green, { align: 'center', a: k01(t, 33.0, 33.3) }); tick(300, 680, 30, k01(t, 33.3, 33.6));
+        const sw = Math.sin(t * 6) * .3; g.save(); g.globalAlpha = k01(t, 34.4, 34.7); g.translate(782, 690); g.rotate(sw); g.fillStyle = C.red; g.strokeStyle = C.ink; g.lineWidth = 4; g.beginPath(); g.moveTo(0, 0); g.lineTo(0, 30); g.stroke(); g.beginPath(); g.roundRect(-36, 30, 72, 80, 10); g.fill(); g.stroke(); g.restore();
+        txt('挂车把', 860, 560, 50, C.red, { align: 'center', a: k01(t, 34.6, 34.9) }); bigX(990, 560, 28, k01(t, 35.0, 35.3));
+        return;
+      }
+      tutList(t, [['备用内胎', 37.2, C.green, 'tick'], ['打气筒', 37.8, C.green, 'tick'], ['手机', 38.4, C.green, 'tick'], ['水', 39.0, C.green, 'tick']], { x: 160, w: 560, dy: 140, h: 100 });
+      cat('背包出发2', 860, 1000, 260, t - 37.4);
+    }],
+    [41.3, 45.4, () => {}],
+    [45.4, 50.6, (lt, t) => tutSlogan(t, 46.4, ['修车的', '联系的', '吃喝的'])],
+    [50.6, 58.4, (lt, t) => tutEnd(lt, t, 50.6, '一定带啥？')]
+  ]),
+  cues: [['whoosh', .05], ['pop', 2.8], ['pop', 3.3], ['pop', 3.8], ['pop', 4.3], ['pop', 6.2], ['pop', 7.0], ['pop', 7.8], ['ding', 10.1], ['pop', 14.8], ['pop', 16.0], ['whoosh', 19.2], ['pop', 23.6], ['whoosh', 24.6],
+    ['pop', 28.3], ['ding', 33.3], ['wrong', 35.0], ['pop', 37.2], ['pop', 37.8], ['pop', 38.4], ['ding', 39.0], ['whoosh', 41.3], ['stamp', 46.4], ['stamp', 47.3], ['stamp', 48.2], ['pop', 50.8], ['ding', 51.2]],
+  cover: (key, w, h) => epCover(key, w, h, { tag: '李财骑行小课堂', l1: '半路扎胎没水？', l2: '包里带这几样', sub: '修车的 · 联系的 · 吃喝的', emo: '期待星星眼', emoScale: .8,
+    art: (x, y, s) => { icon('tube', x - 60 * s, y + 50 * s, .5 * s); icon('pump', x + 60 * s, y + 50 * s, .5 * s); } })
+});
+
+})();
+</script>
+</body>
+</html>

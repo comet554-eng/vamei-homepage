@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行小课堂 · 第一辆车</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;max-width:100vw;aspect-ratio:9/16;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/打招呼.js"></script>
+<script src="licai-seq/放大镜.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script src="shortkit.js"></script>
+<script src="tutkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财骑行小课堂 · 竖版教程 28《第一辆车怎么挑》：手绘 + Mixkit 实拍（见 video/素材/第一辆车/素材清单.md）
+// 车型、尺寸对照、预算比例都是示意，不推荐任何品牌；尺码以各品牌尺码表和试骑为准
+// 公共件里用到的动作（splitseq 按名字加载）：'打招呼' '叉腰得意'
+const k01 = tk01;
+const SHOTS = [
+  [0.0, 2.6, 'W', ''],
+  [37.0, 41.2, 'W', '先去店里试骑几辆'],
+  [41.3, 45.2, 'W', '合适的车，才会天天想骑']
+];
+const withShots = tutFrames(SHOTS);
+const LINES = [
+  [0.1, 2.6, '想买第一辆车，看花了眼？'],
+  [2.7, 5.4, '先问自己三个问题。'],
+  [5.8, 9.8, '{o}平时在哪骑{/}？城里通勤，选城市车或者平把车。'],
+  [10.0, 14.4, '想骑得快、跑长途，选公路车；常走土路山路，选山地车。'],
+  [14.6, 18.8, '{o}尺寸要合适{/}：车架大小按身高选，买前一定要试骑。'],
+  [19.2, 23.4, '站着跨在车上，裆部离上管要留出几指的空。'],
+  [23.5, 27.8, '坐上去，手能轻松够到车把，不用伸得很远。'],
+  [28.2, 32.4, '{o}预算怎么分{/}：留出头盔、车灯、锁和打气筒的钱。'],
+  [32.5, 36.8, '入门不用追求最贵的，骑起来顺手最重要。'],
+  [37.0, 41.2, '能去实体店，就先试骑几辆，请店里帮你调好。'],
+  [41.3, 45.2, '挑到合适的，才会天天想骑。'],
+  [45.6, 50.4, '口诀：{o}看用途、试尺寸、留装备钱{/}。'],
+  [50.8, 54.6, '你的第一辆车是什么车？'],
+  [54.7, 57.8, '评论区说说。']
+];
+function bikeType(x, y, s, type, a) {
+  if (a <= 0) return; g.save(); g.globalAlpha = a; bike(x, y, s, 0, C.ink); g.translate(x, y); g.scale(s, s); g.strokeStyle = C.ink; g.lineCap = 'round';
+  if (type === 'city') { g.lineWidth = 5; g.fillStyle = 'rgba(232,200,120,.7)'; g.beginPath(); g.roundRect(100, -110, 70, 50, 6); g.fill(); g.stroke(); g.beginPath(); g.arc(-105, 30, 74, Math.PI * 1.05, Math.PI * 1.7); g.stroke(); }
+  if (type === 'road') { g.lineWidth = 6; g.beginPath(); g.moveTo(97, -82); g.quadraticCurveTo(125, -80, 118, -50); g.quadraticCurveTo(110, -36, 100, -42); g.stroke(); }
+  if (type === 'mtb') { g.lineWidth = 16; g.strokeStyle = 'rgba(58,51,45,.85)'; [-105, 105].forEach(cx => { g.beginPath(); g.arc(cx, 30, 64, 0, 6.283); g.stroke(); }); g.lineWidth = 10; g.strokeStyle = C.gray; g.beginPath(); g.moveTo(80, -30); g.lineTo(95, 10); g.stroke(); }
+  g.restore();
+}
+shortRun({ src: SRC, seed: 988, lines: LINES, bgm: 'lofi',
+  title: { text: '第一辆车{r}怎么挑{/}', t: 0, small: '李财骑行小课堂' },
+  scenes: withShots([
+    [0, 5.7, (lt, t) => { if (t >= 2.6) tutPreview(t, 2.8, ['看用途', '试尺寸', '留装备钱'], '放大镜'); }],
+    [5.7, 14.5, (lt, t) => {
+      if (t < 10.0) { bikeType(540, 820, 2.3, 'city', k01(t, 5.9, 6.2)); txt('城里通勤', 540, 490, 60, C.ink, { align: 'center', a: k01(t, 5.9, 6.2) }); txt('城市车 / 平把车', 540, 1100, 54, C.green, { align: 'center', a: k01(t, 6.8, 7.1) }); return; }
+      bikeType(300, 640, 1.2, 'road', k01(t, 10.1, 10.4)); txt('公路车', 300, 790, 50, C.blue, { align: 'center', a: k01(t, 10.1, 10.4) }); txt('骑得快、跑长途', 300, 850, 36, C.sub, { align: 'center', a: k01(t, 10.6, 10.9) });
+      bikeType(780, 960, 1.2, 'mtb', k01(t, 12.2, 12.5)); txt('山地车', 780, 1110, 50, C.orange, { align: 'center', a: k01(t, 12.2, 12.5) }); txt('土路、山路', 780, 1170, 36, C.sub, { align: 'center', a: k01(t, 12.7, 13.0) });
+    }],
+    [14.5, 28.0, (lt, t) => {
+      if (t < 19.2) {
+        tutList(t, [['身高 155–165：小号', 14.8, C.blue], ['身高 165–178：中号', 15.4, C.blue], ['身高 178 以上：大号', 16.0, C.blue]], { x: 120, w: 840, dy: 150 });
+        txt('示意：以各家尺码表和试骑为准', 540, 1000, 34, C.sub, { align: 'center', font: BODY, a: k01(t, 16.6, 16.9) }); txt('一定要试骑', 540, 1090, 56, C.red, { align: 'center', a: k01(t, 17.2, 17.5) });
+        return;
+      }
+      g.save(); g.translate(540, 900); bike(0, 0, 2.3, 0, C.ink); g.restore();
+      if (t < 23.5) {
+        // 站着跨在上管上
+        const tt = [540 + 17 * 2.3, 900 - 49 * 2.3]; stick({ head: [tt[0], tt[1] - 360], neck: [tt[0], tt[1] - 320], hip: [tt[0], tt[1] - 200], el1: [tt[0] + 40, tt[1] - 260], h1: [tt[0] + 100, tt[1] - 220], el2: [tt[0] + 40, tt[1] - 260], h2: [tt[0] + 100, tt[1] - 220], k1: [tt[0] - 10, tt[1] + 60], f1: [tt[0] - 10, 1052], k2: [tt[0] + 10, tt[1] + 60], f2: [tt[0] + 10, 1052] }, C.blue, 12);
+        hline(tt[0] + 70, tt[1] - 190, tt[0] + 70, tt[1] - 10, 2801, C.orange, 6, k01(t, 19.6, 20.1)); txt('留几指的空', tt[0] + 230, tt[1] - 100, 46, C.orange, { align: 'center', a: k01(t, 20.0, 20.3) });
+        return;
+      }
+      const h = [540 - 45 * 2.3, 900 - 84 * 2.3], hb = [540 + 97 * 2.3, 900 - 82 * 2.3];
+      stick({ head: [h[0] + 110, h[1] - 230], neck: [h[0] + 90, h[1] - 190], hip: h, el1: [hb[0] - 60, hb[1] - 60], h1: hb, el2: [hb[0] - 60, hb[1] - 60], h2: hb, k1: [h[0] + 110, h[1] + 60], f1: [540 + 20, 900 + 60], k2: [h[0] + 90, h[1] + 80], f2: [540 - 40, 900 + 60] }, C.blue, 12);
+      txt('手能轻松够到车把', 540, 1160, 54, C.green, { align: 'center', a: k01(t, 23.7, 24.0) }); tick(930, 1160, 32, k01(t, 24.4, 24.7));
+    }],
+    [28.0, 37.0, (lt, t) => {
+      if (t < 32.5) {
+        const S = [['车', .66, C.orange], ['头盔', .1, C.blue], ['车灯', .08, C.gold], ['锁', .08, C.green], ['打气筒', .08, C.purple]]; let x = 90;
+        S.forEach((s, i) => { const a = k01(t, 28.4 + i * .5, 28.8 + i * .5); const w = 900 * s[1]; if (a > 0) { hatchBar(x, 700, w * eout(a), 160, s[2], 2810 + i); txt(s[0], x + w / 2, i % 2 ? 920 : 650, 40, s[2], { align: 'center', a: a }); } x += w; });
+        hrect(90, 700, 900, 160, 2820, C.ink, 4, 1);
+        txt('预算别全花在车上', 540, 500, 54, C.ink, { align: 'center', a: k01(t, 28.3, 28.6) }); txt('示意比例', 540, 1020, 34, C.sub, { align: 'center', font: BODY, a: k01(t, 30.6, 30.9) });
+        return;
+      }
+      tutCompare(t, 32.6, '只看最贵的', '贵的不一定适合你', '骑着顺手的', '用途对、尺寸对');
+    }],
+    [37.0, 45.4, () => {}],
+    [45.4, 50.6, (lt, t) => tutSlogan(t, 46.4, ['看用途', '试尺寸', '留装备钱'])],
+    [50.6, 58.4, (lt, t) => tutEnd(lt, t, 50.6, '第一辆是？')]
+  ]),
+  cues: [['whoosh', .05], ['pop', 2.8], ['pop', 3.3], ['pop', 3.8], ['pop', 5.9], ['ding', 6.8], ['pop', 10.1], ['pop', 12.2], ['pop', 14.8], ['pop', 15.4], ['pop', 16.0], ['wrong', 17.2], ['grow', 19.6], ['ding', 24.4],
+    ['pop', 28.4], ['pop', 28.9], ['pop', 29.4], ['pop', 29.9], ['pop', 30.4], ['pop', 32.6], ['wrong', 33.6], ['ding', 35.4], ['whoosh', 37.0], ['stamp', 46.4], ['stamp', 47.3], ['stamp', 48.2], ['pop', 50.8], ['ding', 51.2]],
+  cover: (key, w, h) => epCover(key, w, h, { tag: '李财骑行小课堂', l1: '第一辆车怎么挑？', l2: '先问三个问题', sub: '看用途 · 试尺寸 · 留装备钱', emo: '星星眼开心', emoScale: .8,
+    art: (x, y, s) => { bikeType(x, y + 30 * s, .6 * s, 'road', 1); } })
+});
+
+})();
+</script>
+</body>
+</html>

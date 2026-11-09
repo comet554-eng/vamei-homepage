@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行小课堂 · 减脂</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;max-width:100vw;aspect-ratio:9/16;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/打招呼.js"></script>
+<script src="licai-seq/看手表.js"></script>
+<script src="licai-seq/跑步.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script src="shortkit.js"></script>
+<script src="tutkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财骑行小课堂 · 竖版教程 29《骑车减脂怎么骑》：手绘 + Mixkit 实拍（见 video/素材/减脂/素材清单.md）
+// 强度、时长、频率都是一般建议；身体有慢性病、伤病，先问医生；热量对比只是示意
+// 公共件里用到的动作（splitseq 按名字加载）：'打招呼' '叉腰得意'
+const k01 = tk01;
+const SHOTS = [
+  [0.0, 2.6, 'W', ''],
+  [14.6, 18.8, 'W', '每周骑三到五次'],
+  [41.3, 45.2, 'W', '骑得开心，才能坚持']
+];
+const withShots = tutFrames(SHOTS);
+const LINES = [
+  [0.1, 2.6, '天天骑车，怎么体重没变？'],
+  [2.7, 5.4, '想靠骑车减脂，记住这几点。'],
+  [5.8, 9.8, '{o}别骑太猛{/}：能说话、微微喘的强度最合适。'],
+  [10.0, 14.4, '这样能骑得久，一次骑 40 分钟到一个小时。'],
+  [14.6, 18.8, '{o}每周骑三到五次{/}，比周末一次骑很久更有用。'],
+  [19.2, 23.4, '{o}坚持比强度重要{/}，一周一周慢慢加量。'],
+  [23.5, 27.8, '{o}别骑完大吃一顿{/}：一杯奶茶、一块蛋糕，可能就吃回去了。'],
+  [28.2, 32.4, '骑完正常吃饭，多吃蛋白质和蔬菜，主食也别不吃。'],
+  [32.5, 36.8, '{o}睡够觉{/}，减脂才稳。'],
+  [37.0, 41.2, '{o}看长期{/}：别每天称体重，一个月看一次变化。'],
+  [41.3, 45.2, '慢慢来，骑得开心，才能坚持下去。'],
+  [45.6, 50.4, '口诀：{o}微微喘、常常骑、别吃回{/}。'],
+  [50.8, 54.6, '你骑车瘦了多少？'],
+  [54.7, 57.8, '评论区说说。']
+];
+function cup(x, y, s) { g.save(); g.translate(x, y); g.scale(s, s); g.fillStyle = '#d9b48a'; g.strokeStyle = C.ink; g.lineWidth = 5; g.beginPath(); g.moveTo(-50, -70); g.lineTo(50, -70); g.lineTo(38, 80); g.lineTo(-38, 80); g.closePath(); g.fill(); g.stroke(); g.beginPath(); g.moveTo(10, -70); g.lineTo(30, -120); g.stroke(); g.fillStyle = C.ink; [[-15, 50], [5, 60], [20, 45]].forEach(p => { g.beginPath(); g.arc(p[0], p[1], 8, 0, 6.283); g.fill(); }); g.restore(); }
+function cake(x, y, s) { g.save(); g.translate(x, y); g.scale(s, s); g.fillStyle = '#f7e2c0'; g.strokeStyle = C.ink; g.lineWidth = 5; g.beginPath(); g.moveTo(-70, 50); g.lineTo(70, 50); g.lineTo(70, -10); g.lineTo(-70, -40); g.closePath(); g.fill(); g.stroke(); g.fillStyle = C.pink; g.beginPath(); g.moveTo(-70, -40); g.lineTo(70, -10); g.lineTo(70, 5); g.lineTo(-70, -25); g.closePath(); g.fill(); g.fillStyle = C.red; g.beginPath(); g.arc(20, -40, 14, 0, 6.283); g.fill(); g.restore(); }
+shortRun({ src: SRC, seed: 989, lines: LINES, bgm: 'lofi',
+  title: { text: '骑车{r}减脂{/}怎么骑', t: 0, small: '李财骑行小课堂' },
+  scenes: withShots([
+    [0, 5.7, (lt, t) => { if (t >= 2.6) tutPreview(t, 2.8, ['微微喘', '常常骑', '别吃回去', '看长期'], '跑步'); }],
+    [5.7, 14.5, (lt, t) => {
+      if (t < 10.0) {
+        [['轻松', C.gray], ['能说话、微微喘', C.green], ['说不出话', C.red]].forEach((z, i) => { hatchBar(90 + i * 300, 760, 300, 120, z[1], 2900 + i); txt(z[0], 240 + i * 300, 930, 40, z[1], { align: 'center' }); });
+        hrect(90, 760, 900, 120, 2905, C.ink, 4, 1); const k = eout(k01(t, 6.2, 7.6)); g.save(); g.fillStyle = C.ink; g.beginPath(); g.moveTo(140 + 400 * k, 740); g.lineTo(120 + 400 * k, 700); g.lineTo(160 + 400 * k, 700); g.fill(); g.restore();
+        g.save(); g.globalAlpha = k01(t, 7.8, 8.1); g.fillStyle = '#fff'; g.strokeStyle = C.green; g.lineWidth = 5; g.beginPath(); g.roundRect(300, 500, 480, 110, 40); g.fill(); g.stroke(); g.restore(); txt('还能聊天，就对了', 540, 555, 46, C.green, { align: 'center', a: k01(t, 7.8, 8.1) });
+        return;
+      }
+      const k = eout(k01(t, 10.2, 11.8)); g.save(); g.strokeStyle = C.ink; g.lineWidth = 6; g.beginPath(); g.arc(540, 800, 220, 0, 6.283); g.stroke(); g.fillStyle = 'rgba(79,179,134,.35)'; g.beginPath(); g.moveTo(540, 800); g.arc(540, 800, 220, -Math.PI / 2, -Math.PI / 2 + 6.283 * k); g.closePath(); g.fill(); g.restore();
+      txt('40～60 分钟', 540, 800, 60, C.green, { align: 'center', a: k01(t, 11.0, 11.3) }); txt('骑得久，比骑得猛有用', 540, 1110, 50, C.ink, { align: 'center', a: k01(t, 12.0, 12.3) });
+    }],
+    [14.5, 19.2, () => {}],
+    [19.2, 28.0, (lt, t) => {
+      if (t < 23.5) {
+        const D = [30, 35, 40, 45, 50, 55]; D.forEach((d, i) => { const a = eout(k01(t, 19.4 + i * .3, 19.9 + i * .3)); if (a <= 0) return; const h = d * 8 * a; hatchBar(110 + i * 145, 1060 - h, 110, h, C.green, 2910 + i); txt('第' + (i + 1) + '周', 165 + i * 145, 1100, 32, C.sub, { align: 'center', a: a }); });
+        hline(90, 1065, 990, 1065, 2920, C.ink, 5, 1); txt('一周一周慢慢加', 540, 500, 56, C.green, { align: 'center', a: k01(t, 19.3, 19.6) }); txt('示意：每次骑行分钟数', 540, 570, 32, C.sub, { align: 'center', font: BODY, a: k01(t, 20.4, 20.7) });
+        return;
+      }
+      g.save(); g.translate(260, 820); bike(0, 0, 1.3, t * 4, C.ink); g.restore(); txt('骑车消耗', 260, 1000, 46, C.green, { align: 'center' });
+      txt('≈', 540, 820, 90, C.ink, { align: 'center', a: k01(t, 24.4, 24.7) });
+      cup(760, 780, 1, k01(t, 24.8, 25.1)); cake(900, 900, .8); txt('吃回去', 820, 1060, 46, C.red, { align: 'center', a: k01(t, 25.2, 25.5) });
+      txt('示意：大约的比较', 540, 1140, 32, C.sub, { align: 'center', font: BODY, a: k01(t, 25.8, 26.1) });
+    }],
+    [28.0, 41.3, (lt, t) => {
+      if (t < 32.5) {
+        const S = [['蛋白质', .33, C.orange], ['蔬菜', .42, C.green], ['主食', .25, C.gold]]; let a0 = -Math.PI / 2;
+        S.forEach((s, i) => { const a = k01(t, 28.4 + i * .5, 28.8 + i * .5); const a1 = a0 + 6.283 * s[1]; if (a > 0) { g.save(); g.globalAlpha = a; g.fillStyle = s[2]; g.beginPath(); g.moveTo(540, 800); g.arc(540, 800, 250, a0, a1); g.closePath(); g.fill(); g.restore(); const m = (a0 + a1) / 2; txt(s[0], 540 + Math.cos(m) * 150, 800 + Math.sin(m) * 150, 46, '#fff', { align: 'center', a: a }); } a0 = a1; });
+        hcircle(540, 800, 260, 260, 2930, C.ink, 5, 1); txt('正常吃饭', 540, 490, 56, C.ink, { align: 'center', a: k01(t, 28.3, 28.6) });
+        return;
+      }
+      if (t < 37.0) {
+        g.save(); g.fillStyle = C.gold; g.beginPath(); g.arc(540, 780, 160, 0, 6.283); g.fill(); g.fillStyle = PAPER; g.beginPath(); g.arc(610, 730, 150, 0, 6.283); g.fill(); g.restore();
+        txt('Z', 760, 600 - ((t * 40) % 60), 60, C.blue, { align: 'center' }); txt('Z', 830, 520 - ((t * 40) % 60), 48, C.blue, { align: 'center' });
+        txt('睡够觉', 540, 1060, 60, C.blue, { align: 'center', a: k01(t, 32.7, 33.0) });
+        return;
+      }
+      tutList(t, [['每天称体重', 37.2, C.red, 'x'], ['一个月看一次', 38.4, C.green, 'tick']], { x: 140, w: 800, dy: 180, h: 130, fs: 56 });
+      cat('看手表', 540, 1050, 260, t - 39.0);
+    }],
+    [41.3, 45.4, () => {}],
+    [45.4, 50.6, (lt, t) => tutSlogan(t, 46.4, ['微微喘', '常常骑', '别吃回'])],
+    [50.6, 58.4, (lt, t) => tutEnd(lt, t, 50.6, '瘦了多少？')]
+  ]),
+  cues: [['whoosh', .05], ['pop', 2.8], ['pop', 3.3], ['pop', 3.8], ['pop', 4.3], ['grow', 6.2], ['ding', 7.8], ['grow', 10.2], ['pop', 12.0], ['whoosh', 14.6], ['grow', 19.4], ['pop', 24.4], ['wrong', 25.2],
+    ['pop', 28.4], ['pop', 28.9], ['pop', 29.4], ['pop', 32.7], ['wrong', 37.5], ['ding', 38.7], ['whoosh', 41.3], ['stamp', 46.4], ['stamp', 47.3], ['stamp', 48.2], ['pop', 50.8], ['ding', 51.2]],
+  cover: (key, w, h) => epCover(key, w, h, { tag: '李财骑行小课堂', l1: '天天骑车不瘦？', l2: '减脂这样骑', sub: '微微喘 · 常常骑 · 别吃回', emo: '开饭啦', emoScale: .8,
+    art: (x, y, s) => { cup(x - 40 * s, y + 40 * s, .4 * s); cake(x + 50 * s, y + 60 * s, .35 * s); } })
+});
+
+})();
+</script>
+</body>
+</html>

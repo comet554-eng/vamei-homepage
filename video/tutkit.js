@@ -56,3 +56,42 @@ function gear(x, y, r, n, rot, col, lw) {
   for (var i = 0; i <= n * 2; i++) { var a = i / (n * 2) * 6.283, rr = i % 2 ? r : r - Math.max(6, r * .12); g.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); }
   g.stroke(); g.beginPath(); g.arc(0, 0, r * .35, 0, 6.283); g.stroke(); g.fillStyle = col || C.ink; g.beginPath(); g.arc(0, 0, 8, 0, 6.283); g.fill(); g.restore();
 }
+// 清单：items = [[文字, 出现时间, 框颜色, 'tick'|'x'|null], ...]
+function tutList(t, items, o) {
+  o = o || {}; var x = o.x || 90, y = o.y || 520, dy = o.dy || 150, w = o.w || 900, h = o.h || 110, fs = o.fs || 52;
+  items.forEach(function (s, i) {
+    var a = tk01(t, s[1], s[1] + .3); if (a <= 0) return; var yy = y + i * dy;
+    boxNote(x, yy, w, h, 2100 + i + (o.seed || 0), s[2] || C.ink, a); txt(s[0], x + 40, yy + h / 2, fs, C.ink, { a: a });
+    if (s[3] === 'tick') tick(x + w - 60, yy + h / 2, 30, tk01(t, s[1] + .3, s[1] + .6)); if (s[3] === 'x') bigX(x + w - 60, yy + h / 2, 28, tk01(t, s[1] + .3, s[1] + .6));
+  });
+}
+// 半圆气压表：val 0~1；绿区是合适范围，右端红区是超过最高值
+function gaugeDial(x, y, r, val, a) {
+  if (a === 0) return; g.save(); g.globalAlpha = a == null ? 1 : a; g.lineCap = 'butt';
+  [[0, .22, C.orange], [.22, .78, C.green], [.78, .9, C.orange], [.9, 1, C.red]].forEach(function (z) { g.strokeStyle = z[2]; g.lineWidth = r * .16; g.beginPath(); g.arc(x, y, r, Math.PI + z[0] * Math.PI, Math.PI + z[1] * Math.PI); g.stroke(); });
+  g.strokeStyle = C.ink; g.lineWidth = 5; g.beginPath(); g.arc(x, y, r * 1.1, Math.PI, 2 * Math.PI); g.stroke();
+  var an = Math.PI + clamp(val, 0, 1) * Math.PI; g.lineCap = 'round'; g.lineWidth = r * .05; g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(an) * r * .85, y + Math.sin(an) * r * .85); g.stroke();
+  g.fillStyle = C.ink; g.beginPath(); g.arc(x, y, r * .08, 0, 6.283); g.fill(); g.restore();
+}
+// 手绘小狗：dir 1 朝右 / -1 朝左，run 跑动
+function dog(x, y, s, t, dir, run) {
+  g.save(); g.translate(x, y); g.scale(s * (dir || 1), s); g.lineCap = 'round'; g.strokeStyle = C.ink; g.lineWidth = 5; g.fillStyle = '#c98a4b';
+  var sw = run ? Math.sin(t * 22) * 26 : 0;
+  [[-60, sw], [-35, -sw], [45, -sw], [70, sw]].forEach(function (l) { g.beginPath(); g.moveTo(l[0], 20); g.lineTo(l[0] + l[1] * .6, 78); g.stroke(); });
+  g.beginPath(); g.moveTo(-90, -10); g.quadraticCurveTo(-130, -60 + sw * .4, -120, -80); g.stroke();
+  g.beginPath(); g.ellipse(0, 0, 95, 42, 0, 0, 6.283); g.fill(); g.stroke();
+  g.beginPath(); g.arc(100, -40, 40, 0, 6.283); g.fill(); g.stroke();
+  g.beginPath(); g.ellipse(140, -30, 26, 18, 0, 0, 6.283); g.fill(); g.stroke();
+  g.fillStyle = '#8a5a2e'; g.beginPath(); g.moveTo(80, -72); g.lineTo(62, -20); g.lineTo(92, -50); g.closePath(); g.fill(); g.stroke();
+  g.fillStyle = C.ink; g.beginPath(); g.arc(112, -50, 6, 0, 6.283); g.fill(); g.beginPath(); g.arc(164, -32, 7, 0, 6.283); g.fill();
+  g.restore();
+}
+// 车胎侧面：sq 触地压扁的程度
+function tireFlat(x, y, R, sq, col) {
+  g.save(); g.strokeStyle = col || C.ink; g.lineWidth = 44; g.lineJoin = 'round'; g.beginPath();
+  for (var i = 0; i <= 72; i++) { var a = i / 72 * 6.283, px = x + Math.cos(a) * R, py = Math.min(y + Math.sin(a) * R, y + R - sq); if (i) g.lineTo(px, py); else g.moveTo(px, py); }
+  g.closePath(); g.stroke(); g.strokeStyle = C.gray; g.lineWidth = 6; g.beginPath(); g.arc(x, y, R - 34, 0, 6.283); g.stroke();
+  g.lineWidth = 2; for (var k = 0; k < 12; k++) { var b = k / 12 * 6.283; g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(b) * (R - 34), y + Math.sin(b) * (R - 34)); g.stroke(); }
+  g.fillStyle = C.ink; g.beginPath(); g.arc(x, y, 10, 0, 6.283); g.fill(); g.restore();
+  return y + R - sq + 22;
+}
