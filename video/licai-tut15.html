@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行小课堂 · 刹车用法</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;max-width:100vw;aspect-ratio:9/16;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/吓一跳.js"></script>
+<script src="licai-seq/打招呼.js"></script>
+<script src="licai-seq/点头指向.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script src="shortkit.js"></script>
+<script src="tutkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财骑行小课堂 · 竖版教程 14《刹车怎么捏才安全》：手绘 + Mixkit 实拍（见 video/素材/刹车用法/素材清单.md）
+// 不同车左右手对应的前后刹不一样，片中只提醒“先确认你的车”，不写死哪只手
+// 公共件里用到的动作（splitseq 按名字加载）：'打招呼' '叉腰得意'
+const k01 = tk01;
+const SHOTS = [
+  [0.0, 2.6, 'W', ''],
+  [5.8, 9.8, 'W', '先认清：哪只手管前刹'],
+  [28.2, 32.4, 'W', '长下坡：捏一捏、松一松'],
+  [41.3, 45.2, 'W', '刹车不对劲，及时去调']
+];
+const withShots = tutFrames(SHOTS);
+const LINES = [
+  [0.1, 2.6, '刹车捏错了，比不刹还危险？'],
+  [2.7, 5.4, '记住这几条，停得又快又稳。'],
+  [5.8, 9.8, '先确认你的车：{o}哪只手管前刹{/}，哪只手管后刹。'],
+  [10.0, 14.4, '前刹力量大，大部分停车靠它；后刹帮忙稳住车。'],
+  [14.6, 18.8, '所以{o}两只手一起刹{/}，前刹慢慢加力，别一下捏死。'],
+  [19.2, 23.4, '猛捏前刹，后轮会翘起来，人可能往前翻。'],
+  [23.5, 27.8, '{o}急刹车{/}：屁股往后挪，手臂撑直，重心压低。'],
+  [28.2, 32.4, '长下坡别一直拖着刹车，{o}捏一捏、松一松{/}。'],
+  [32.5, 36.8, '一直拖着，刹车会越来越热，越来越不灵。'],
+  [37.0, 41.2, '下雨天提前刹，弯道里别猛刹，直道上刹好再进弯。'],
+  [41.3, 45.2, '刹车捏到底能碰到车把，就该去调了。'],
+  [45.6, 50.4, '口诀：{o}两手一起刹，前刹慢加力{/}。'],
+  [50.8, 54.6, '你有没有被刹车吓到过？'],
+  [54.7, 57.8, '评论区说说。']
+];
+shortRun({ src: SRC, seed: 974, lines: LINES, bgm: 'lofi',
+  title: { text: '刹车{r}怎么捏{/}才安全', t: 0, small: '李财骑行小课堂' },
+  scenes: withShots([
+    [0, 5.7, (lt, t) => { if (t >= 2.6) tutPreview(t, 2.8, ['认清前后刹', '两手一起刹', '急刹重心后', '下坡点刹'], '吓一跳'); }],
+    [5.7, 14.5, (lt, t) => {
+      if (t < 10.0) return;
+      const k = eout(k01(t, 10.2, 11.4)), k2 = eout(k01(t, 10.8, 11.8));
+      txt('前刹', 110, 620, 52, C.ink); hatchBar(260, 590, 600 * k, 64, C.orange, 1401); txt('力量大', 260 + 600 * k + 20, 622, 40, C.orange, { a: k01(t, 11.4, 11.7) });
+      txt('后刹', 110, 780, 52, C.ink); hatchBar(260, 750, 240 * k2, 64, C.blue, 1402); txt('帮忙稳住', 260 + 240 * k2 + 20, 782, 40, C.blue, { a: k01(t, 11.8, 12.1) });
+      txt('示意：大部分停车靠前刹', 110, 900, 30, C.sub, { font: BODY, a: k01(t, 12.0, 12.3) });
+    }],
+    [14.5, 23.5, (lt, t) => {
+      if (t < 19.2) { boxNote(90, 520, 900, 200, 1403, C.green, k01(t, 14.6, 14.9)); txt('两只手一起刹', 540, 590, 60, C.ink, { align: 'center', a: k01(t, 14.7, 15.0) }); txt('前刹慢慢加力', 540, 670, 52, C.green, { align: 'center', a: k01(t, 15.4, 15.7) });
+        cat('点头指向', 540, 980, 300, t - 15.8); return; }
+      const flip = eout(k01(t, 19.6, 20.8)) * .5;
+      hline(80, 1000, 1000, 1000, 1404, C.ink, 5, 1);
+      g.save(); g.translate(700, 1000); g.rotate(flip); g.translate(-105, -92); bike(0, 0, 1.0, 0, C.red); g.restore();
+      txt('猛捏前刹', 300, 560, 56, C.red, { align: 'center', a: k01(t, 19.4, 19.7) }); txt('后轮翘起来', 300, 650, 48, C.ink, { align: 'center', a: k01(t, 20.6, 20.9) }); bigX(820, 560, 50, k01(t, 21.0, 21.3));
+    }],
+    [23.5, 28.0, (lt, t) => {
+      g.save(); g.translate(540, 900); bike(0, 0, 1.4, 0, C.ink); g.restore();
+      harrow(560, 640, 470, 620, 380, 660, C.orange, k01(t, 23.8, 24.2), 7); txt('屁股往后', 300, 560, 48, C.orange, { align: 'center', a: k01(t, 24.0, 24.3) });
+      txt('手臂撑直', 780, 560, 48, C.orange, { align: 'center', a: k01(t, 24.8, 25.1) });
+      harrow(540, 700, 545, 760, 540, 820, C.orange, k01(t, 25.6, 26.0), 7); txt('重心压低', 540, 1110, 52, C.orange, { align: 'center', a: k01(t, 25.8, 26.1) });
+    }],
+    [28.0, 41.3, (lt, t) => {
+      if (t < 32.4) return;
+      if (t < 37.0) {
+        g.save(); g.translate(540, 820); bike(0, 0, 1.5, 0, C.ink); g.restore();
+        const h = k01(t, 32.8, 35.4); for (let i = 0; i < 5; i++) { const x = 540 - 160 * 1.5 + i * 22, f = Math.sin(t * 9 + i) * 8; g.save(); g.globalAlpha = h; g.fillStyle = i % 2 ? C.orange : C.red; g.beginPath(); g.moveTo(x - 12, 700); g.quadraticCurveTo(x, 640 - 40 * h + f, x + 12, 700); g.fill(); g.restore(); }
+        txt('越来越热', 540, 560, 56, C.red, { align: 'center', a: k01(t, 33.0, 33.3) }); txt('越来越不灵', 540, 1090, 56, C.red, { align: 'center', a: k01(t, 34.4, 34.7) });
+        return;
+      }
+      [['下雨天：提前刹', C.blue], ['弯道里：别猛刹', C.red], ['直道上：刹好再进弯', C.green]].forEach((s, i) => { const a = k01(t, 37.2 + i * 1.2, 37.5 + i * 1.2); if (a <= 0) return; boxNote(90, 500 + i * 160, 900, 120, 1410 + i, s[1], a); txt(s[0], 140, 560 + i * 160, 54, C.ink, { a: a }); });
+    }],
+    [41.3, 45.4, () => {}],
+    [45.4, 50.6, (lt, t) => tutSlogan(t, 46.4, ['两手一起刹', '前刹慢加力'])],
+    [50.6, 58.4, (lt, t) => tutEnd(lt, t, 50.6, '被吓到过？')]
+  ]),
+  cues: [['whoosh', .05], ['pop', 2.8], ['pop', 3.3], ['pop', 3.8], ['pop', 4.3], ['whoosh', 5.8], ['grow', 10.2], ['pop', 14.7], ['ding', 15.4], ['whoosh', 19.6], ['wrong', 21.0], ['pop', 24.0], ['pop', 24.8], ['pop', 25.8],
+    ['whoosh', 28.2], ['grow', 32.8, 2.6], ['pop', 37.2], ['pop', 38.4], ['pop', 39.6], ['whoosh', 41.3], ['stamp', 46.4], ['stamp', 47.3], ['pop', 50.8], ['ding', 51.2]],
+  cover: (key, w, h) => epCover(key, w, h, { tag: '李财骑行小课堂', l1: '刹车捏错更危险', l2: '两手一起刹', sub: '前刹慢加力 · 下坡点刹', emo: '惊吓感叹', emoScale: .85,
+    art: (x, y, s) => { g.save(); g.translate(x, y + 30 * s); bike(0, 0, .7 * s, 0, C.ink); g.restore(); } })
+});
+
+})();
+</script>
+</body>
+</html>
