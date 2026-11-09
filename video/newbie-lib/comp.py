@@ -17,6 +17,7 @@ from vert import (W, H, FPS, INK, DIM, GOLD, ICE, RED, GREEN, clamp, ease, ramp,
                   stroke_text, subtitle, big_title, tag, ring, arrow, card, Writer, chips, spans, rich_line)
 from epbase import key, plain
 from rig3d import interp
+import licai
 
 vert.SERIES = ep.SERIES
 MODE = A.mode
@@ -195,10 +196,10 @@ def hook_title(c, t, name, stamp_text=None, stamp_col=RED):
             stamp(c, stamp_text, W / 2, 1180, t, hs[1][1] + 0.1, stamp_col)
 
 
-def end_card(c, t, nxt):
+def end_card(c, t, nxt, head="下一课"):
     e0, e1, _ = SEC["end"]
     if t > e0 - 0.2:
-        big_title(c, [("下一课", 0.6), ("{w|" + nxt + "}", 1.15)], t, e0 + 0.1, DUR + 1, y=720, size=110)
+        big_title(c, [(head, 0.6), ("{w|" + nxt + "}", 1.15)], t, e0 + 0.1, DUR + 1, y=720, size=110)
         stroke_text(c, ep.SERIES, W / 2, 1080, 34, GOLD, window(t, e0 + 0.5, DUR + 1, 0.3), spacing=0.2, stroke=6)
 
 
@@ -263,7 +264,7 @@ def dim(c, a, k=0.55):
         c.set_source_rgba(0.02, 0.04, 0.09, k * a); c.rectangle(0, 0, W, H); c.fill()
 
 
-def bars(c, t, a, title, items, vmax, y=1020, h=420, unit="", edge=GOLD, foot=None):
+def bars(c, t, a, title, items, vmax, y=1020, h=420, unit="", edge=GOLD, foot=None, fmt="{:.0f}"):
     """柱状图：items = [(标签, 数值, 颜色, 出现时刻, 小注)]"""
     if a <= 0:
         return
@@ -279,12 +280,50 @@ def bars(c, t, a, title, items, vmax, y=1020, h=420, unit="", edge=GOLD, foot=No
         if k > 0:
             hh = max(4, v * sc * k)
             c.set_source_rgba(*col, 0.95 * a); rrect(c, bx, base - hh, bw, hh, 12); c.fill()
-            stroke_text(c, f"{v * k:.0f}{unit}" if k > 0.95 else f"{v * k:.0f}", bx + bw / 2, base - hh - 16, 38, col, a, stroke=6)
+            stroke_text(c, (fmt.format(v) + unit) if k > 0.95 else fmt.format(v * k), bx + bw / 2, base - hh - 16, 38, col, a, stroke=6)
         stroke_text(c, lab, bx + bw / 2, base + 40, 30, INK, a, stroke=0)
         if sub:
             stroke_text(c, sub, bx + bw / 2, base + 76, 24, DIM, a * clamp(k * 3), bold=False, stroke=0)
     if foot:
         stroke_text(c, foot, x + 36, y + h + 40, 24, DIM, a, bold=False, align="l", stroke=4)
+
+
+def lines(c, t, a, title, series, xmax, ymax, xlab="", ylab="", y=1000, h=470, edge=ICE, foot=None, xticks=(), yticks=()):
+    """折线图：series = [(名字, 颜色, [(x, y), ...], 开始画的时刻, 画完用几秒)]，按时间从左往右画出来。"""
+    if a <= 0:
+        return
+    x0c, w = 90, 900
+    card(c, x0c, y, w, h, a, edge)
+    stroke_text(c, title, x0c + 36, y + 56, 30, edge, a, align="l", stroke=0)
+    L, R_, T, B = x0c + 110, x0c + w - 50, y + 100, y + h - 80
+    X = lambda v: L + (R_ - L) * v / xmax
+    Y = lambda v: B - (B - T) * v / ymax
+    c.set_source_rgba(1, 1, 1, 0.35 * a); c.set_line_width(2)
+    c.move_to(L, T); c.line_to(L, B); c.line_to(R_, B); c.stroke()
+    for v in xticks:
+        stroke_text(c, f"{v:g}", X(v), B + 34, 22, DIM, a, bold=False, stroke=0)
+    for v in yticks:
+        c.set_source_rgba(1, 1, 1, 0.12 * a); c.move_to(L, Y(v)); c.line_to(R_, Y(v)); c.stroke()
+        stroke_text(c, f"{v:g}", L - 14, Y(v) + 8, 22, DIM, a, bold=False, align="r", stroke=0)
+    if xlab:
+        stroke_text(c, xlab, R_, B + 64, 22, DIM, a, bold=False, align="r", stroke=0)
+    if ylab:
+        stroke_text(c, ylab, L - 10, T - 16, 22, DIM, a, bold=False, align="l", stroke=0)
+    for name, col, pts, t0, dur in series:
+        k = clamp((t - t0) / dur)
+        if k <= 0:
+            continue
+        n = max(2, int(len(pts) * k))
+        c.set_source_rgba(*col, a); c.set_line_width(7); c.set_line_join(cairo.LINE_JOIN_ROUND)
+        c.move_to(X(pts[0][0]), Y(pts[0][1]))
+        for px, py in pts[1:n]:
+            c.line_to(X(px), Y(py))
+        c.stroke()
+        ex, ey = pts[n - 1]
+        if k >= 0.98:
+            stroke_text(c, name, X(ex) - 6, Y(ey) - 16, 28, col, a, align="r", stroke=5)
+    if foot:
+        stroke_text(c, foot, x0c + 36, y + h + 40, 24, DIM, a, bold=False, align="l", stroke=4)
 
 
 # ------------------------------------------------------------------ 每帧叠加
@@ -296,6 +335,8 @@ def overlay(c, t, i, pts):
         if kind == "R":
             mode_tag(c)
         ep.overlay(c, t, PLAN[i], pts, sys.modules[__name__])
+        if getattr(ep, "LICAI_ON", True):
+            licai.overlay(c, t, SEC, DUR, kind, getattr(ep, "LICAI", None))
         if kind == "F":
             stroke_text(c, f"实拍：Mixkit #{ep.FOOT[shot][0]}", W - 50, H - 70, 20, DIM, 0.75, bold=False, align="r", stroke=4)
         for s, a0, a1 in SUBS:
@@ -394,6 +435,8 @@ def overlay(c, t, i, pts):
     # 实拍来源角标
     if kind == "F":
         stroke_text(c, f"实拍：Mixkit #{ep.FOOT[shot][0]}", W - 50, H - 70, 20, DIM, 0.75, bold=False, align="r", stroke=4)
+    if getattr(ep, "LICAI_ON", True):
+        licai.overlay(c, t, SEC, DUR, kind, getattr(ep, "LICAI", None))
     for s, a0, a1 in SUBS:
         if a0 - 0.2 < t < a1 + 0.2:
             subtitle(c, s, t, a0, a1, y=1580, size=60)

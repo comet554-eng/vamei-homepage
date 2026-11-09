@@ -11,6 +11,7 @@ NAME = "后刃推坡"
 TITLE = f"第{LESSON}课 · {NAME}"
 STYLE = "day"
 MUSIC = "bounce"
+TRACK = (780, 0.0)             # Mixkit 免费音乐 #780
 MARKS = True
 
 # ------------------------------------------------------------------ 数据（示意，见 方案.md）

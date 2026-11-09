@@ -39,3 +39,11 @@ python3 newbie-lib/covers_nb.py newbie-EP01 3d cover_bg.jpg 前缀-3D版 cover_r
 ```
 
 字体：Noto Sans SC / Noto Serif SC（Google Fonts，装到 `~/.fonts`）。
+
+## 李财和配乐（2026-11-09 起，第1–15课）
+
+- `licai.py` + `licai/`：主持人李财（三花猫，骑行系列的同一个角色）。逐帧动画从骑行系列的 `licai-seq/*.js` 转成 `licai/<动作>/<帧>.webp` + `seq.json`；`comp.py` 每帧自动按段落叠加（开头踩滑雪板滑进来、要领段点头指向、原理段思考 / 划重点、错误段摔跟头 / 捂脸 / 吓一跳、练习段叉腰 / 拍手、结尾挥手）。ep.py 可写 `LICAI = {段落: 动作名}` 换动作，`LICAI_ON = False` 关掉。封面也会放李财踩滑雪板。
+- 配乐：ep.py 写 `TRACK = (Mixkit 音乐编号, 起点秒)`，`finish.py` 用 `music_up.py --bed` 把这首曲子当底、叠上段落音效；曲子放在 `MUSIC_DIR`（默认 `../素材/音乐/原曲/`，仓库里没放原曲，从 `https://assets.mixkit.co/music/<编号>/<编号>.mp3` 下载）。没写 `TRACK` 时还是本地合成的三种风格。
+- `turns.py`：转弯轨迹 → 关键帧（横切、弯、换刃、起伏 `rise`、搓雪甩尾 `skid`、刻滑倾倒 `lean`、反脚 `switch`），第6课起的弯都用它。
+- `epkit.py`：第6课起的通用结构（`std_plan`、`std_hits`、`std_overlay`），每集只写字幕、动作、要领标签和原理图。
+- `comp.py` 里的图表：`bars`（柱状图）、`lines`（折线图）、`edge_diagram`（推坡截面）、`dim`（压暗背景）。

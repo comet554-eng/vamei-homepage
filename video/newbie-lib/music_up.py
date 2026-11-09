@@ -1,5 +1,5 @@
 """明快版背景音乐（替换原来偏暗的氛围铺底）：大调、四拍鼓点、贝斯、拨弦琶音，段落切换处加上扬音效和重拍。
-python3 music_up.py OUT.wav DURATION [--style pop|drive] [--hits t1,t2,...] [--level -20]
+python3 music_up.py OUT.wav DURATION [--style pop|drive] [--hits t1,t2,...] [--level -20] [--bed 曲子.mp3 --bedstart 秒]
   pop   = 轻快流行（118 BPM，C 大调 I–V–vi–IV）
   drive = 动感电子（128 BPM，D 大调，更重的鼓和锯齿和弦）
   bounce = 阳光律动（122 BPM，A 大调 vi–IV–I–V，反拍贝斯 + 钢琴和弦切分 + 沙锤）
@@ -14,6 +14,8 @@ ap.add_argument("out"); ap.add_argument("dur", type=float)
 ap.add_argument("--style", default="pop"); ap.add_argument("--hits", default="")
 ap.add_argument("--level", type=float, default=-20.0)
 ap.add_argument("--sfx", default="")          # "t:kind,..."  kind = boom | ding | whoosh
+ap.add_argument("--bed", default="")          # 用一首现成的曲子（如 Mixkit 免费音乐）当底，不再合成；音效照加
+ap.add_argument("--bedstart", type=float, default=0.0)
 A = ap.parse_args()
 ST = dict(pop=dict(bpm=118, root=60, prog=[(0, "M"), (7, "M"), (9, "m"), (5, "M")], saw=0.25, kick=0.9),
           drive=dict(bpm=128, root=62, prog=[(0, "M"), (9, "m"), (5, "M"), (7, "M")], saw=0.7, kick=1.1),
@@ -175,9 +177,20 @@ for b in range(nbars):
             else:
                 add(t_bar + pos * BEAT, tone(hz(ST["root"] + 12 + off), d * BEAT, "saw", dec=0.4), 0.05, 0.1)
 
-for h in hits:
-    riser(h, 2 * BEAT, 0.12)
-    impact(h, 0.5)
+if A.bed:                                                    # 现成曲子当底：清掉合成的编曲，换成解码后的音频
+    import subprocess
+    raw = subprocess.run(["ffmpeg", "-v", "error", "-ss", str(A.bedstart), "-i", A.bed, "-t", f"{A.dur + 1:.2f}",
+                          "-f", "f32le", "-ac", "2", "-ar", str(SR), "-"], capture_output=True, check=True).stdout
+    bed = np.frombuffer(raw, np.float32).reshape(-1, 2)
+    L[:] = 0; R[:] = 0; duck[:] = 1
+    n = min(N, len(bed)); L[:n] = bed[:n, 0]; R[:n] = bed[:n, 1]
+    BED_RMS = float(np.sqrt((bed[:n] ** 2).mean()))
+    for h in hits:
+        impact(h, 0.25 * BED_RMS / 0.1)
+else:
+    for h in hits:
+        riser(h, 2 * BEAT, 0.12)
+        impact(h, 0.5)
 
 
 def ding(t0, g):
@@ -197,7 +210,8 @@ def whoosh(t0, g, d=0.45):
 
 for item in [x for x in A.sfx.split(",") if x.strip()]:
     tsec, kind = item.split(":")
-    {"boom": lambda q: impact(q, 0.9), "ding": lambda q: ding(q, 0.18), "whoosh": lambda q: whoosh(q, 0.35)}[kind](float(tsec))
+    k = (BED_RMS / 0.1) if A.bed else 1.0                  # 音效跟着底曲的响度走
+    {"boom": lambda q: impact(q, 0.6 * k), "ding": lambda q: ding(q, 0.18 * k), "whoosh": lambda q: whoosh(q, 0.35 * k)}[kind](float(tsec))
 
 L *= duck; R *= duck * 0.98 + 0.02
 mix = np.stack([L, R], 1)[: int(A.dur * SR)]

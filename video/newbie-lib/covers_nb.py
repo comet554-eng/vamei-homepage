@@ -79,6 +79,21 @@ for name, (w, h) in SIZES.items():
     px = int(w * rx - r.width / 2); py = int(h * ry - r.height)
     lay = Image.new("RGBA", img.size, (0, 0, 0, 0)); lay.paste(sh, (px + 14 - pad, py + 18 - pad)); img.alpha_composite(lay)
     img.alpha_composite(r, (px, py))
+    # 李财踩滑雪板（骑行系列的三花猫主持人）
+    if os.environ.get("NO_LICAI") is None:
+        import json as _j
+        ld = os.path.join(HERE, "licai"); fr = _j.load(open(os.path.join(ld, "seq.json")))["seq"]["滑雪板"]
+        li = CV.get("licai_frame", 3)
+        cat = Image.open(os.path.join(ld, "滑雪板", f"{li}.webp")).convert("RGBA")
+        ch = int(h * (0.31 if portrait else 0.36)); k = ch / 420
+        cat = cat.resize((int(cat.width * k), int(cat.height * k)), Image.LANCZOS)
+        ox, oy = fr[li]
+        cx, cy = (w * 0.22, h * 0.975) if portrait else (w * 0.43, h * 0.97)
+        csh = Image.new("RGBA", (cat.width + 80, cat.height + 80), (0, 0, 0, 0))
+        al2 = Image.new("L", csh.size, 0); al2.paste(cat.getchannel("A").point(lambda v: int(v * 0.4)), (40, 40)); csh.putalpha(al2)
+        csh = csh.filter(ImageFilter.GaussianBlur(14))
+        img.alpha_composite(csh, (int(cx + ox * k - 40 + 10), int(cy + oy * k - 40 + 14)))
+        img.alpha_composite(cat, (int(cx + ox * k), int(cy + oy * k)))
     # 文字
     arr = np.asarray(img.convert("RGB"))
     buf = np.dstack([arr[..., 2], arr[..., 1], arr[..., 0], np.full((h, w), 255, np.uint8)]).copy()

@@ -11,6 +11,7 @@ NAME = "直滑降"
 TITLE = f"第{LESSON}课 · {NAME}"
 STYLE = "day"
 MUSIC = "drive"
+TRACK = (963, 0.0)             # Mixkit 免费音乐 #963
 MARKS = True
 
 # ------------------------------------------------------------------ 数据（示意计算，见 方案.md）

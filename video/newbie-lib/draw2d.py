@@ -138,7 +138,16 @@ def snow_marks(c, cam, slope, center=(0.0, 0.0)):
 
 def trails(c, cam, J):
     """板在雪上推出来的痕（rig 里每段是一个 1×1 的面片的变换矩阵）。"""
-    for m in J.get("trails", []):
+    grooves = J.get("trail_groove") or [False] * len(J.get("trails", []))
+    for m, g in zip(J.get("trails", []), grooves):
+        if g:                                       # 刻滑：一条细细的刃线（画成两道深色细线）
+            for yy in (-0.5, 0.5):
+                a, b = m @ Vector((-0.5, yy, 0.0)), m @ Vector((0.5, yy, 0.0))
+                if min(cam.depth(a), cam.depth(b)) < 0.3:
+                    continue
+                c.new_path(); c.move_to(*cam(a)); c.line_to(*cam(b))
+                c.set_source_rgba(0.42, 0.52, 0.70, 0.85); c.set_line_width(max(2.0, 0.025 * cam.scale(a))); c.stroke()
+            continue
         pts = [m @ Vector((x, y, 0.0)) for x, y in ((-0.5, -0.5), (0.5, -0.5), (0.5, 0.5), (-0.5, 0.5))]
         if min(cam.depth(p) for p in pts) < 0.3:
             continue

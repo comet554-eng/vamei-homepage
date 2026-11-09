@@ -7,14 +7,23 @@ EP = os.path.abspath(sys.argv[1]); sys.path.insert(0, EP); sys.path.insert(0, HE
 import ep
 
 raw, out = sys.argv[2], sys.argv[3]
+
+
+def bed_args():
+    """ep.TRACK = (Mixkit 音乐编号, 起点秒)：用现成曲子当底（曲子放在 MUSIC_DIR，默认 ../素材/音乐）。"""
+    tr = getattr(ep, "TRACK", None)
+    if not tr:
+        return []
+    d = os.environ.get("MUSIC_DIR", os.path.join(HERE, "..", "素材", "音乐", "原曲"))
+    return ["--bed", os.path.join(d, f"mixkit-music-{tr[0]}.mp3"), "--bedstart", str(tr[1])]
 style = getattr(ep, "MUSIC", None)
 if style:
     hits, sfx = ep.music_hits() if hasattr(ep, "music_hits") else ([], [])
     wav = os.path.join(tempfile.gettempdir(), f"music_{ep.LESSON}.wav")
     subprocess.run([sys.executable, os.path.join(HERE, "music_up.py"), wav, f"{ep.DUR:.2f}",
-                    "--style", style, "--level", "-22",
+                    "--style", style, "--level", "-18" if getattr(ep, "TRACK", None) else "-22",
                     "--hits", ",".join(f"{h:.2f}" for h in hits),
-                    "--sfx", ",".join(f"{t:.2f}:{k}" for t, k in sfx)], check=True)
+                    "--sfx", ",".join(f"{t:.2f}:{k}" for t, k in sfx)] + bed_args(), check=True)
     aud = ["-i", wav]
 else:
     aud = ["-f", "lavfi", "-i", "anullsrc=r=48000:cl=stereo"]
