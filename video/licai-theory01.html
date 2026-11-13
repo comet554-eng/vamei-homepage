@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行实验室 · 速度的三次方</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#11161d;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;max-width:100vw;aspect-ratio:9/16;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<script src="licaikit.js"></script>
+<script src="theorykit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财骑行实验室 · 理论竖版 01《速度的三次方》：速度翻倍，平路要出的力将近 6 倍
+// 模型：人 + 车 80 kg，风阻面积 CdA 0.40 m²（压低 0.32），空气密度 1.2，滚阻系数 0.005，平路无风
+const RHO = 1.2, CDA = .40, CDA_LOW = .32, M = 80, CRR = .005;
+const pAir = (kmh, cda) => .5 * RHO * (cda || CDA) * Math.pow(kmh / 3.6, 3), pRoll = kmh => CRR * M * 9.81 * kmh / 3.6, pTot = (kmh, cda) => pAir(kmh, cda) + pRoll(kmh);
+const speedAt = (P, cda) => { let lo = 0, hi = 80; for (let i = 0; i < 60; i++) { const m = (lo + hi) / 2; if (pTot(m, cda) > P) hi = m; else lo = m; } return lo; };
+const P20 = pTot(20), P40 = pTot(40), P30 = pTot(30), V_LOW = speedAt(P30, CDA_LOW);
+const fmt = (x, d) => x.toFixed(d || 0);
+
+// 极简侧视骑车人（面朝左，风从左边来）；lean = 上身和水平线夹角
+function rider(x, y, s, lean, col) {
+  g.save(); g.translate(x, y); g.scale(s, s); g.strokeStyle = col || TH.ink; g.lineCap = 'round'; g.lineJoin = 'round';
+  g.lineWidth = 6; [[-105, 0], [105, 0]].forEach(w => { g.beginPath(); g.arc(w[0], w[1], 62, 0, 6.283); g.stroke(); });
+  g.lineWidth = 7; g.beginPath(); g.moveTo(105, 0); g.lineTo(30, -95); g.lineTo(-70, -95); g.lineTo(-105, 0); g.moveTo(30, -95); g.lineTo(0, 0); g.lineTo(-105, 0); g.moveTo(-70, -95); g.lineTo(-80, -120); g.moveTo(-95, -120); g.lineTo(-70, -120); g.stroke();
+  const hip = [30, -110], sh = [hip[0] - Math.cos(lean) * 130, hip[1] - Math.sin(lean) * 130];
+  g.lineWidth = 16; g.beginPath(); g.moveTo(hip[0], hip[1]); g.lineTo(sh[0], sh[1]); g.stroke();
+  g.lineWidth = 11; g.beginPath(); g.moveTo(sh[0], sh[1]); g.lineTo(-82, -112); g.stroke();
+  g.beginPath(); g.moveTo(hip[0], hip[1]); g.lineTo(-10, -40); g.lineTo(0, 0); g.stroke();
+  g.fillStyle = col || TH.ink; g.beginPath(); g.arc(sh[0] - Math.cos(lean) * 34, sh[1] - Math.sin(lean) * 30 - 14, 24, 0, 6.283); g.fill();
+  g.restore();
+}
+// 迎面的气流线：v 速度倍数，n 每行密度倍数
+function airflow(t, x0, x1, y0, y1, v, n, a) {
+  g.save(); g.globalAlpha = a; g.strokeStyle = TH.air; g.lineCap = 'round';
+  const rows = 9, per = Math.round(3 * n);
+  for (let r = 0; r < rows; r++) for (let i = 0; i < per; i++) {
+    const L = x1 - x0, ph = ((t * 340 * v + (i / per) * L + hash(r * 7 + i) * 90) % L), x = x0 + ph, y = y0 + (y1 - y0) * r / (rows - 1);
+    g.lineWidth = 3 + 2 * (v - 1); g.globalAlpha = a * (1 - ph / L) * .9; g.beginPath(); g.moveTo(x, y); g.lineTo(x + 50 + 40 * v, y); g.stroke();
+  }
+  g.restore();
+}
+const SPEEDS = [15, 20, 25, 30, 40];
+
+const LINES = [
+  [0.1, 2.8, '速度翻一倍，力气要多花几倍？'],
+  [2.9, 5.6, '答案不是两倍，是将近{h}六倍{/}。'],
+  [5.8, 9.6, '因为平路骑车，你主要在跟{a}空气{/}较劲。'],
+  [9.8, 14.2, '十五公里每小时，大约一半力气在推开空气；'],
+  [14.3, 17.4, '到了三十，{a}八成{/}都花在风阻上。'],
+  [17.6, 19.3, '为什么涨这么快？'],
+  [19.5, 23.4, '速度翻倍，每秒撞上的空气多一倍，'],
+  [23.5, 27.6, '每一份空气也撞得更狠，阻力变成{h}四倍{/}。'],
+  [27.8, 31.8, '而功率等于阻力乘速度，再乘一个二，'],
+  [31.9, 35.4, '就是{h}八倍{/}。这就是速度的三次方。'],
+  [35.8, 40.6, '好在风阻能省：同样的力气，把身子压低一点，'],
+  [40.7, 44.6, '三十公里每小时，能多骑出{g}两公里{/}。'],
+  [45.0, 49.6, '所以想骑快，先练姿势，再练腿；'],
+  [49.7, 53.6, '通勤慢慢骑，风阻其实没那么可怕。'],
+  [54.0, 57.6, '你平时骑多快？评论区报个速度。']
+];
+
+thRun({ src: SRC, seed: 951, series: '李财骑行实验室', lines: LINES,
+  title: { text: '骑快一倍，费力{h}几倍{/}？', t: 0 },
+  wind: t => t > 19.4 && t < 35.6 ? (t < 21 ? .35 : .7) : 0,
+  scenes: [
+    // 1 钩子：速度 ×2，功率 ×5.9
+    [0, 5.7, (lt, t) => {
+      const base = 1120, sc = 600 / P40;
+      const kv = ease(k01(t, .6, 1.3)), kp = ease(k01(t, 1.6, 4.4));
+      const hv = 170 + 170 * kv, pw = P20 + (P40 - P20) * kp, hp = pw * sc;
+      card(110, base - hv, 260, hv, 1, TH.line); g.fillStyle = TH.ink; g.globalAlpha = .9; g.fillRect(110, base - hv, 260, hv); g.globalAlpha = 1;
+      tx(fmt(20 + 20 * kv) + ' km/h', 240, base - hv - 50, 50, TH.ink, { align: 'center' });
+      tx('速度', 240, base + 50, 44, TH.sub, { align: 'center', w: 400 });
+      g.fillStyle = TH.hot; g.fillRect(560, base - hp, 300, hp);
+      tx(fmt(pw) + ' W', 710, base - hp - 50, 56, TH.hot, { align: 'center' });
+      tx('要出的功率', 710, base + 50, 44, TH.sub, { align: 'center', w: 400 });
+      if (t > 1.3) tx('×2', 240, base - hv - 130, 90, TH.ink, { align: 'center', a: k01(t, 1.3, 1.6), w: 700 });
+      if (t > 4.4) tx('×' + fmt(P40 / P20, 1), 710, base - hp / 2, 130, '#fff', { align: 'center', a: k01(t, 4.4, 4.7), w: 700 });
+      seg(80, base, 1000, base, TH.line, 4);
+      thFoot('20 → 40 km/h，平路无风；人 + 车 80 kg', k01(t, 1, 1.4));
+    }],
+    // 2 功率花在哪：空气 vs 滚动
+    [5.7, 19.4, (lt, t) => {
+      const x0 = 250, sc = 640 / pTot(40), y0 = 520, dy = 140;
+      g.fillStyle = TH.air; g.fillRect(70, 430, 30, 30); tx('空气阻力', 115, 446, 34, TH.ink, { w: 400 });
+      g.fillStyle = TH.roll; g.fillRect(330, 430, 30, 30); tx('滚动阻力', 375, 446, 34, TH.ink, { w: 400 });
+      SPEEDS.forEach((v, i) => {
+        const k = ease(k01(t, 6.0 + i * .45, 6.8 + i * .45)), y = y0 + i * dy, a = pAir(v), r = pRoll(v);
+        const hl = t > 9.8 && t < 14.2 ? v === 15 : t > 14.3 && t < 17.4 ? v === 30 : true, al = hl ? 1 : .28;
+        g.save(); g.globalAlpha = al;
+        tx(v + ' km/h', 70, y, 40, TH.ink);
+        g.fillStyle = TH.roll; g.fillRect(x0, y - 34, r * sc * k, 68);
+        g.fillStyle = TH.air; g.fillRect(x0 + r * sc * k, y - 34, a * sc * k, 68);
+        if (k > .95) { tx(fmt(a + r) + ' W', x0 + (a + r) * sc + 18, y, 36, TH.ink, { w: 400 }); }
+        g.restore();
+        if (k > .95 && ((v === 15 && t > 10.4 && t < 14.2) || (v === 30 && t > 14.8 && t < 17.4))) {
+          const pct = Math.round(100 * a / (a + r)); tx('空气 ' + pct + '%', x0 + (a + r) * sc + 150, y, 44, TH.air, { align: 'left', a: k01(t, v === 15 ? 10.4 : 14.8, v === 15 ? 10.7 : 15.1) });
+        }
+      });
+      thFoot('风阻面积 0.40 m²、滚阻系数 0.005、空气密度 1.2 kg/m³ 估算', k01(t, 6.5, 7));
+    }],
+    // 3 为什么是三次方
+    [19.4, 35.6, (lt, t) => {
+      const v2 = t > 21.0, v = v2 ? 2 : 1;
+      airflow(t, 60, 520, 470, 790, v, v2 ? 2 : 1, 1);
+      rider(720, 760, 1.05, .7, TH.ink);
+      tx(v2 ? '速度 ×2' : '速度 ×1', 70, 420, 40, v2 ? TH.hot : TH.sub, { w: 700 });
+      const rowY = [900, 975, 1050, 1125];
+      if (t > 21.8) richLine('每秒撞上的空气　{h}×2{/}', 70, rowY[0], 46, { a: k01(t, 21.8, 22.1) });
+      if (t > 24.0) richLine('每份空气撞得更狠　{h}×2{/}', 70, rowY[1], 46, { a: k01(t, 24.0, 24.3) });
+      if (t > 25.6) richLine('→ 阻力　{h}×4{/}（速度²）', 70, rowY[2], 50, { a: k01(t, 25.6, 25.9) });
+      if (t > 28.4) richLine('功率 = 阻力 × 速度 → {h}×4 × 2{/}', 70, rowY[3], 46, { a: k01(t, 28.4, 28.7) });
+      if (t > 31.9) {
+        g.save(); g.globalAlpha = k01(t, 31.9, 32.2); g.fillStyle = TH.bg; g.fillRect(0, 860, W, 320); g.restore();
+        tx('= ×8', CX - 30, 930, 120, TH.hot, { align: 'center', a: k01(t, 31.9, 32.2), w: 700 });
+        card(110, 1010, 800, 130, k01(t, 32.8, 33.1), TH.hot);
+        richLine('P空气 = ½ ρ · CdA · {h}v³{/}', CX - 30, 1076, 58, { align: 'center', a: k01(t, 32.9, 33.2) });
+      }
+    }],
+    // 4 压低身子：同样功率快 2 km/h
+    [35.6, 44.8, (lt, t) => {
+      const a1 = k01(t, 35.8, 36.2), a2 = k01(t, 37.6, 38.0);
+      g.save(); g.globalAlpha = a1; rider(290, 700, .82, .78, TH.sub); g.restore();
+      g.save(); g.globalAlpha = a2; rider(800, 700, .82, .32, TH.good); g.restore();
+      tx('正常握把', 290, 860, 42, TH.sub, { align: 'center', a: a1 }); tx('风阻面积 0.40 m²', 290, 915, 32, TH.sub, { align: 'center', a: a1, w: 400 });
+      tx('压低身子', 800, 860, 42, TH.good, { align: 'center', a: a2 }); tx('风阻面积 0.32 m²', 800, 915, 32, TH.good, { align: 'center', a: a2, w: 400 });
+      if (t > 40.7) {
+        card(110, 990, 860, 170, k01(t, 40.7, 41.0), TH.good);
+        tx('同样 ' + fmt(P30) + ' W', CX - 30, 1035, 36, TH.sub, { align: 'center', a: k01(t, 40.8, 41.1), w: 400 });
+        richLine('30.0 → {g}' + fmt(V_LOW, 1) + ' km/h{/}', CX - 30, 1105, 66, { align: 'center', a: k01(t, 41.0, 41.3) });
+      }
+    }],
+    // 5 结论两张卡
+    [44.8, 53.8, (lt, t) => {
+      const a1 = k01(t, 45.0, 45.4), a2 = k01(t, 49.7, 50.1);
+      card(90, 450, 880, 310, a1, TH.hot);
+      tx('想骑快', 140, 530, 60, TH.hot, { a: a1, w: 700 });
+      richLine('30 km/h 时，{a}' + Math.round(100 * pAir(30) / P30) + '%{/} 的力在对付空气', 140, 615, 40, { a: a1, w: 400 });
+      tx('先练姿势，再练腿', 140, 690, 46, TH.ink, { a: a1 });
+      card(90, 810, 880, 310, a2, TH.good);
+      tx('通勤慢慢骑', 140, 890, 60, TH.good, { a: a2, w: 700 });
+      richLine('15 km/h 时，空气只占 {a}' + Math.round(100 * pAir(15) / pTot(15)) + '%{/}', 140, 975, 40, { a: a2, w: 400 });
+      tx('风阻没那么可怕', 140, 1050, 46, TH.ink, { a: a2 });
+    }],
+    // 6 结尾提问
+    [53.8, 58.4, (lt, t) => {
+      const im = IMG.front || IMG.happy, a = k01(t, 53.9, 54.3), r = 190;
+      g.save(); g.globalAlpha = a; g.beginPath(); g.arc(CX - 30, 700, r, 0, 6.283); g.fillStyle = '#f3ead6'; g.fill(); g.clip();
+      if (im) { const s = r * 2.5 / Math.min(im.width, im.height); g.drawImage(im, CX - 30 - im.width * s / 2, 690 - im.height * s / 2, im.width * s, im.height * s); }
+      g.restore(); g.save(); g.globalAlpha = a; g.strokeStyle = TH.hot; g.lineWidth = 8; g.beginPath(); g.arc(CX - 30, 700, r, 0, 6.283); g.stroke(); g.restore();
+      tx('你平时骑多快？', CX - 30, 1000, 70, TH.ink, { align: 'center', a: k01(t, 54.2, 54.5), w: 700 });
+      tx('关注 李财骑行实验室，每期拆一个骑行原理', CX - 30, 1090, 36, TH.sub, { align: 'center', a: k01(t, 55.0, 55.4), w: 400 });
+    }]
+  ],
+  cues: [['pop', .6], ['rise', 1.6, 2.8], ['hit', 4.4], ['whoosh', 5.7], ['tick', 6.0], ['tick', 6.45], ['tick', 6.9], ['tick', 7.35], ['tick', 7.8], ['pop', 10.4], ['pop', 14.8],
+    ['whoosh', 19.4], ['whoosh', 21.0], ['pop', 21.8], ['pop', 24.0], ['ding', 25.6], ['pop', 28.4], ['hit', 31.9], ['ding', 32.9], ['whoosh', 35.6], ['pop', 37.6], ['ding', 41.0], ['pop', 45.0], ['pop', 49.7], ['pop', 53.9]],
+  cover: (key, w, h) => {
+    paper(); const vert = h > w, tall = h / w > 1.6, u = Math.min(w, h) / 1080;
+    const x = vert ? 90 * u : 110 * u, y0 = vert ? 330 * u : 220 * u, avail = vert ? w - 2 * x : w * .52;
+    const fs = 150 * u * Math.min(1, avail / txW('要多费6倍力', 150 * u, 700));
+    tx('李财骑行实验室', x, y0, 46 * u, TH.sub, { w: 400 });
+    tx('骑快一倍', x, y0 + fs * 1.15, fs, TH.ink, { w: 700 });
+    richLine('要多费{h}6倍{/}力', x, y0 + fs * 2.4, fs, { w: 700 });
+    g.fillStyle = TH.hot; g.fillRect(x, y0 + fs * 3.1, 160 * u, 12 * u);
+    richLine('P ∝ {h}v³{/}　风阻是平路最大的敌人', x, y0 + fs * 3.1 + 90 * u, 44 * u, { w: 400 });
+    let cx, cy, r;
+    if (vert) { if (tall) rider(w * .40, h - 260 * u, 1.4 * u, .5, TH.sub); r = (tall ? 170 : 130) * u; cx = w - (tall ? 260 : 190) * u; cy = h - (tall ? 330 : 200) * u; }
+    else {
+      const base = h - 150 * u, bw = 150 * u, x1 = w * .62, x2 = w * .62 + 220 * u, sc = 520 * u / P40;
+      g.fillStyle = TH.sub; g.fillRect(x1, base - P20 * sc, bw, P20 * sc); g.fillStyle = TH.hot; g.fillRect(x2, base - P40 * sc, bw, P40 * sc);
+      tx(fmt(P20) + ' W', x1 + bw / 2, base - P20 * sc - 40 * u, 40 * u, TH.ink, { align: 'center' }); tx(fmt(P40) + ' W', x2 + bw / 2, base - P40 * sc - 40 * u, 40 * u, TH.hot, { align: 'center' });
+      tx('20 km/h', x1 + bw / 2, base + 45 * u, 34 * u, TH.sub, { align: 'center', w: 400 }); tx('40 km/h', x2 + bw / 2, base + 45 * u, 34 * u, TH.sub, { align: 'center', w: 400 });
+      r = 70 * u; cx = w - 110 * u; cy = 120 * u;
+    }
+    const im = IMG.front || IMG.happy;
+    g.save(); g.beginPath(); g.arc(cx, cy, r, 0, 6.283); g.fillStyle = '#f3ead6'; g.fill(); g.clip();
+    if (im) { const s = r * 2.5 / Math.min(im.width, im.height); g.drawImage(im, cx - im.width * s / 2, cy - .06 * r - im.height * s / 2, im.width * s, im.height * s); }
+    g.restore(); g.strokeStyle = TH.hot; g.lineWidth = 8 * u; g.beginPath(); g.arc(cx, cy, r, 0, 6.283); g.stroke();
+  }
+});
+
+})();
+</script>
+</body>
+</html>

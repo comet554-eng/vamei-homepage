@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行小课堂 · 换内胎</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;max-width:100vw;aspect-ratio:9/16;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/举手欢迎.js"></script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/委屈难过.js"></script>
+<script src="licai-seq/打招呼.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script src="shortkit.js"></script>
+<script src="tutkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财骑行小课堂 · 竖版教程 11《路上扎胎，换内胎六步》：手绘步骤 + Mixkit 实拍（见 video/素材/换内胎/素材清单.md）
+// Mixkit 上没有自行车换胎的实拍，六步用手绘车轮动画（沿用横版换内胎那集的画法）
+// 公共件里用到的动作（splitseq 按名字加载）：'打招呼' '叉腰得意'
+const PI = Math.PI, TOP = -PI / 2, BOT = PI / 2, WX = 520, WY = 640, R = 250;
+const k01 = (lt, a, b) => clamp((lt - a) / (b - a), 0, 1);
+// 侧视车轮：辐条、轮圈、外胎；o.off = [a0, a1] 这段胎边脱出轮圈；o.tube = [a0, a1] 露出的内胎；o.tw 外胎粗细
+function wheelSide(cx, cy, r, o) {
+  o = o || {}; g.save(); g.lineCap = 'round';
+  g.strokeStyle = C.faint; g.lineWidth = 3;
+  for (let i = 0; i < 16; i++) { const a = (o.rot || 0) + i * PI / 8; g.beginPath(); g.moveTo(cx + Math.cos(a) * 20, cy + Math.sin(a) * 20); g.lineTo(cx + Math.cos(a) * (r - 36), cy + Math.sin(a) * (r - 36)); g.stroke(); }
+  g.fillStyle = C.ink; g.beginPath(); g.arc(cx, cy, 18, 0, 6.283); g.fill();
+  g.strokeStyle = '#a49b90'; g.lineWidth = 16; g.beginPath(); g.arc(cx, cy, r - 30, 0, 6.283); g.stroke();
+  g.strokeStyle = '#7d756c'; g.lineWidth = 8; g.beginPath(); g.moveTo(cx + Math.cos(o.valve || BOT) * (r - 36), cy + Math.sin(o.valve || BOT) * (r - 36)); g.lineTo(cx + Math.cos(o.valve || BOT) * (r - 78), cy + Math.sin(o.valve || BOT) * (r - 78)); g.stroke();
+  if (o.tube && o.tube[1] > o.tube[0]) { g.strokeStyle = C.red; g.lineWidth = 12; g.beginPath(); g.arc(cx, cy, r - 8, o.tube[0], o.tube[1]); g.stroke(); }
+  const off = o.off && o.off[1] - o.off[0] > .01 ? o.off : null, tw = o.tw || 30;
+  g.strokeStyle = C.ink; g.lineWidth = tw;
+  if (!off) { g.beginPath(); g.arc(cx, cy, r, 0, 6.283); g.stroke(); }
+  else {
+    if (off[1] - off[0] < 6.28) { g.beginPath(); g.arc(cx, cy, r, off[1], off[0] + 6.283); g.stroke(); }
+    g.strokeStyle = '#6f665d'; g.lineWidth = tw - 4; g.beginPath(); g.arc(cx, cy, r + 24, off[0], off[1]); g.stroke();
+  }
+  g.restore();
+}
+// 撬胎棒：底端在 (x, y)，ang=0 时朝上
+function lever(x, y, ang, a) {
+  g.save(); g.globalAlpha = a == null ? 1 : a; g.translate(x, y); g.rotate(ang); g.fillStyle = C.blue;
+  g.beginPath(); g.roundRect(-14, -170, 28, 180, 13); g.fill();
+  g.strokeStyle = C.blue; g.lineWidth = 12; g.lineCap = 'round'; g.beginPath(); g.arc(-12, 6, 14, 0, PI); g.stroke(); g.restore();
+}
+// 小号打气筒（工具卡和第 6 步用），pump 0~1 是手柄高度
+function pumpIcon(x, y, s, pump, gauge) {
+  g.save(); g.translate(x, y); g.scale(s, s); g.lineCap = 'round';
+  g.fillStyle = C.ink; g.fillRect(-70, 150, 140, 20);
+  g.fillStyle = C.orange; g.beginPath(); g.roundRect(-26, -110, 52, 265, 10); g.fill();
+  const hy = -110 - 30 - (pump == null ? .5 : pump) * 70;
+  g.strokeStyle = C.ink; g.lineWidth = 8; g.beginPath(); g.moveTo(0, -100); g.lineTo(0, hy); g.stroke();
+  g.lineWidth = 16; g.beginPath(); g.moveTo(-60, hy); g.lineTo(60, hy); g.stroke();
+  if (gauge != null) { g.fillStyle = '#fff'; g.strokeStyle = C.ink; g.lineWidth = 4; g.beginPath(); g.arc(0, 40, 34, 0, 6.283); g.fill(); g.stroke();
+    const na = PI * .8 + gauge * PI * 1.4; g.strokeStyle = C.red; g.beginPath(); g.moveTo(0, 40); g.lineTo(Math.cos(na) * 26, 40 + Math.sin(na) * 26); g.stroke(); }
+  g.restore();
+}
+function tubeIcon(x, y, r) { g.save(); g.strokeStyle = C.red; g.lineWidth = 14; g.beginPath(); g.arc(x, y, r, 0, 6.283); g.stroke(); g.strokeStyle = '#7d756c'; g.lineWidth = 9; g.lineCap = 'round'; g.beginPath(); g.moveTo(x, y + r - 6); g.lineTo(x, y + r - 44); g.stroke(); g.restore(); }
+function glass(x, y, a) { g.save(); g.globalAlpha = a; g.fillStyle = '#7fc3d8'; g.strokeStyle = C.ink; g.lineWidth = 2; g.beginPath(); g.moveTo(x - 9, y + 8); g.lineTo(x + 2, y - 16); g.lineTo(x + 10, y + 6); g.closePath(); g.fill(); g.stroke(); g.restore(); }
+const SHOTS = [
+  [0.0, 2.6, 'W', ''],
+  [41.3, 45.2, 'W', '装好了，捏一下刹车再出发']
+];
+const withShots = tutFrames(SHOTS);
+const LINES = [
+  [0.1, 2.6, '骑着骑着，车胎瘪了？'],
+  [2.7, 5.4, '六个字，十五分钟自己换好。'],
+  [5.8, 9.8, '{o}卸{/}：松开刹车，打开快拆，把轮子取下来。'],
+  [10.0, 14.4, '{o}撬{/}：放光气，两根撬胎棒把一边胎撬出来。'],
+  [14.6, 18.8, '{o}摸{/}：拉出旧内胎，手指沿外胎内侧摸一圈。'],
+  [19.2, 23.4, '摸到玻璃、钉子一定拔掉，不然新胎马上又扎。'],
+  [23.5, 27.8, '{o}塞{/}：新内胎先打一点气，气嘴先插进孔里。'],
+  [28.2, 32.4, '{o}压{/}：从气嘴开始，两手往两边把胎边压回去。'],
+  [32.5, 36.8, '最后一段用掌根推，别用撬胎棒，容易夹破内胎。'],
+  [37.0, 41.2, '{o}打{/}：先打一半，看胎边一圈均匀，再打足。'],
+  [41.3, 45.2, '装回轮子，记得关上刹车，捏一下再出发。'],
+  [45.6, 50.4, '口诀：{o}卸、撬、摸、塞、压、打{/}。'],
+  [50.8, 54.6, '你在路上扎过胎吗？'],
+  [54.7, 57.8, '评论区说说你是怎么回家的。']
+];
+const KX = 540, KY = 790, KR = 230;
+function steps(t, n) {
+  ['卸', '撬', '摸', '塞', '压', '打'].forEach((k, i) => { const x = 160 + i * 150, on = i + 1 === n, done = i + 1 < n;
+    g.save(); g.fillStyle = on ? C.orange : done ? C.green : C.cream; g.beginPath(); g.arc(x, 470, on ? 46 : 38, 0, 6.283); g.fill(); g.restore();
+    txt(k, x, 474, on ? 52 : 42, on || done ? '#fff' : C.sub, { align: 'center' }); });
+}
+shortRun({ src: SRC, seed: 971, lines: LINES, bgm: 'lofi',
+  title: { text: '扎胎了，{r}换内胎{/}六步', t: 0, small: '李财骑行小课堂' },
+  scenes: withShots([
+    [0, 5.7, (lt, t) => { if (t >= 2.6) tutPreview(t, 2.8, ['卸轮子 · 撬胎边', '摸异物 · 塞内胎', '压胎边 · 打气'], '委屈难过'); }],
+    [5.7, 10.0, (lt, t) => {
+      steps(t, 1); const drop = k01(t, 7.6, 8.8) * 140, qr = k01(t, 6.6, 7.2);
+      g.save(); g.strokeStyle = C.ink; g.lineWidth = 16; g.lineCap = 'round'; g.beginPath(); g.moveTo(KX - 110, KY - KR - 110); g.lineTo(KX, KY); g.stroke(); g.restore();
+      wheelSide(KX, KY + drop, KR);
+      g.save(); g.translate(KX, KY + drop); g.rotate(-PI / 2 * qr); g.fillStyle = C.green; g.beginPath(); g.roundRect(-8, -12, 110, 24, 12); g.fill(); g.restore();
+      txt('快拆', KX + 130, KY + 20, 40, C.green, { a: k01(t, 6.6, 6.9) });
+    }],
+    [10.0, 14.6, (lt, t) => {
+      steps(t, 2); const k = k01(t, 11.6, 13.4);
+      wheelSide(KX, KY, KR, { off: k > 0 ? [TOP + .35 - k * 2.6, TOP + .35] : null });
+      if (t > 10.6) lever(KX, KY - KR - 4, PI * .92 * k01(t, 10.8, 11.3), k01(t, 10.6, 10.9));
+      if (t > 11.2) { const a2 = TOP + .35 - k * 2.6; lever(KX + Math.cos(a2) * (KR + 4), KY + Math.sin(a2) * (KR + 4), a2 + PI / 2 + PI * .92 * k01(t, 11.3, 11.7), k01(t, 11.2, 11.4)); }
+    }],
+    [14.6, 23.5, (lt, t) => {
+      steps(t, 3); const out = k01(t, 14.8, 15.8), ta = TOP + .6 + PI, pa = TOP + k01(t, 16.0, 19.4) * (PI + .6);
+      wheelSide(KX, KY, KR, { off: [TOP - 2.25, TOP + .35] });
+      g.save(); g.globalAlpha = 1 - out * .5; tubeIcon(KX - out * 330, KY - out * 230, KR - 8 - out * 160); g.restore();
+      const tx = KX + Math.cos(ta) * (KR - 4), ty = KY + Math.sin(ta) * (KR - 4), pulled = k01(t, 20.6, 21.2) * 90;
+      glass(tx + Math.cos(ta) * pulled, ty + Math.sin(ta) * pulled, 1);
+      if (t > 16.0 && t < 20.6) paw(KX + Math.cos(pa) * (KR - 6), KY + Math.sin(pa) * (KR - 6), 1.1, 1, C.pink);
+      if (t > 19.4) { hcircle(tx, ty, 46, 46, 5301, C.red, 5, k01(t, 19.4, 19.8)); txt('拔掉！', tx + 70, ty + 70, 52, C.red, { a: k01(t, 19.6, 19.9) }); }
+    }],
+    [23.5, 28.0, (lt, t) => {
+      steps(t, 4); const k = k01(t, 25.0, 27.4);
+      wheelSide(KX, KY, KR, { off: [TOP - 2.25, TOP + .35], tube: [BOT - k * PI, BOT + k * PI] });
+      if (t > 24.2) { harrow(KX + 170, KY + KR + 70, KX + 80, KY + KR + 30, KX + 14, KY + KR - 50, C.blue, k01(t, 24.2, 24.6), 6); txt('气嘴先进孔', KX + 160, KY + KR + 110, 40, C.blue, { align: 'center', a: k01(t, 24.4, 24.7) }); }
+    }],
+    [28.0, 37.0, (lt, t) => {
+      steps(t, 5); const s = k01(t, 28.6, 33.6), a0 = BOT + s * PI, a1 = BOT + 2 * PI - s * PI;
+      wheelSide(KX, KY, KR, { off: s < 1 ? [a0, a1] : null, tube: s < 1 ? [a0, a1] : null });
+      if (t > 28.6 && t < 34.0) { paw(KX + Math.cos(a0) * (KR + 10), KY + Math.sin(a0) * (KR + 10), 1.3, 1, C.pink); paw(KX + Math.cos(a1) * (KR + 10), KY + Math.sin(a1) * (KR + 10), 1.3, 1, C.pink); }
+      if (t > 32.6) { txt('最后一段：掌根推', KX, KY + KR + 90, 46, C.red, { align: 'center', a: k01(t, 32.6, 32.9) }); txt('别用撬胎棒', KX, KY + KR + 150, 40, C.ink, { align: 'center', a: k01(t, 33.2, 33.5) }); }
+    }],
+    [37.0, 45.4, (lt, t) => {
+      if (t >= 41.3) return;
+      steps(t, 6); const k = k01(t, 37.4, 40.6), pz = t < 40.6 ? (Math.sin(t * 7) + 1) / 2 : .5;
+      wheelSide(KX - 120, KY, KR * .85, { tw: 22 + 10 * k });
+      pumpIcon(KX + 320, KY + 40, 1, pz, k);
+      if (t > 38.6) txt('先打一半，看胎边', KX, KY + KR + 90, 46, C.ink, { align: 'center', a: k01(t, 38.6, 38.9) });
+    }],
+    [45.4, 50.6, (lt, t) => tutSlogan(t, 46.4, ['卸 · 撬 · 摸', '塞 · 压 · 打'])],
+    [50.6, 58.4, (lt, t) => tutEnd(lt, t, 50.6, '怎么回家的？')]
+  ]),
+  cues: [['whoosh', .05], ['pop', 2.8], ['pop', 3.3], ['pop', 3.8], ['pop', 4.3], ['pop', 4.8], ['pop', 5.3], ['pop', 6.6], ['whoosh', 7.6], ['pop', 10.6], ['pop', 11.2], ['pen', 11.6, 1.8],
+    ['pop', 14.8], ['pen', 16.0, 3.4], ['wrong', 19.4], ['pop', 20.6], ['pop', 24.2], ['ding', 27.4], ['pen', 28.6, 5], ['ding', 33.6], ['grow', 37.4, 3.2], ['whoosh', 41.3], ['stamp', 46.4], ['stamp', 47.3], ['pop', 50.8], ['ding', 51.2]],
+  cover: (key, w, h) => epCover(key, w, h, { tag: '李财骑行小课堂', l1: '路上扎胎了？', l2: '换内胎六步', sub: '卸 · 撬 · 摸 · 塞 · 压 · 打', emo: '握拳加油', emoScale: .85,
+    art: (x, y, s) => { const r = 110 * s, a = TOP + .9; wheelSide(x, y, r, { off: [TOP - .2, TOP + 1.2], tw: 20 * s }); g.save(); g.translate(x + Math.cos(a) * r, y + Math.sin(a) * r); g.scale(.5 * s, .5 * s); lever(0, 0, a + PI / 2); g.restore(); } })
+});
+
+})();
+</script>
+</body>
+</html>

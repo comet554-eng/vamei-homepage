@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行小课堂 · 坐垫高度</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;max-width:100vw;aspect-ratio:9/16;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/思考怀疑.js"></script>
+<script src="licai-seq/打招呼.js"></script>
+<script src="licai-seq/跨上车.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script src="shortkit.js"></script>
+<script src="tutkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财骑行小课堂 · 竖版教程 16《坐垫高度怎么调》：手绘 + Mixkit 实拍（见 video/素材/坐垫高度/素材清单.md）
+// 没有找到调坐垫的实拍，脚跟法、前后位置、拧螺丝都是手绘示意
+// 公共件里用到的动作（splitseq 按名字加载）：'打招呼' '叉腰得意'
+const k01 = tk01;
+const SHOTS = [
+  [0.0, 2.6, 'W', ''],
+  [28.2, 32.4, 'V', ''],
+  [41.3, 45.2, 'W', '怕摔先低一点，熟了再慢慢升']
+];
+const withShots = tutFrames(SHOTS);
+const LINES = [
+  [0.1, 2.6, '骑车膝盖疼、腿使不上劲？'],
+  [2.7, 5.4, '先看看坐垫高度，三步调好。'],
+  [5.8, 9.8, '{o}脚跟法{/}：坐上车，用脚跟踩在踏板上。'],
+  [10.0, 14.4, '踏板转到最低点，腿刚好能伸直，就是大致的高度。'],
+  [14.6, 18.8, '平时用前脚掌踩，最低点时膝盖{o}微微弯曲{/}。'],
+  [19.2, 23.4, '太低：膝盖弯得厉害，膝盖前面容易疼。'],
+  [23.5, 27.8, '太高：屁股左右扭，脚够不着，膝盖后面疼。'],
+  [28.2, 32.4, '骑起来看一看，屁股坐稳不扭，就差不多了。'],
+  [32.5, 36.8, '{o}前后位置{/}：踏板在前面平着时，膝盖大约在脚掌上方。'],
+  [37.0, 41.2, '坐垫要放平，螺丝拧紧，座管别拔过最高刻度线。'],
+  [41.3, 45.2, '新手怕摔，可以先调低一点，熟了再慢慢往上升。'],
+  [45.6, 50.4, '口诀：{o}脚跟伸直，脚掌微弯{/}。'],
+  [50.8, 54.6, '你的坐垫调过吗？'],
+  [54.7, 57.8, '评论区说说。']
+];
+// 侧面自行车 + 骑车人：sh 座管多拔出来的长度，ca 曲柄角（0 = 朝前平，π/2 = 最低点），heel 用脚跟踩，sway 屁股左右扭（画成前后晃）
+const L1 = 74, L2 = 74;
+function rider(x, y, s, o) {
+  const sh = o.sh, ca = o.ca, col = C.ink;
+  g.save(); g.translate(x, y); g.scale(s, s); g.lineCap = 'round'; g.lineJoin = 'round';
+  const rw = [-105, 30], fw = [105, 30], bb = [-10, 30], st = [-40, -50], ht = [75, -48], u = [-0.351, -0.936];
+  [rw, fw].forEach(w => { g.strokeStyle = col; g.lineWidth = 5; g.beginPath(); g.arc(w[0], w[1], 62, 0, 6.283); g.stroke(); g.fillStyle = col; g.beginPath(); g.arc(w[0], w[1], 6, 0, 6.283); g.fill(); });
+  g.lineWidth = 7; g.strokeStyle = C.orange; g.beginPath(); g.moveTo(rw[0], rw[1]); g.lineTo(bb[0], bb[1]); g.lineTo(ht[0], ht[1]); g.lineTo(st[0], st[1]); g.lineTo(bb[0], bb[1]); g.moveTo(st[0], st[1]); g.lineTo(rw[0], rw[1]); g.stroke();
+  g.strokeStyle = col; g.lineWidth = 5; g.beginPath(); g.moveTo(ht[0], ht[1]); g.lineTo(fw[0], fw[1]); g.moveTo(ht[0], ht[1]); g.lineTo(ht[0] - 8, ht[1] - 28); g.lineTo(ht[0] + 22, ht[1] - 34); g.stroke();
+  // 座管 + 坐垫
+  const sp = [st[0] + u[0] * (sh + 8), st[1] + u[1] * (sh + 8)];
+  g.strokeStyle = o.postCol || col; g.lineWidth = 6; g.beginPath(); g.moveTo(st[0], st[1]); g.lineTo(sp[0], sp[1]); g.stroke();
+  g.strokeStyle = col; g.lineWidth = 9; g.beginPath(); g.moveTo(sp[0] - 24, sp[1] - 4 + (o.tilt || 0)); g.lineTo(sp[0] + 18, sp[1] - 4 - (o.tilt || 0)); g.stroke();
+  // 曲柄 + 踏板
+  const pd = [bb[0] + Math.cos(ca) * 34, bb[1] + Math.sin(ca) * 34];
+  g.lineWidth = 6; g.beginPath(); g.moveTo(bb[0], bb[1]); g.lineTo(pd[0], pd[1]); g.stroke(); g.beginPath(); g.arc(bb[0], bb[1], 12, 0, 6.283); g.stroke();
+  g.lineWidth = 8; g.beginPath(); g.moveTo(pd[0] - 10, pd[1]); g.lineTo(pd[0] + 10, pd[1]); g.stroke();
+  // 腿：脚跟踩时脚踝就在踏板上；前脚掌踩时脚踝在踏板后上方
+  const hip = [sp[0] - 2 + (o.sway || 0), sp[1] - 12];
+  let ank = o.heel ? [pd[0] - 2, pd[1] - 6] : [pd[0] - 16, pd[1] - 14];
+  let dx = ank[0] - hip[0], dy = ank[1] - hip[1], d = Math.hypot(dx, dy); const reach = d <= L1 + L2;
+  if (!reach) { ank = [hip[0] + dx / d * (L1 + L2 - .5), hip[1] + dy / d * (L1 + L2 - .5)]; dx = ank[0] - hip[0]; dy = ank[1] - hip[1]; d = L1 + L2 - .5; }
+  const th = Math.atan2(dy, dx), a = Math.acos(clamp((L1 * L1 + d * d - L2 * L2) / (2 * L1 * d), -1, 1)), kn = [hip[0] + Math.cos(th - a) * L1, hip[1] + Math.sin(th - a) * L1];
+  const toe = o.heel ? [ank[0] + 26, ank[1] - 2] : [ank[0] + 30, ank[1] + 12];
+  const sh0 = [hip[0] + 56, hip[1] - 80];
+  g.strokeStyle = C.blue; g.lineWidth = 12;
+  g.beginPath(); g.moveTo(sh0[0], sh0[1]); g.lineTo(hip[0], hip[1]); g.lineTo(kn[0], kn[1]); g.lineTo(ank[0], ank[1]); g.lineTo(toe[0], toe[1]); g.stroke();
+  g.lineWidth = 9; g.beginPath(); g.moveTo(sh0[0], sh0[1]); g.lineTo(sh0[0] + 22, sh0[1] + 34); g.lineTo(ht[0] + 18, ht[1] - 32); g.stroke();
+  g.fillStyle = C.blue; g.beginPath(); g.arc(sh0[0] + 10, sh0[1] - 26, 20, 0, 6.283); g.fill();
+  g.restore();
+  const P = p => [x + p[0] * s, y + p[1] * s];
+  return { hip: P(hip), knee: P(kn), ank: P(ank), pedal: P(pd), reach: reach, saddle: P(sp), bb: P(bb) };
+}
+shortRun({ src: SRC, seed: 976, lines: LINES, bgm: 'lofi',
+  title: { text: '坐垫{r}调多高{/}才对', t: 0, small: '李财骑行小课堂' },
+  scenes: withShots([
+    [0, 5.7, (lt, t) => { if (t >= 2.6) tutPreview(t, 2.8, ['脚跟伸直', '脚掌微弯', '前后位置', '放平拧紧'], '跨上车'); }],
+    [5.7, 14.5, (lt, t) => {
+      const ca = t < 10.0 ? t * 2.2 : (() => { const a0 = 10.0 * 2.2 % 6.283, tgt = Math.PI / 2 + (a0 > Math.PI / 2 ? 6.283 : 0); return a0 + (tgt - a0) * eout(k01(t, 10.0, 11.2)); })();
+      const r = rider(520, 960, 2.0, { sh: 20, ca: ca, heel: true });
+      txt('脚跟踩踏板', 540, 455, 60, C.ink, { align: 'center', a: k01(t, 5.9, 6.2) });
+      if (t > 11.2) { const k = k01(t, 11.2, 11.8); hline(r.hip[0], r.hip[1], r.ank[0], r.ank[1], 1601, C.green, 8, k); txt('最低点：腿刚好伸直', 540, 1205, 52, C.green, { align: 'center', a: k01(t, 11.6, 11.9) }); tick(870, 560, 44, k01(t, 11.8, 12.1)); }
+    }],
+    [14.5, 28.0, (lt, t) => {
+      if (t < 19.2) {
+        const r = rider(520, 960, 2.0, { sh: 20, ca: Math.PI / 2, heel: false });
+        txt('平时：前脚掌踩', 540, 455, 60, C.ink, { align: 'center', a: k01(t, 14.7, 15.0) });
+        hcircle(r.knee[0], r.knee[1], 56, 56, 1602, C.green, 5, k01(t, 15.4, 15.9)); txt('膝盖微微弯曲', 540, 1205, 52, C.green, { align: 'center', a: k01(t, 15.6, 15.9) }); tick(870, 560, 44, k01(t, 16.0, 16.3));
+        return;
+      }
+      if (t < 23.5) {
+        const r = rider(520, 960, 2.0, { sh: -18, ca: Math.PI / 2 + Math.sin(t * 3) * .5, heel: false, postCol: C.red });
+        txt('太低', 540, 455, 66, C.red, { align: 'center', a: k01(t, 19.3, 19.6) }); bigX(870, 560, 44, k01(t, 19.6, 19.9));
+        hcircle(r.knee[0], r.knee[1], 60, 60, 1603, C.red, 5, k01(t, 20.0, 20.5)); txt('膝盖弯太多，前面疼', 540, 1205, 52, C.red, { align: 'center', a: k01(t, 20.2, 20.5) });
+        return;
+      }
+      const r = rider(520, 960, 2.0, { sh: 52, ca: Math.PI / 2, heel: false, sway: Math.sin(t * 7) * 9, postCol: C.red });
+      txt('太高', 250, 455, 66, C.red, { align: 'center', a: k01(t, 23.6, 23.9) }); bigX(870, 560, 44, k01(t, 23.9, 24.2));
+      harrow(r.hip[0] - 90, r.hip[1] - 30, r.hip[0], r.hip[1] - 60, r.hip[0] + 90, r.hip[1] - 30, C.red, k01(t, 24.4, 24.8), 6); harrow(r.hip[0] + 90, r.hip[1] - 50, r.hip[0], r.hip[1] - 80, r.hip[0] - 90, r.hip[1] - 50, C.red, k01(t, 24.6, 25.0), 6);
+      txt('屁股扭、脚够不着', 540, 1205, 52, C.red, { align: 'center', a: k01(t, 24.8, 25.1) });
+    }],
+    [28.0, 41.3, (lt, t) => {
+      if (t < 32.4) { txt('骑起来', 770, 620, 60, C.ink, { align: 'center', a: k01(t, 28.5, 28.8) }); txt('屁股坐稳', 770, 730, 64, C.green, { align: 'center', a: k01(t, 29.0, 29.3) }); txt('不左右扭', 770, 830, 64, C.green, { align: 'center', a: k01(t, 29.6, 29.9) }); return; }
+      if (t < 37.0) {
+        const r = rider(520, 960, 2.0, { sh: 20, ca: 0, heel: false });
+        txt('踏板在前面平着', 540, 455, 58, C.ink, { align: 'center', a: k01(t, 32.6, 32.9) });
+        const k = k01(t, 33.4, 34.2); g.save(); g.setLineDash([14, 12]); g.strokeStyle = C.orange; g.lineWidth = 5; g.globalAlpha = k; g.beginPath(); g.moveTo(r.knee[0], r.knee[1] - 30); g.lineTo(r.knee[0], r.pedal[1] + 50); g.stroke(); g.restore();
+        txt('膝盖大约在脚掌上方', 540, 1205, 52, C.orange, { align: 'center', a: k01(t, 34.0, 34.3) });
+        txt('示意：大致参考，不是硬标准', 540, 1262, 28, C.sub, { align: 'center', font: BODY, a: k01(t, 34.6, 34.9) });
+        return;
+      }
+      // 放平 / 拧紧 / 最高刻度线
+      g.save(); g.translate(330, 760);
+      g.strokeStyle = C.ink; g.lineCap = 'round'; g.lineWidth = 16; g.beginPath(); g.moveTo(-150, -150); g.lineTo(150, -150); g.stroke();
+      g.lineWidth = 26; g.strokeStyle = C.gray; g.beginPath(); g.moveTo(0, -130); g.lineTo(0, 260); g.stroke();
+      g.strokeStyle = C.orange; g.lineWidth = 40; g.beginPath(); g.moveTo(0, 120); g.lineTo(0, 330); g.stroke();
+      g.strokeStyle = C.red; g.lineWidth = 5; [40, 60, 80].forEach(yy => { g.beginPath(); g.moveTo(-18, yy); g.lineTo(18, yy); g.stroke(); }); g.restore();
+      txt('最高刻度', 380, 820, 34, C.red);
+      [['坐垫放平', 37.2, C.green], ['螺丝拧紧', 38.4, C.green], ['别拔过刻度线', 39.4, C.red]].forEach((s, i) => { const a = k01(t, s[1], s[1] + .3); if (a <= 0) return; boxNote(560, 520 + i * 170, 440, 120, 1610 + i, s[2], a); txt(s[0], 600, 580 + i * 170, 52, C.ink, { a: a }); });
+      hline(180, 610, 480, 610, 1615, C.green, 5, k01(t, 37.2, 37.6));
+    }],
+    [41.3, 45.4, () => {}],
+    [45.4, 50.6, (lt, t) => tutSlogan(t, 46.4, ['脚跟伸直', '脚掌微弯'])],
+    [50.6, 58.4, (lt, t) => tutEnd(lt, t, 50.6, '调过吗？')]
+  ]),
+  cues: [['whoosh', .05], ['pop', 2.8], ['pop', 3.3], ['pop', 3.8], ['pop', 4.3], ['pop', 5.9], ['ding', 11.8], ['pop', 14.7], ['ding', 16.0], ['wrong', 19.6], ['wrong', 23.9], ['whoosh', 28.2],
+    ['pop', 32.6], ['grow', 33.4], ['pop', 37.2], ['pop', 38.4], ['pop', 39.4], ['whoosh', 41.3], ['stamp', 46.4], ['stamp', 47.3], ['pop', 50.8], ['ding', 51.2]],
+  cover: (key, w, h) => epCover(key, w, h, { tag: '李财骑行小课堂', l1: '骑车膝盖疼？', l2: '坐垫高度三步调', sub: '脚跟伸直 · 脚掌微弯', emo: '托腮思考', emoScale: .85,
+    art: (x, y, s) => { rider(x, y + 20 * s, .55 * s, { sh: 20, ca: Math.PI / 2, heel: false }); } })
+});
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行实验室 EP.08</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;width:100vw;max-height:100vh;aspect-ratio:16/9;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1920px;height:1080px;max-height:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/吃能量棒.js"></script>
+<script src="licai-seq/吓一跳.js"></script>
+<script src="licai-seq/思考怀疑.js"></script>
+<script src="licai-seq/按车铃.js"></script>
+<script src="licai-seq/点头指向.js"></script>
+<script src="licai-seq/看手表.js"></script>
+<script src="licai-seq/骑车挥手.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script src="labkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财骑行实验室 EP.08《心率 150，身体在烧什么？》
+const ZONES = [['低强度', '约 110 次/分', 85, 4], ['中强度', '约 140 次/分', 50, 9], ['高强度', '约 165 次/分', 25, 13]];
+labRun({ ep: 8, src: SRC, cover: { l1: '心率 150', l2: '在烧什么？', sub: '脂肪还是糖，按强度拆开', emo: '被吓一跳', art: (x, y, s) => { g.save(); g.fillStyle = C.red; g.translate(x, y); g.scale(s, s); g.beginPath(); g.moveTo(0, 40); g.bezierCurveTo(-90, -20, -40, -90, 0, -40); g.bezierCurveTo(40, -90, 90, -20, 0, 40); g.fill(); g.restore(); } },
+  pages: [
+    { type: 'open', dur: 6, emo: '看手表', l1: '心率 150，', l2: '身体在{o}烧什么{/}？' },
+    { type: 'draw', dur: 12, title: '强度不同，烧的“燃料”不同', sub: '柱 = 能量来源 · 黄 = 脂肪，红 = 糖', col: C.orange,
+      fn: lt => { const Y0 = 860, Hh = 480;
+        ZONES.forEach((z, i) => { const x = 260 + i * 380, k = eout((lt - .8 - i * .8) / .8); if (k <= 0) return; const hf = Hh * z[2] / 100 * k, hc = Hh * (100 - z[2]) / 100 * k;
+          hatchBar(x, Y0 - hf, 200, hf, C.gold, 3501 + i); hatchBar(x, Y0 - hf - hc, 200, hc, C.red, 3511 + i);
+          if (k > .9) { txt('脂肪 ' + z[2] + '%', x + 100, Y0 - hf / 2, 34, C.ink, { align: 'center' }); txt('糖 ' + (100 - z[2]) + '%', x + 100, Y0 - hf - hc / 2, 34, C.ink, { align: 'center' }); }
+          txt(z[0], x + 100, Y0 + 44, 40, C.ink, { align: 'center' }); txt(z[1], x + 100, Y0 + 90, 28, C.sub, { align: 'center', font: BODY }); });
+        hline(200, Y0, 1300, Y0, 3521, C.ink, 3.5, (lt - .5) / .4); },
+      notes: [{ t: 4.4, text: '越拼命，越靠{r}烧糖{/}', x: 1340, y: 420, size: 54 }, { t: 6.0, text: '强度低，主要烧脂肪', x: 1344, y: 500, plain: 1, size: 34 }],
+      emo: { n: '托腮思考', x: 1720, y: 780, h: 300, t: 7.0 }, foot: '口径：按最大心率约 190 估算；比例参考 Romijn 等 1993 年的经典研究，示意', cues: [['grow', .8], ['grow', 1.6], ['grow', 2.4]] },
+    { type: 'bars', dur: 11, title: '那每分钟烧掉的脂肪，谁最多？', sub: '条长 = 每分钟来自脂肪的千卡', col: C.gold, unit: ' 千卡', x0: 560, wmax: 900, max: 5, dp: 1,
+      rows: ZONES.map((z, i) => ({ l: z[0], s: z[1], v: z[3] * z[2] / 100, c: [C.green, C.orange, C.red][i] })), dy: 170, y0: 360, crown: 1,
+      notes: [{ t: 4.6, text: '{g}中等强度{/}：脂肪烧得最多', x: 560, y: 880, size: 54 }],
+      emo: { n: '灵光一闪', x: 1780, y: 880, h: 220, t: 5.4 }, foot: '估算：总消耗约 4 / 9 / 13 千卡每分钟 × 脂肪占比，示意' },
+    { type: 'draw', dur: 11, title: '身体里的“糖油箱”，能撑多久？', sub: '肌肉和肝脏里存的糖原', col: C.red,
+      fn: lt => { const x = 200, y = 320, w = 900, h = 160, lvl = lt < 4 ? 1 : Math.max(0, 1 - (lt - 4) / 4);
+        g.save(); g.fillStyle = lvl > .25 ? C.green : C.red; g.globalAlpha = .7; g.fillRect(x, y, w * lvl, h); g.restore(); hrect(x, y, w, h, 3531, C.ink, 5); g.fillStyle = C.ink; g.fillRect(x + w, y + 50, 30, 60);
+        txt('约 400～500 克糖原 ≈ 1600～2000 千卡', x, y + 220, 42, C.ink, { a: clamp((lt - 1) / .3, 0, 1) });
+        if (lt > 4) txt('高强度骑：每小时烧掉约 600 千卡的糖', x, y + 290, 40, C.red, { a: clamp((lt - 4) / .3, 0, 1) }); },
+      notes: [{ t: 6.4, text: '两三个小时见底 = 第一季讲的{r}“撞墙”{/}', x: 200, y: 760, size: 50 }, { t: 8.0, text: '所以骑久了，每小时补 30～60 克糖（一根香蕉 ≈ 25 克）', x: 204, y: 840, plain: 1, size: 34 }],
+      emo: { n: '吃能量棒', x: 1700, y: 600, h: 300, t: 7.0 }, foot: '口径：常见的生理学估算，因体重和训练水平差别很大' },
+    { type: 'list', dur: 10, title: '怎么知道自己在“中等强度”？', sub: '', col: C.green,
+      items: [['{g}能说话，但唱不了歌{/}', '最简单的判断方法'], ['心率约为最大心率的 {g}60%～75%{/}', '最大心率 ≈ 220 − 年龄（粗估）'], ['骑一小时以上，记得{g}补糖{/}', '香蕉、面包、能量胶']], emo: '骑车挥手', opt: { cx: 1640, cy: 680, ch: 440 } },
+    { type: 'end', dur: 10, items: ['强度越高，越靠{g}烧糖{/}', '{g}中等强度{/}，每分钟烧的脂肪最多', '糖油箱有限：骑久了要补'] },
+    { type: 'next', dur: 6, emo: '按车铃', l1: '跟着别人骑，', l2: '能省{o}多少{/}？', bk: 'road', bc: C.blue }
+  ] });
+
+})();
+</script>
+</body>
+</html>

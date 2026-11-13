@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行小课堂 · 第一次骑远</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;max-width:100vw;aspect-ratio:9/16;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/打招呼.js"></script>
+<script src="licai-seq/抬头张望.js"></script>
+<script src="licai-seq/看地图.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script src="shortkit.js"></script>
+<script src="tutkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财骑行小课堂 · 竖版教程 23《第一次骑远怎么准备》：手绘 + Mixkit 实拍（见 video/素材/第一次骑远/素材清单.md）
+// 里程数字、体力电量都是示意
+// 公共件里用到的动作（splitseq 按名字加载）：'打招呼' '叉腰得意'
+const k01 = tk01;
+const SHOTS = [
+  [0.0, 2.6, 'W', ''],
+  [23.5, 27.8, 'W', '一小时歇一次'],
+  [41.3, 45.2, 'W', '累了就歇，不丢人']
+];
+const withShots = tutFrames(SHOTS);
+const LINES = [
+  [0.1, 2.6, '第一次骑远，骑一半就骑不动了？'],
+  [2.7, 5.4, '出发前，先把这几件事想好。'],
+  [5.8, 9.8, '{o}距离一点点加{/}：平时能骑 20 公里，这次先试 30。'],
+  [10.0, 14.4, '每周加一点，别一下子翻倍。'],
+  [14.6, 18.8, '{o}路线提前看{/}：哪里有坡、哪里能补水、哪里能歇脚。'],
+  [19.2, 23.4, '尽量选车少的路，手机里存一份离线地图。'],
+  [23.5, 27.8, '{o}一小时歇一次{/}：下车喝水、吃点东西、活动一下。'],
+  [28.2, 32.4, '{o}去程别冲太快{/}：骑到一半时，还要留着一大半力气。'],
+  [32.5, 36.8, '回程常常又累又逆风，最容易出问题。'],
+  [37.0, 41.2, '{o}告诉家人{/}你的路线，大概几点回来。'],
+  [41.3, 45.2, '实在累了，就坐车回来，也不丢人。'],
+  [45.6, 50.4, '口诀：{o}慢慢加、先看路、留力气{/}。'],
+  [50.8, 54.6, '你骑过最远的一次是多少公里？'],
+  [54.7, 57.8, '评论区说说。']
+];
+function battery(x, y, lvl, col, a) { if (a <= 0) return; g.save(); g.globalAlpha = a; g.strokeStyle = C.ink; g.lineWidth = 6; g.beginPath(); g.roundRect(x - 70, y - 160, 140, 300, 18); g.stroke(); g.fillStyle = C.ink; g.fillRect(x - 30, y - 182, 60, 22); g.fillStyle = col; const h = 280 * lvl; g.fillRect(x - 60, y + 130 - h, 120, h); g.restore(); }
+shortRun({ src: SRC, seed: 983, lines: LINES, bgm: 'lofi',
+  title: { text: '第一次{r}骑远{/}怎么准备', t: 0, small: '李财骑行小课堂' },
+  scenes: withShots([
+    [0, 5.7, (lt, t) => { if (t >= 2.6) tutPreview(t, 2.8, ['慢慢加距离', '路线先看好', '一小时一歇', '留够力气'], '看地图'); }],
+    [5.7, 14.5, (lt, t) => {
+      const D = [20, 30, 35, 40, 50], weeks = t < 10.0 ? 2 : 5;
+      for (let i = 0; i < weeks; i++) { const a = eout(k01(t, (i < 2 ? 6.0 : 10.2) + i * .5, (i < 2 ? 6.6 : 10.8) + i * .5)); if (a <= 0) continue; const h = D[i] * 9 * a; hatchBar(130 + i * 170, 1040 - h, 120, h, i ? C.green : C.gray, 2300 + i); txt(D[i] + 'km', 190 + i * 170, 1010 - h, 40, C.ink, { align: 'center', a: a }); txt(i ? '第' + (i + 1) + '次' : '平时', 190 + i * 170, 1090, 36, C.sub, { align: 'center', a: a }); }
+      hline(110, 1045, 990, 1045, 2310, C.ink, 5, 1);
+      txt(t < 10.0 ? '先比平时多一点' : '一点点往上加', 540, 470, 56, C.ink, { align: 'center' });
+      if (t > 11.8) { txt('别一下翻倍', 540, 1170, 50, C.red, { align: 'center', a: k01(t, 11.8, 12.1) }); }
+    }],
+    [14.5, 23.5, (lt, t) => {
+      // 路线图
+      const P = [[160, 1060], [320, 880], [260, 700], [520, 620], [700, 760], [880, 560]], k = eout(k01(t, 14.7, 16.0));
+      g.save(); g.strokeStyle = C.orange; g.lineWidth = 10; g.lineCap = 'round'; g.lineJoin = 'round'; g.setLineDash([2, 18]); g.beginPath(); P.forEach((p, i) => { if (i / (P.length - 1) <= k + .01) i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]); }); g.stroke(); g.restore();
+      txt('出发', 160, 1120, 40, C.ink, { align: 'center' }); txt('终点', 880, 500, 40, C.ink, { align: 'center', a: k01(t, 15.8, 16.1) });
+      [['有坡', 260, 700, C.red, 16.0], ['补水', 520, 620, C.blue, 16.8], ['歇脚', 700, 760, C.green, 17.6]].forEach(s => { const a = k01(t, s[4], s[4] + .3); if (a <= 0) return; g.save(); g.globalAlpha = a; g.fillStyle = s[3]; g.beginPath(); g.arc(s[1], s[2], 20, 0, 6.283); g.fill(); g.restore(); txt(s[0], s[1], s[2] - 60, 44, s[3], { align: 'center', a: a }); });
+      if (t > 19.2) { boxNote(560, 960, 420, 150, 2311, C.blue, k01(t, 19.3, 19.6)); txt('车少的路', 770, 1010, 46, C.ink, { align: 'center', a: k01(t, 19.4, 19.7) }); txt('存离线地图', 770, 1070, 40, C.blue, { align: 'center', a: k01(t, 20.4, 20.7) }); }
+    }],
+    [23.5, 28.0, () => {}],
+    [28.0, 41.3, (lt, t) => {
+      if (t < 37.0) {
+        const bad = t >= 32.5, l1 = bad ? .7 - .55 * eout(k01(t, 32.8, 34.4)) : 1 - .35 * eout(k01(t, 28.6, 30.2));
+        battery(320, 820, l1, l1 > .4 ? C.green : C.red, 1); txt(bad ? '回程' : '去程到一半', 320, 1040, 48, C.ink, { align: 'center' });
+        txt(bad ? '又累又逆风' : '还剩一大半', 760, 700, 56, bad ? C.red : C.green, { align: 'center', a: k01(t, bad ? 33.0 : 29.4, bad ? 33.3 : 29.7) });
+        if (bad) for (let i = 0; i < 3; i++) { const k = (t * 1.5 + i / 3) % 1; harrow(980 - k * 300, 820 + i * 50, 940 - k * 300, 815 + i * 50, 900 - k * 300, 820 + i * 50, C.blue, 1, 5); }
+        else txt('别冲太快', 760, 800, 50, C.orange, { align: 'center', a: k01(t, 30.4, 30.7) });
+        return;
+      }
+      g.save(); g.fillStyle = C.ink; g.beginPath(); g.roundRect(380, 520, 320, 560, 36); g.fill(); g.fillStyle = '#fffdf6'; g.fillRect(400, 560, 280, 470); g.restore();
+      [['今天骑 xx 路线', 37.3], ['大概下午 5 点回', 38.3], ['到家报平安', 39.3]].forEach((s, i) => { const a = k01(t, s[1], s[1] + .3); if (a <= 0) return; g.save(); g.globalAlpha = a; g.fillStyle = C.green; g.beginPath(); g.roundRect(420, 590 + i * 140, 240, 100, 20); g.fill(); g.restore(); txt(s[0], 540, 640 + i * 140, 30, '#fff', { align: 'center', a: a }); });
+      txt('告诉家人', 850, 600, 52, C.orange, { align: 'center', a: k01(t, 37.1, 37.4) });
+    }],
+    [41.3, 45.4, () => {}],
+    [45.4, 50.6, (lt, t) => tutSlogan(t, 46.4, ['慢慢加', '先看路', '留力气'])],
+    [50.6, 58.4, (lt, t) => tutEnd(lt, t, 50.6, '最远多少？')]
+  ]),
+  cues: [['whoosh', .05], ['pop', 2.8], ['pop', 3.3], ['pop', 3.8], ['pop', 4.3], ['grow', 6.0], ['grow', 10.2], ['wrong', 11.8], ['whoosh', 14.7], ['pop', 16.0], ['pop', 16.8], ['pop', 17.6], ['pop', 19.3], ['whoosh', 23.5],
+    ['grow', 28.6], ['pop', 30.4], ['wrong', 33.0], ['pop', 37.3], ['pop', 38.3], ['ding', 39.3], ['whoosh', 41.3], ['stamp', 46.4], ['stamp', 47.3], ['stamp', 48.2], ['pop', 50.8], ['ding', 51.2]],
+  cover: (key, w, h) => epCover(key, w, h, { tag: '李财骑行小课堂', l1: '第一次骑远？', l2: '出发前想好这几件', sub: '慢慢加 · 先看路 · 留力气', emo: '仰望星星', emoScale: .8,
+    art: (x, y, s) => { g.save(); g.translate(x, y + 30 * s); g.scale(.25 * s, .25 * s); battery(0, 0, .7, C.green, 1); g.restore(); } })
+});
+
+})();
+</script>
+</body>
+</html>

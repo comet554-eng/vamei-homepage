@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行小课堂 · 摔车以后</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;max-width:100vw;aspect-ratio:9/16;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/打招呼.js"></script>
+<script src="licai-seq/摔倒爬起.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script src="shortkit.js"></script>
+<script src="tutkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财骑行小课堂 · 竖版教程 30《摔车以后怎么办》：手绘 + Mixkit 实拍（见 video/素材/摔车以后/素材清单.md）
+// 没有摔车实拍；身体信号是常见的急救科普，不能代替医生判断
+// 公共件里用到的动作（splitseq 按名字加载）：'打招呼' '叉腰得意'
+const k01 = tk01;
+const SHOTS = [
+  [0.0, 2.6, 'W', ''],
+  [32.5, 36.8, 'V', ''],
+  [41.3, 45.2, 'W', '心里慌，就推着走一段']
+];
+const withShots = tutFrames(SHOTS);
+const LINES = [
+  [0.1, 2.6, '骑车摔了一跤，第一件事做什么？'],
+  [2.7, 5.4, '别急着爬起来就骑，按这几步来。'],
+  [5.8, 9.8, '{o}先离开车道{/}：能动的话，带着车挪到路边安全的地方。'],
+  [10.0, 14.4, '后面的车可能看不见你，这一步最重要。'],
+  [14.6, 18.8, '{o}检查身体{/}：头晕、恶心、哪里特别疼、动不了，'],
+  [19.2, 23.4, '就别硬撑，马上打 120，或者请路人帮忙。'],
+  [23.5, 27.8, '擦伤先用清水冲干净，回家再好好处理。'],
+  [28.2, 32.4, '{o}检查车{/}：车把正不正，刹车灵不灵，'],
+  [32.5, 36.8, '轮子转起来晃不晃，链条有没有掉。'],
+  [37.0, 41.2, '{o}头盔摔过就换{/}，外面看着好好的，里面可能已经坏了。'],
+  [41.3, 45.2, '心里还慌，就推着走一段，或者打车回家。'],
+  [45.6, 50.4, '口诀：{o}先挪开、查身体、查车子{/}。'],
+  [50.8, 54.6, '你摔过车吗？'],
+  [54.7, 57.8, '评论区说说。']
+];
+shortRun({ src: SRC, seed: 990, lines: LINES, bgm: 'lofi',
+  title: { text: '摔车以后{r}怎么办{/}', t: 0, small: '李财骑行小课堂' },
+  scenes: withShots([
+    [0, 5.7, (lt, t) => { if (t >= 2.6) tutPreview(t, 2.8, ['先挪开', '查身体', '查车子', '头盔要换'], '摔倒爬起'); }],
+    [5.7, 14.5, (lt, t) => {
+      g.save(); g.fillStyle = '#e6dcc8'; g.fillRect(300, 460, 480, 760); g.fillStyle = '#d2c7b1'; g.fillRect(780, 460, 220, 760); g.strokeStyle = '#fffdf6'; g.lineWidth = 5; g.setLineDash([24, 18]); g.beginPath(); g.moveTo(540, 460); g.lineTo(540, 1220); g.stroke(); g.restore();
+      txt('路边', 890, 500, 40, C.ink, { align: 'center' });
+      const k = eout(k01(t, 6.2, 8.4)), x = 680 + 210 * k, y = 760; g.save(); g.fillStyle = k > .95 ? C.green : C.red; g.beginPath(); g.arc(x, y, 30, 0, 6.283); g.fill(); g.restore(); txt('你', x, y - 60, 40, k > .95 ? C.green : C.red, { align: 'center' });
+      txt('带着车挪到路边', 300, 400 + 120, 46, C.green, { align: 'left', a: k01(t, 6.0, 6.3) });
+      if (t > 10.0) { const c = eout(k01(t, 10.2, 12.0)); g.save(); g.fillStyle = C.blue; g.strokeStyle = C.ink; g.lineWidth = 5; g.beginPath(); g.roundRect(600, 1240 - 360 * c, 120, 200, 20); g.fill(); g.stroke(); g.restore(); txt('后车可能看不见你', 420, 1060, 44, C.red, { align: 'center', a: k01(t, 10.4, 10.7) }); }
+    }],
+    [14.5, 28.0, (lt, t) => {
+      if (t < 23.5) {
+        tutList(t, [['头晕、恶心', 14.8, C.red], ['哪里特别疼', 15.6, C.red], ['动不了', 16.4, C.red]], { x: 120, w: 560, dy: 140, y: 500 });
+        if (t > 19.2) { g.save(); g.fillStyle = C.ink; g.beginPath(); g.roundRect(760, 560, 200, 340, 28); g.fill(); g.fillStyle = C.red; g.fillRect(776, 590, 168, 270); g.restore(); txt('120', 860, 725, 64, '#fff', { align: 'center', a: k01(t, 19.3, 19.6) }); txt('别硬撑', 540, 1020, 58, C.red, { align: 'center', a: k01(t, 19.6, 19.9) }); txt('或者请路人帮忙', 540, 1100, 48, C.ink, { align: 'center', a: k01(t, 20.8, 21.1) }); }
+        return;
+      }
+      g.save(); g.fillStyle = '#f2c9a8'; g.strokeStyle = C.ink; g.lineWidth = 5; g.beginPath(); g.roundRect(300, 760, 480, 200, 90); g.fill(); g.stroke(); g.fillStyle = 'rgba(216,70,59,.55)'; g.beginPath(); g.ellipse(540, 850, 90, 40, 0, 0, 6.283); g.fill(); g.restore();
+      for (let i = 0; i < 8; i++) { const k = (t * 1.4 + i * .13) % 1; g.save(); g.globalAlpha = 1 - k; g.fillStyle = C.blue; g.beginPath(); g.ellipse(470 + (i * 37) % 150, 560 + k * 220, 8, 13, 0, 0, 6.283); g.fill(); g.restore(); }
+      txt('擦伤：清水冲干净', 540, 1080, 54, C.blue, { align: 'center', a: k01(t, 23.6, 23.9) });
+    }],
+    [28.0, 32.5, (lt, t) => {
+      g.save(); g.translate(540, 1000); bike(0, 0, 1.6, 0, C.ink); g.restore();
+      tutList(t, [['车把正不正', 28.3, C.green, 'tick'], ['刹车灵不灵', 29.6, C.green, 'tick']], { x: 140, w: 800, dy: 140, y: 480, h: 100 });
+    }],
+    [32.5, 37.0, (lt, t) => { txt('转一转', 770, 620, 60, C.ink, { align: 'center', a: k01(t, 32.7, 33.0) }); txt('晃不晃', 770, 720, 60, C.orange, { align: 'center', a: k01(t, 33.2, 33.5) }); txt('链条掉没掉', 770, 860, 48, C.orange, { align: 'center', a: k01(t, 34.4, 34.7) }); }],
+    [37.0, 41.3, (lt, t) => {
+      g.save(); g.translate(540, 860); g.fillStyle = C.red; g.strokeStyle = C.ink; g.lineWidth = 6; g.beginPath(); g.moveTo(-260, 60); g.quadraticCurveTo(-250, -240, 0, -250); g.quadraticCurveTo(250, -240, 260, 60); g.closePath(); g.fill(); g.stroke();
+      g.strokeStyle = '#fff'; g.lineWidth = 8; [-120, 0, 120].forEach(dx => { g.beginPath(); g.moveTo(dx, 30); g.lineTo(dx * .7, -200); g.stroke(); });
+      g.strokeStyle = C.ink; g.lineWidth = 7; g.beginPath(); g.moveTo(-60, -230); g.lineTo(-10, -140); g.lineTo(-50, -90); g.lineTo(30, 0); g.stroke(); g.restore();
+      txt('外面看着好好的', 540, 1000, 48, C.ink, { align: 'center', a: k01(t, 37.4, 37.7) }); txt('里面可能已经坏了', 540, 1070, 48, C.red, { align: 'center', a: k01(t, 38.2, 38.5) });
+      if (t > 39.0) stamp('摔过就换', 540, 520, 76, t - 39.0, -.05);
+    }],
+    [41.3, 45.4, () => {}],
+    [45.4, 50.6, (lt, t) => tutSlogan(t, 46.4, ['先挪开', '查身体', '查车子'])],
+    [50.6, 58.4, (lt, t) => tutEnd(lt, t, 50.6, '摔过吗？')]
+  ]),
+  cues: [['whoosh', .05], ['pop', 2.8], ['pop', 3.3], ['pop', 3.8], ['pop', 4.3], ['whoosh', 6.2], ['ding', 8.4], ['whoosh', 10.2], ['pop', 14.8], ['pop', 15.6], ['pop', 16.4], ['wrong', 19.6], ['pop', 23.6], ['pop', 28.3], ['pop', 29.6],
+    ['whoosh', 32.5], ['pop', 37.4], ['stamp', 39.0], ['whoosh', 41.3], ['stamp', 46.4], ['stamp', 47.3], ['stamp', 48.2], ['pop', 50.8], ['ding', 51.2]],
+  cover: (key, w, h) => epCover(key, w, h, { tag: '李财骑行小课堂', l1: '骑车摔了一跤？', l2: '先做这三件事', sub: '先挪开 · 查身体 · 查车子', emo: '委屈含泪', emoScale: .8,
+    art: (x, y, s) => { g.save(); g.translate(x, y + 30 * s); g.rotate(-.5); bike(0, 0, .5 * s, 0, C.ink); g.restore(); } })
+});
+
+})();
+</script>
+</body>
+</html>

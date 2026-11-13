@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行小课堂 · 带东西</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;max-width:100vw;aspect-ratio:9/16;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/打招呼.js"></script>
+<script src="licai-seq/背包出发.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script src="shortkit.js"></script>
+<script src="tutkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财骑行小课堂 · 竖版教程 27《骑车怎么带东西》：手绘 + Mixkit 实拍（见 video/素材/带东西/素材清单.md）
+// 各种包和货架都是手绘示意；实拍只是推车、骑车的画面
+// 公共件里用到的动作（splitseq 按名字加载）：'打招呼' '叉腰得意'
+const k01 = tk01;
+const SHOTS = [
+  [0.0, 2.6, 'W', ''],
+  [32.5, 36.8, 'W', '扣牢了，晃一晃再走'],
+  [41.3, 45.2, 'W', '东西放稳，骑着轻松']
+];
+const withShots = tutFrames(SHOTS);
+const LINES = [
+  [0.1, 2.6, '骑车背个大包，背都湿透了？'],
+  [2.7, 5.4, '东西怎么带，看这几招。'],
+  [5.8, 9.8, '{o}小东西{/}：骑行服后兜、座包、上管包就够了。'],
+  [10.0, 14.4, '{o}背包{/}：选贴背、带胸扣的，越轻越好，别超过三五公斤。'],
+  [14.6, 18.8, '{o}东西多{/}：装个后货架，挂驮包或者用绑带捆好。'],
+  [19.2, 23.4, '重的东西放低、放后面，车更稳。'],
+  [23.5, 27.8, '{o}车筐{/}放轻的东西，太重了，车头会发飘。'],
+  [28.2, 32.4, '{o}千万别挂在车把上{/}，袋子一晃，卷进前轮就摔了。'],
+  [32.5, 36.8, '绑带、挂钩要扣牢，骑之前用手晃一晃，不松才行。'],
+  [37.0, 41.2, '长的东西别横着伸出车外，蹭到人和车很危险。'],
+  [41.3, 45.2, '东西放稳了，骑着才轻松。'],
+  [45.6, 50.4, '口诀：{o}重的放低、别挂车把、绑牢再走{/}。'],
+  [50.8, 54.6, '你骑车一般怎么带东西？'],
+  [54.7, 57.8, '评论区说说。']
+];
+const BX = 540, BY = 880, BS = 2.3, P = (x, y) => [BX + x * BS, BY + y * BS];
+function bag(x, y, w, h, col, a) { if (a <= 0) return; g.save(); g.globalAlpha = a; g.fillStyle = col; g.strokeStyle = C.ink; g.lineWidth = 4; g.beginPath(); g.roundRect(x, y, w, h, 12); g.fill(); g.stroke(); g.restore(); }
+function bikeBase() { g.save(); g.translate(BX, BY); bike(0, 0, BS, 0, C.ink); g.restore(); }
+function rack(a) { if (a <= 0) return; const r0 = P(-50, -60), r1 = P(-150, -60), w = P(-105, 30); g.save(); g.globalAlpha = a; g.strokeStyle = C.ink; g.lineWidth = 6; g.beginPath(); g.moveTo(r0[0], r0[1]); g.lineTo(r1[0], r1[1]); g.moveTo(r1[0] + 30, r1[1]); g.lineTo(w[0], w[1]); g.stroke(); g.restore(); }
+shortRun({ src: SRC, seed: 987, lines: LINES, bgm: 'lofi',
+  title: { text: '骑车{r}怎么带{/}东西', t: 0, small: '李财骑行小课堂' },
+  scenes: withShots([
+    [0, 5.7, (lt, t) => { if (t >= 2.6) tutPreview(t, 2.8, ['小包就够', '背包要轻', '重的放低', '别挂车把'], '背包出发'); }],
+    [5.7, 14.5, (lt, t) => {
+      if (t < 10.0) {
+        bikeBase(); const sb = P(-62, -66), tb = P(5, -66);
+        bag(sb[0] - 30, sb[1], 70, 50, C.green, k01(t, 6.2, 6.5)); txt('座包', sb[0] - 40, sb[1] - 70, 46, C.green, { align: 'center', a: k01(t, 6.3, 6.6) });
+        bag(tb[0] - 60, tb[1] - 20, 120, 44, C.blue, k01(t, 7.2, 7.5)); txt('上管包', tb[0], tb[1] - 80, 46, C.blue, { align: 'center', a: k01(t, 7.3, 7.6) });
+        txt('+ 骑行服后兜', 540, 1150, 48, C.ink, { align: 'center', a: k01(t, 6.0, 6.3) });
+        txt('小东西', 540, 480, 58, C.ink, { align: 'center', a: k01(t, 5.9, 6.2) });
+        return;
+      }
+      // 背包：背面
+      g.save(); g.fillStyle = C.blue; g.beginPath(); g.roundRect(380, 620, 320, 420, 60); g.fill(); g.fillStyle = C.ink; g.beginPath(); g.arc(540, 560, 70, 0, 6.283); g.fill(); g.restore();
+      bag(420, 680, 240, 300, C.orange, 1); g.save(); g.strokeStyle = C.ink; g.lineWidth = 8; g.beginPath(); g.moveTo(420, 760); g.lineTo(660, 760); g.stroke(); g.restore();
+      txt('贴背、带胸扣', 540, 1100, 52, C.green, { align: 'center', a: k01(t, 10.4, 10.7) }); txt('别超过三五公斤', 540, 1170, 46, C.orange, { align: 'center', a: k01(t, 11.6, 11.9) });
+    }],
+    [14.5, 28.0, (lt, t) => {
+      bikeBase(); rack(t < 23.5 ? k01(t, 14.7, 15.0) : 0);
+      if (t < 23.5) {
+        const low = t > 19.2 ? eout(k01(t, 19.4, 20.4)) : 0, r1 = P(-150, -60);
+        bag(r1[0] + 20, r1[1] + 10 + 90 * low, 160, 170, C.orange, k01(t, 15.2, 15.5));
+        txt('后货架 + 驮包', 540, 490, 56, C.orange, { align: 'center', a: k01(t, 14.8, 15.1) });
+        if (t > 19.2) { harrow(r1[0] - 60, r1[1] - 40, r1[0] - 80, r1[1] + 60, r1[0] - 60, r1[1] + 160, C.green, k01(t, 19.4, 19.8), 6); txt('重的放低、放后面', 540, 1170, 50, C.green, { align: 'center', a: k01(t, 19.6, 19.9) }); }
+        return;
+      }
+      const f = P(110, -100), heavy = t > 25.4, wob = heavy ? Math.sin(t * 8) * 12 : 0;
+      g.save(); g.translate(0, wob); g.strokeStyle = C.ink; g.fillStyle = 'rgba(232,200,120,.6)'; g.lineWidth = 5; g.beginPath(); g.roundRect(f[0] - 20, f[1] - 40, 160, 110, 10); g.fill(); g.stroke(); g.restore();
+      txt(heavy ? '太重：车头发飘' : '车筐：放轻的东西', 540, 490, 54, heavy ? C.red : C.green, { align: 'center' });
+      if (heavy) bigX(900, 1150, 34, k01(t, 25.6, 25.9));
+    }],
+    [28.0, 41.3, (lt, t) => {
+      if (t < 32.5) {
+        bikeBase(); const hb = P(97, -82), sw = Math.sin(t * 5) * .5 * k01(t, 28.4, 29.0);
+        g.save(); g.translate(hb[0], hb[1]); g.rotate(sw); g.strokeStyle = C.ink; g.lineWidth = 4; g.beginPath(); g.moveTo(0, 0); g.lineTo(0, 60); g.stroke(); g.fillStyle = C.red; g.beginPath(); g.roundRect(-45, 60, 90, 110, 12); g.fill(); g.stroke(); g.restore();
+        txt('别挂车把上', 540, 490, 60, C.red, { align: 'center', a: k01(t, 28.3, 28.6) }); bigX(880, 490, 36, k01(t, 28.8, 29.1)); txt('卷进前轮就摔了', 540, 1170, 50, C.red, { align: 'center', a: k01(t, 29.6, 29.9) });
+        return;
+      }
+      if (t < 37.0) return;
+      bikeBase(); g.save(); g.strokeStyle = C.brown; g.lineWidth = 18; g.lineCap = 'round'; g.beginPath(); const r = P(-100, -75); g.moveTo(r[0] - 260, r[1]); g.lineTo(r[0] + 260, r[1]); g.stroke(); g.restore();
+      txt('长东西横着伸出去', 540, 490, 54, C.red, { align: 'center', a: k01(t, 37.1, 37.4) }); bigX(880, 1150, 36, k01(t, 37.8, 38.1)); txt('蹭到人和车', 460, 1150, 48, C.red, { align: 'center', a: k01(t, 38.4, 38.7) });
+    }],
+    [41.3, 45.4, () => {}],
+    [45.4, 50.6, (lt, t) => tutSlogan(t, 46.4, ['重的放低', '别挂车把', '绑牢再走'])],
+    [50.6, 58.4, (lt, t) => tutEnd(lt, t, 50.6, '怎么带东西？')]
+  ]),
+  cues: [['whoosh', .05], ['pop', 2.8], ['pop', 3.3], ['pop', 3.8], ['pop', 4.3], ['pop', 6.2], ['pop', 7.2], ['pop', 10.4], ['pop', 11.6], ['pop', 14.8], ['pop', 15.2], ['whoosh', 19.4], ['pop', 23.6], ['wrong', 25.6],
+    ['wrong', 28.8], ['whoosh', 32.5], ['wrong', 37.8], ['whoosh', 41.3], ['stamp', 46.4], ['stamp', 47.3], ['stamp', 48.2], ['pop', 50.8], ['ding', 51.2]],
+  cover: (key, w, h) => epCover(key, w, h, { tag: '李财骑行小课堂', l1: '背大包骑车累？', l2: '东西这样带', sub: '重的放低 · 别挂车把 · 绑牢再走', emo: '歪头', emoScale: .8,
+    art: (x, y, s) => { g.save(); g.translate(x, y + 30 * s); bike(0, 0, .6 * s, 0, C.ink); g.restore(); } })
+});
+
+})();
+</script>
+</body>
+</html>

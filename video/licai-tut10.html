@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行小课堂 · 链条保养</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;max-width:100vw;aspect-ratio:9/16;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/打招呼.js"></script>
+<script src="licai-seq/检查车轮.js"></script>
+<script src="licai-seq/检查车轮2.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script src="shortkit.js"></script>
+<script src="tutkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财骑行小课堂 · 竖版教程 09《链条怎么清洁上油》：手绘步骤 + Mixkit 实拍（见 video/素材/链条保养/素材清单.md）
+// 没有找到给自行车链条上油的实拍，擦、滴、擦三步用手绘链条动画；实拍只放牙盘、飞轮、骑行画面
+// 公共件里用到的动作（splitseq 按名字加载）：'打招呼' '叉腰得意'
+const SHOTS = [
+  [0.0, 2.6, 'V', ''],
+  [5.8, 9.8, 'V', ''],
+  [14.6, 18.8, 'V', ''],
+  [28.2, 32.4, 'W', '油留在里面，外面擦干'],
+  [37.0, 41.2, 'W', '骑两三百公里，或者淋雨之后']
+];
+const withShots = tutFrames(SHOTS);
+const LINES = [
+  [0.1, 2.6, '链条咔咔响、黑乎乎的？'],
+  [2.7, 5.4, '三步保养，骑起来又顺又安静。'],
+  [5.8, 9.8, '第一，{o}擦{/}：干布夹住链条，倒转踏板，把旧油泥擦掉。'],
+  [10.0, 14.4, '特别脏的话，用链条清洁剂刷一刷，再擦干。'],
+  [14.6, 18.8, '第二，{o}滴油{/}：每一节滚子滴一滴，边滴边倒转踏板。'],
+  [19.2, 23.4, '用自行车专用的链条油，别用食用油。'],
+  [23.5, 27.8, '除锈喷剂主要是清洁防锈，不能代替链条油。'],
+  [28.2, 32.4, '第三，{o}擦外面{/}：转几圈让油渗进去，再把表面多余的油擦掉。'],
+  [32.5, 36.8, '油留在里面，外面干干的，才不容易粘灰。'],
+  [37.0, 41.2, '多久做一次？一般骑两三百公里，或者淋过雨之后。'],
+  [41.3, 45.2, '听到链条咔咔响、摸着发干，也该上油了。'],
+  [45.6, 50.4, '口诀：{o}擦干净、滴一滴、擦外面{/}。'],
+  [50.8, 54.6, '你多久给链条上一次油？'],
+  [54.7, 57.8, '评论区说说。']
+];
+// 一段横着的链条：off 滚动偏移，dirt 0~1 脏，oil 已滴油的滚子数
+function chain(y, off, dirt, oilN, x0, x1) {
+  x0 = x0 || 60; x1 = x1 || 1020; const P = 70;
+  g.save(); g.beginPath(); g.rect(x0, y - 60, x1 - x0, 120); g.clip();
+  for (let i = -1; i < (x1 - x0) / P + 2; i++) {
+    const x = x0 + i * P + ((off % P) + P) % P;
+    g.fillStyle = i % 2 ? '#9a948c' : '#b7b1a8'; g.strokeStyle = C.ink; g.lineWidth = 3; g.beginPath(); g.roundRect(x - 8, y - 26, P + 16, 52, 24); g.fill(); g.stroke();
+  }
+  for (let i = -1; i < (x1 - x0) / P + 2; i++) {
+    const x = x0 + i * P + ((off % P) + P) % P, k = Math.round((x - x0) / P);
+    g.fillStyle = k >= 0 && k < oilN ? '#e0b030' : '#6e6860'; g.beginPath(); g.arc(x, y, 15, 0, 6.283); g.fill(); g.strokeStyle = C.ink; g.stroke();
+  }
+  if (dirt > 0) { g.globalAlpha = dirt * .75; g.fillStyle = '#2b2621'; for (let i = 0; i < 40; i++) { const dx = x0 + (hash(i) * (x1 - x0) + off * .0) % (x1 - x0); g.beginPath(); g.arc(dx, y - 20 + hash(i + 7) * 40, 6 + hash(i + 3) * 10, 0, 6.283); g.fill(); } }
+  g.restore();
+}
+function cloth(x, y, a) { if (a <= 0) return; g.save(); g.globalAlpha = a; g.fillStyle = '#f3ead6'; g.strokeStyle = C.ink; g.lineWidth = 4; g.beginPath(); g.roundRect(x - 90, y - 70, 180, 140, 26); g.fill(); g.stroke(); g.restore(); }
+function bottle(x, y, a) { if (a <= 0) return; g.save(); g.globalAlpha = a; g.fillStyle = C.green; g.strokeStyle = C.ink; g.lineWidth = 4; g.beginPath(); g.roundRect(x - 40, y - 150, 80, 130, 14); g.fill(); g.stroke(); g.beginPath(); g.moveTo(x - 14, y - 20); g.lineTo(x, y + 20); g.lineTo(x + 14, y - 20); g.closePath(); g.fill(); g.stroke(); g.restore(); }
+shortRun({ src: SRC, seed: 969, lines: LINES, bgm: 'lofi',
+  title: { text: '链条{r}清洁上油{/}', t: 0, small: '李财骑行小课堂' },
+  scenes: withShots([
+    [0, 5.7, (lt, t) => {
+      if (t < 2.6) { txt('咔咔', 770, 640, 80, C.red, { align: 'center' }); txt('黑乎乎', 770, 780, 60, C.ink, { align: 'center' }); return; }
+      tutPreview(t, 2.8, ['擦干净', '滴一滴', '擦外面'], '检查车轮');
+    }],
+    [5.7, 14.5, (lt, t) => {
+      if (t < 9.8) { txt('干布夹住', 770, 600, 56, C.ink, { align: 'center', a: tk01(t, 6.4, 6.7) }); txt('倒转踏板', 770, 720, 56, C.ink, { align: 'center', a: tk01(t, 7.2, 7.5) }); txt('擦掉油泥', 770, 840, 56, C.orange, { align: 'center', a: tk01(t, 8.0, 8.3) }); return; }
+      const k = tk01(t, 10.0, 13.6); chain(780, -t * 120, 1 - k, 0); cloth(540, 780, 1);
+      txt('清洁剂刷一刷 → 擦干', 540, 560, 54, C.ink, { align: 'center', a: tk01(t, 10.4, 10.7) });
+    }],
+    [14.5, 28.0, (lt, t) => {
+      if (t < 19.2) { txt('每节滚子', 770, 600, 56, C.ink, { align: 'center', a: tk01(t, 15.0, 15.3) }); txt('滴一滴', 770, 720, 64, C.orange, { align: 'center', a: tk01(t, 15.8, 16.1) }); txt('边滴边倒转', 770, 840, 50, C.ink, { align: 'center', a: tk01(t, 16.6, 16.9) }); return; }
+      chain(860, 0, 0, Math.floor(tk01(t, 19.2, 23.0) * 14)); bottle(100 + 70 * Math.floor(tk01(t, 19.2, 23.0) * 13), 760, 1);
+      if (t < 23.5) { tick(220, 560, 40, tk01(t, 19.6, 19.9)); txt('自行车专用链条油', 270, 570, 50, C.green, { a: tk01(t, 19.6, 19.9) }); bigX(220, 660, 40, tk01(t, 21.0, 21.3)); txt('食用油', 270, 670, 50, C.red, { a: tk01(t, 21.0, 21.3) }); }
+      else { bigX(220, 560, 40, tk01(t, 23.6, 23.9)); txt('除锈喷剂 ≠ 链条油', 270, 570, 50, C.red, { a: tk01(t, 23.6, 23.9) }); txt('它主要是清洁、防锈', 270, 660, 40, C.sub, { a: tk01(t, 24.4, 24.7) }); }
+    }],
+    [28.0, 37.0, (lt, t) => {
+      if (t < 32.5) return;
+      chain(780, -t * 60, 0, 14); cloth(540, 780, 1);
+      txt('里面有油', 300, 600, 52, C.orange, { align: 'center', a: tk01(t, 32.8, 33.1) }); txt('外面干干的', 760, 600, 52, C.green, { align: 'center', a: tk01(t, 33.4, 33.7) });
+      txt('不粘灰 ✓', 540, 980, 60, C.green, { align: 'center', a: tk01(t, 34.4, 34.7) });
+    }],
+    [37.0, 45.4, (lt, t) => {
+      if (t < 41.3) return;
+      txt('咔咔响', 300, 640, 70, C.red, { align: 'center', a: tk01(t, 41.5, 41.8) }); txt('摸着发干', 760, 640, 64, C.red, { align: 'center', a: tk01(t, 42.2, 42.5) });
+      stamp('该上油了', 540, 880, 80, t - 43.0, -.06); cat('检查车轮2', 860, 1080, 220, t - 41.6);
+    }],
+    [45.4, 50.6, (lt, t) => tutSlogan(t, 46.4, ['擦干净', '滴一滴', '擦外面'])],
+    [50.6, 58.4, (lt, t) => tutEnd(lt, t, 50.6, '多久一次？')]
+  ]),
+  cues: [['whoosh', .05], ['pop', 2.8], ['pop', 3.3], ['pop', 3.8], ['whoosh', 5.8], ['pop', 6.4], ['pop', 7.2], ['pen', 10.0, 3], ['whoosh', 14.6], ['pop', 15.8], ['pop', 19.6], ['wrong', 21.0], ['wrong', 23.6],
+    ['whoosh', 28.2], ['pop', 32.8], ['ding', 34.4], ['whoosh', 37.0], ['pop', 41.5], ['pop', 42.2], ['stamp', 43.0], ['stamp', 46.4], ['stamp', 47.3], ['stamp', 48.2], ['pop', 50.8], ['ding', 51.2]],
+  cover: (key, w, h) => epCover(key, w, h, { tag: '李财骑行小课堂', l1: '链条咔咔响？', l2: '三步上好油', sub: '擦干净 · 滴一滴 · 擦外面', emo: '叉腰自信', emoScale: .85,
+    art: (x, y, s) => { g.save(); g.translate(x - 540 * s * .4, y - 780 * s * .4); g.scale(s * .4, s * .4); chain(780, 0, 0, 6, 200, 880); g.restore(); } })
+});
+
+})();
+</script>
+</body>
+</html>

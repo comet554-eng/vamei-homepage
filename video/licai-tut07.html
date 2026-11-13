@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行小课堂 · 出门检查</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;max-width:100vw;aspect-ratio:9/16;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/举手欢迎.js"></script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/开车灯.js"></script>
+<script src="licai-seq/打招呼.js"></script>
+<script src="licai-seq/按车铃.js"></script>
+<script src="licai-seq/检查车轮.js"></script>
+<script src="licai-seq/检查车轮2.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script src="shortkit.js"></script>
+<script src="tutkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财骑行小课堂 · 竖版教程 06《出门前 1 分钟检查》：手绘 + Mixkit 实拍（见 video/素材/出门检查/素材清单.md）
+// 公共件里用到的动作（splitseq 按名字加载）：'打招呼' '叉腰得意'
+const SHOTS = [
+  [0.0, 2.6, 'W', ''],
+  [5.8, 9.8, 'V', ''],
+  [14.6, 18.8, 'W', '捏到底：刹车把别碰到车把'],
+  [23.5, 27.8, 'V', ''],
+  [41.3, 45.2, 'W', '查好了，再出发']
+];
+const withShots = tutFrames(SHOTS);
+const LINES = [
+  [0.1, 2.6, '出门骑车，你会先检查一下吗？'],
+  [2.7, 5.4, '一分钟查五个地方，路上少很多麻烦。'],
+  [5.8, 9.8, '第一，{o}轮胎{/}：用手捏一捏，要硬邦邦的。'],
+  [10.0, 14.4, '最好用带气压表的打气筒，打到胎侧写的范围。'],
+  [14.6, 18.8, '第二，{o}刹车{/}：捏到底，刹车把不能碰到车把。'],
+  [19.2, 23.4, '推着车捏刹车，轮子要马上停住。'],
+  [23.5, 27.8, '第三，{o}链条{/}：倒转几圈踏板，不干、不咔咔响。'],
+  [28.2, 32.4, '第四，{o}快拆{/}：扳手要合紧，贴住车架。'],
+  [32.5, 36.8, '第五，{o}车把{/}：夹住前轮转一转，车把不能晃。'],
+  [37.0, 41.2, '晚上骑车，再按一下车灯和车铃。'],
+  [41.3, 45.2, '哪一项不对，先修好再出门。'],
+  [45.6, 50.4, '口诀：{o}胎、刹、链、快拆、把{/}。'],
+  [50.8, 54.6, '你出门前会检查哪一项？'],
+  [54.7, 57.8, '评论区说说。']
+];
+function pump(x, y, s, k) {
+  g.save(); g.translate(x, y); g.scale(s, s); g.lineCap = 'round';
+  g.fillStyle = C.ink; g.fillRect(-70, 150, 140, 18); g.fillStyle = C.orange; g.beginPath(); g.roundRect(-26, -110, 52, 262, 10); g.fill();
+  const hy = -150 - (Math.sin(k * 12) + 1) * 30; g.strokeStyle = C.ink; g.lineWidth = 8; g.beginPath(); g.moveTo(0, -100); g.lineTo(0, hy); g.stroke(); g.lineWidth = 16; g.beginPath(); g.moveTo(-60, hy); g.lineTo(60, hy); g.stroke();
+  g.fillStyle = '#fff'; g.strokeStyle = C.ink; g.lineWidth = 4; g.beginPath(); g.arc(0, 30, 40, 0, 6.283); g.fill(); g.stroke();
+  const na = Math.PI * .8 + k * Math.PI * 1.2; g.strokeStyle = C.red; g.beginPath(); g.moveTo(0, 30); g.lineTo(Math.cos(na) * 30, 30 + Math.sin(na) * 30); g.stroke(); g.restore();
+}
+// 快拆：轮轴 + 扳手，closed 0~1
+function qr(x, y, closed, col) {
+  g.save(); g.translate(x, y); g.strokeStyle = C.ink; g.lineWidth = 12; g.lineCap = 'round';
+  g.beginPath(); g.moveTo(0, -200); g.lineTo(0, 0); g.stroke(); gear(0, 0, 30, 10, 0, C.ink, 4);
+  g.rotate(-1.4 * (1 - closed)); g.fillStyle = col; g.beginPath(); g.roundRect(-10, -10, 26, -170, 13); g.fill(); g.restore();
+}
+shortRun({ src: SRC, seed: 966, lines: LINES, bgm: 'lofi',
+  title: { text: '出门前{r}1 分钟{/}检查', t: 0, small: '李财骑行小课堂' },
+  scenes: withShots([
+    [0, 5.7, (lt, t) => { if (t >= 2.6) tutPreview(t, 2.8, ['轮胎', '刹车', '链条', '快拆', '车把'], '检查车轮2'); }],
+    [5.7, 14.5, (lt, t) => {
+      if (t < 9.8) { txt('捏一捏', 770, 600, 60, C.ink, { align: 'center', a: tk01(t, 6.4, 6.7) }); txt('硬邦邦 ✓', 770, 720, 60, C.green, { align: 'center', a: tk01(t, 7.2, 7.5) }); txt('软塌塌 ✗', 770, 850, 52, C.red, { align: 'center', a: tk01(t, 8.0, 8.3) }); return; }
+      pump(330, 800, 1.3, tk01(t, 10.2, 13.0)); txt('看气压表', 330, 520, 50, C.ink, { align: 'center', a: tk01(t, 10.4, 10.7) });
+      boxNote(560, 600, 420, 300, 901, C.orange, tk01(t, 11.6, 11.9)); txt('打到胎侧', 770, 680, 50, C.ink, { align: 'center', a: tk01(t, 11.7, 12.0) }); txt('写的范围', 770, 760, 50, C.orange, { align: 'center', a: tk01(t, 11.9, 12.2) }); txt('别超过 MAX', 770, 840, 38, C.red, { align: 'center', a: tk01(t, 12.5, 12.8) });
+    }],
+    [14.5, 23.5, (lt, t) => {
+      if (t < 19.2) return;
+      const k = tk01(t, 19.4, 20.4), stop = t > 21.0; g.save(); g.globalAlpha = tk01(t, 19.2, 19.5); bike(540 - 160 * (1 - k), 800, 1.1, stop ? 0 : t * 5, C.ink); g.restore();
+      if (t > 20.4) { stamp('停！', 760, 600, 70, t - 20.6, .06); }
+      if (t > 21.4) txt('轮子马上停住 ✓', 540, 1010, 54, C.green, { align: 'center', a: tk01(t, 21.4, 21.7) });
+    }],
+    [23.5, 37.0, (lt, t) => {
+      if (t < 28.0) { txt('倒转踏板', 770, 600, 56, C.ink, { align: 'center', a: tk01(t, 24.0, 24.3) }); txt('不干', 770, 720, 56, C.green, { align: 'center', a: tk01(t, 24.8, 25.1) }); txt('不咔咔响', 770, 820, 56, C.green, { align: 'center', a: tk01(t, 25.4, 25.7) }); return; }
+      if (t < 32.5) {
+        qr(300, 900, 1, C.green); txt('合紧 ✓', 300, 1000, 50, C.green, { align: 'center', a: tk01(t, 28.6, 28.9) });
+        qr(780, 900, 0, C.red); txt('松开 ✗', 780, 1000, 50, C.red, { align: 'center', a: tk01(t, 29.4, 29.7) });
+        txt('扳手贴住车架', 540, 540, 56, C.ink, { align: 'center', a: tk01(t, 30.2, 30.5) }); return;
+      }
+      cat('检查车轮', 540, 820, 480, t - 32.5);
+      if (t > 33.6) { harrow(300, 560, 220, 640, 300, 720, C.orange, tk01(t, 33.6, 34.0), 6); harrow(780, 560, 860, 640, 780, 720, C.orange, tk01(t, 33.6, 34.0), 6); txt('车把不能晃', 540, 1110, 54, C.ink, { align: 'center', a: tk01(t, 34.4, 34.7) }); }
+    }],
+    [37.0, 45.4, (lt, t) => { if (t < 41.3) { cat('开车灯', 330, 820, 380, t - 37.0); cat('按车铃', 780, 820, 360, t - 38.2); txt('晚上：车灯 + 车铃', 540, 560, 56, C.ink, { align: 'center', a: tk01(t, 37.2, 37.5) }); } }],
+    [45.4, 50.6, (lt, t) => tutSlogan(t, 46.4, ['胎', '刹', '链', '快拆', '把'])],
+    [50.6, 58.4, (lt, t) => tutEnd(lt, t, 50.6, '查哪一项？')]
+  ]),
+  cues: [['whoosh', .05], ['pop', 2.8], ['pop', 3.3], ['pop', 3.8], ['pop', 4.3], ['pop', 4.8], ['whoosh', 5.8], ['pop', 6.4], ['ding', 7.2], ['wrong', 8.0], ['pop', 10.2], ['pop', 11.6], ['whoosh', 14.6],
+    ['pop', 19.4], ['stamp', 20.6], ['ding', 21.4], ['whoosh', 23.5], ['pop', 24.8], ['pop', 25.4], ['ding', 28.6], ['wrong', 29.4], ['pop', 32.5], ['pop', 33.6], ['pop', 37.0], ['bell', 38.4], ['whoosh', 41.3],
+    ['stamp', 46.4], ['stamp', 47.3], ['stamp', 48.2], ['stamp', 49.1], ['pop', 50.8], ['ding', 51.2]],
+  cover: (key, w, h) => epCover(key, w, h, { tag: '李财骑行小课堂', l1: '出门前1分钟', l2: '查这5个地方', sub: '胎 · 刹 · 链 · 快拆 · 把', emo: '握拳加油', emoScale: .85,
+    art: (x, y, s) => { pump(x, y + 20 * s, .55 * s, .6); } })
+});
+
+})();
+</script>
+</body>
+</html>

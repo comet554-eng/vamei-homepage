@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财爱骑行 · 开门杀（插画版）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;max-width:100vw;aspect-ratio:9/16;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<script src="licai-bg/开门杀.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/侧面骑车.js"></script>
+<script src="licai-seq/吓一跳.js"></script>
+<script src="licai-seq/打招呼.js"></script>
+<script src="licai-seq/放大镜2.js"></script>
+<script src="licai-seq/骑车开心2.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script src="shortkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财爱骑行 · 竖版短视频 01《开门杀》插画版：GPT 画的街景当背景，李财的逐帧动作放进去
+Object.assign(LICAI_IMG, LICAI_BG);
+window.SHORT_TITLE_BG = true;
+const k01 = (t, a, b) => clamp((t - a) / (b - a), 0, 1);
+// 背景：zoom 以 (ax, ay) 为中心放大；flip 水平镜像（街道侧视图镜像后车头朝右，和李财骑行方向一致）
+function bg(name, zoom, ax, ay, o) {
+  o = o || {}; const im = IMG['bg:' + name]; if (!im) return;
+  g.save(); if (o.filter) g.filter = o.filter;
+  g.translate(ax, ay); g.scale(zoom * (o.flip ? -1 : 1), zoom); g.translate(o.flip ? -(W - ax) : -ax, -ay);
+  g.drawImage(im, 0, 0, W, H); g.restore();
+  if (o.dim) { g.fillStyle = 'rgba(255,253,246,' + o.dim + ')'; g.fillRect(0, 0, W, H); }
+}
+// 贴纸式标签：白底圆角 + 彩色字
+function tag(text, x, y, size, col, a, align) {
+  if (a <= 0) return; const w = textW(text, size) + 44, x0 = align === 'left' ? x : x - w / 2;
+  g.save(); g.globalAlpha = a; g.fillStyle = 'rgba(255,253,246,.94)'; g.strokeStyle = col; g.lineWidth = 4;
+  g.beginPath(); g.roundRect(x0, y - size * .78, w, size * 1.56, 18); g.fill(); g.stroke(); g.restore();
+  txt(text, x0 + w / 2, y + 2, size, col, { align: 'center', a: a });
+}
+function bracketH(x1, x2, y, col, a) {
+  if (a <= 0) return; g.save(); g.globalAlpha = a; g.strokeStyle = col; g.lineWidth = 6; g.lineCap = 'round';
+  g.beginPath(); g.moveTo(x1, y - 18); g.lineTo(x1, y); g.lineTo(x2, y); g.lineTo(x2, y - 18); g.stroke(); g.restore();
+}
+function bracketV(x, y1, y2, col, a) {
+  if (a <= 0) return; g.save(); g.globalAlpha = a; g.strokeStyle = col; g.lineWidth = 6; g.lineCap = 'round';
+  g.beginPath(); g.moveTo(x - 18, y1); g.lineTo(x, y1); g.lineTo(x, y2); g.lineTo(x - 18, y2); g.stroke(); g.restore();
+}
+
+const LINES = [
+  [0.15, 2.9, '骑车最怕的，不是车多。'],
+  [3.0, 4.3, '是这扇门！'],
+  [4.5, 8.0, '路边停着的车，车门随时可能打开。'],
+  [8.2, 12.4, '正常骑，一秒就冲出{r}四米多{/}，根本来不及躲。'],
+  [12.7, 18.1, '所以经过停着的车，离它至少{g}一个车门宽{/}，大概一米。'],
+  [18.5, 23.2, '看到车里有人，或者刹车灯亮着，再离远一点。'],
+  [23.5, 27.6, '实在太挤，就放慢速度，手放在刹车上。'],
+  [28.0, 31.6, '你被开门杀吓到过吗？评论区说说。']
+];
+const HIT = .75, DOOR_X = 612, ROAD = 1190;
+
+shortRun({ src: SRC, seed: 902, lines: LINES,
+  title: { text: '{r}开门杀{/}', t: 3.0, small: '骑车最怕的' },
+  scenes: [
+    // 1 街上骑 → 车门半开 → 全开 → 撞上（漫画式切镜）
+    [0, 4.4, (lt, t) => {
+      shake(t, HIT, 24);
+      const z = 1 + .05 * t;
+      if (t < .42) bg('街道侧视', 1.35, 540, 1100, { flip: true });
+      else bg(t < .6 ? '车门半开' : '车门全开', t < HIT ? 1.08 : z, 560, 900);
+      if (t < HIT) {
+        const x = t < .42 ? -240 + 600 * t / .42 : 230 + (DOOR_X - 190 - 230) * k01(t, .42, HIT);
+        cat('侧面骑车', x, ROAD - 210, 420, 1, { noPop: true });
+        for (let i = 0; i < 4; i++) hline(x - 330 - i * 50, ROAD - 300 + i * 60, x - 220 - i * 36, ROAD - 300 + i * 60, 300 + i, '#fff', 6, 1);
+      } else {
+        const k = k01(t, HIT, HIT + .45);
+        g.save(); g.translate(DOOR_X - 230, ROAD); g.rotate(-.3 * eout(k)); bikeType(0, -92 * 1.3, 1.3, 'road', 0, C.red); g.restore();
+        seqDraw('吓一跳', t - HIT, 8, DOOR_X - 290 - 150 * eout(k), ROAD + 10, 400, { frames: [2, 3, 4, 5, 6], once: true });
+        bang('砰！', DOOR_X + 60, 560, t - HIT, 110);
+      }
+      if (t > 3.0) { hcircle(560 + 70 * z, 900 - 25 * z, 120, 240, 9001, C.red, 8, k01(t, 3.0, 3.35)); }
+    }],
+    // 2 开门区 + 一秒四米（李财从左骑到右，刚好约一辆车长一秒）
+    [4.4, 12.6, (lt, t) => {
+      bg('街道侧视', 1 + .02 * lt / 8, 540, 1100, { flip: true });
+      const zone = k01(t, 5.4, 6.0);
+      if (zone > 0) { g.save(); g.globalAlpha = .45 * zone; g.fillStyle = C.red; g.fillRect(0, 1110, W * zone, 80); g.restore();
+        hatchBar(0, 1110, W * zone, 80, C.red, 71, { dashed: true }); }
+      tag('开门区 ≈ 1 米', 540, 880, 50, C.red, k01(t, 6.0, 6.3) * (1 - k01(t, 8.0, 8.3)));
+      if (t > 6.0 && t < 8.3) harrow(540, 920, 560, 1000, 600, 1090, C.red, k01(t, 6.1, 6.4), 7);
+      const x = -200 + 435 * (t - 9);
+      if (t > 8.6) cat('侧面骑车', t < 9 ? -200 : x, ROAD - 205, 410, 1, { noPop: true });
+      if (t > 10.0) { bracketH(235, Math.min(670, x), 860, C.blue, 1); }
+      if (t > 11.0) { tag('1 秒 ≈ 4 米', 452, 790, 56, C.blue, k01(t, 11.0, 11.3)); tag('差不多一辆车长', 452, 700, 40, C.sub, k01(t, 11.3, 11.6)); }
+      txt('按 15 公里/时：每秒约 4.2 米', 70, 1230 - 20, 28, '#fff', { font: BODY, a: k01(t, 10.5, 10.8) * (t < 12.2 ? 1 : 0) });
+    }],
+    // 3 留一个车门宽：车门开着，李财从门外安全骑过
+    [12.6, 18.4, (lt, t) => {
+      bg('车门全开', 1.02, 560, 900);
+      const p = k01(t, 13.0, 13.8);
+      g.save(); g.setLineDash([26, 18]); g.strokeStyle = C.green; g.lineWidth = 10; g.beginPath(); g.moveTo(0, 1205); g.lineTo(W * p, 1205); g.stroke(); g.restore();
+      bracketV(900, 1060, 1200, C.green, k01(t, 14.0, 14.3)); tag('≥ 1 米', 900, 1130, 46, C.green, k01(t, 14.1, 14.4));
+      const x = -250 + 1500 * k01(t, 14.4, 17.6);
+      cat('骑车开心2', x, 1205 - 240, 480, 1, { noPop: true });
+      if (t > 16.4) { tick(330, 470, 36, k01(t, 16.4, 16.7)); tag('门开了也碰不到你', 560, 470, 50, C.green, k01(t, 16.5, 16.8)); }
+    }],
+    // 4 两个信号：车里有人、刹车灯亮（车门已经开了一条缝）
+    [18.4, 23.4, (lt, t) => {
+      bg('车门半开', 1.1 + .03 * lt / 5, 560, 760);
+      const zx = (x) => 560 + (x - 560) * (1.1 + .03 * lt / 5), zy = (y) => 760 + (y - 760) * (1.1 + .03 * lt / 5);
+      const pa = k01(t, 19.0, 19.3);
+      if (pa > 0) { g.save(); g.globalAlpha = .82 * pa; g.fillStyle = '#2f3550'; g.beginPath(); g.arc(zx(548), zy(735), 30, 0, 6.283); g.fill(); g.beginPath(); g.ellipse(zx(548), zy(800), 50, 40, 0, PI_, 0); g.fill(); g.restore(); }
+      if (t > 19.3) { hcircle(zx(548), zy(760), 95, 110, 9101, C.red, 7, k01(t, 19.3, 19.6)); tag('车里有人', zx(548), 520, 54, C.red, k01(t, 19.4, 19.7)); }
+      if (t > 20.6) { const br = .75 + .25 * Math.sin((t - 20.6) * 9), gx = zx(66), gy = zy(778), gr = g.createRadialGradient(gx, gy, 4, gx, gy, 110);
+        gr.addColorStop(0, 'rgba(255,40,30,.95)'); gr.addColorStop(1, 'rgba(255,40,30,0)'); g.save(); g.globalAlpha = br; g.fillStyle = gr; g.beginPath(); g.arc(gx, gy, 110, 0, 6.283); g.fill(); g.restore();
+        tag('刹车灯亮', 200, 600, 54, C.red, k01(t, 20.6, 20.9)); }
+      if (t > 21.8) tag('再离远一点 ↓', 540, 1160, 54, C.green, k01(t, 21.8, 22.1));
+      cat('放大镜2', 900, 1120, 240, lt - .3);
+    }],
+    // 5 窄巷：慢下来，手放在刹车上
+    [23.4, 28.0, (lt, t) => {
+      const sp = 1 - .7 * k01(t, 24.2, 25.6), z = 1 + .06 * (lt - .4 * Math.max(0, lt - 1.4));
+      bg('窄巷停满车', z, 540, 720);
+      const cx = 850, cy = 560, r = 110, v = 22 - 12 * eout(k01(t, 24.2, 25.6)), a = PI_ + PI_ * v / 30;
+      g.save(); g.fillStyle = 'rgba(255,253,246,.94)'; g.beginPath(); g.arc(cx, cy - 10, r + 40, 0, 6.283); g.fill();
+      g.lineCap = 'round'; g.strokeStyle = C.grid; g.lineWidth = 18; g.beginPath(); g.arc(cx, cy, r, PI_, 0); g.stroke();
+      g.strokeStyle = C.green; g.beginPath(); g.arc(cx, cy, r, PI_, PI_ + PI_ * 15 / 30); g.stroke();
+      g.strokeStyle = C.red; g.lineWidth = 7; g.beginPath(); g.moveTo(cx, cy); g.lineTo(cx + Math.cos(a) * (r - 22), cy + Math.sin(a) * (r - 22)); g.stroke(); g.restore();
+      txt(Math.round(v) + ' 公里/时', cx, cy + 50, 34, C.ink, { align: 'center' });
+      if (t > 25.6) tag('慢下来', cx, cy - 190, 50, C.green, k01(t, 25.6, 25.9));
+      seqDraw('侧面骑车', lt, 12 * sp, 540, 1215, 380, {});
+      if (t > 26.0) { paw(700, 1000, 2.2, k01(t, 26.0, 26.2), C.pink); tag('手放在刹车上', 540, 760, 50, C.blue, k01(t, 26.1, 26.4)); }
+    }],
+    // 6 结尾提问
+    [28.0, 32.0, (lt, t) => {
+      bg('街道侧视', 1.1, 540, 1000, { flip: true, filter: 'blur(8px)', dim: .35 });
+      cat('打招呼', 520, 800, 580, lt - .1);
+      g.save(); g.globalAlpha = k01(t, 28.6, 28.9); g.fillStyle = '#fff'; g.strokeStyle = C.ink; g.lineWidth = 5;
+      g.beginPath(); g.roundRect(700, 470, 220, 130, 40); g.fill(); g.stroke(); g.beginPath(); g.moveTo(740, 598); g.lineTo(720, 650); g.lineTo(790, 598); g.fill(); g.stroke();
+      txt('？', 810, 538, 80, C.orange, { align: 'center' }); g.restore();
+      tag('关注李财，骑车不踩坑', 520, 1150, 44, C.orange, k01(t, 29.6, 30.0));
+    }]
+  ],
+  cues: [['whoosh', .05], ['whoosh', .42], ['thud', HIT, .9], ['wrong', HIT + .05], ['stamp', 3.0], ['pop', 5.4], ['pop', 6.0], ['whoosh', 8.8], ['pop', 10.0], ['ding', 11.0], ['pen', 13.0], ['pop', 14.1], ['whoosh', 14.4], ['ding', 16.4], ['pop', 19.0], ['ding', 19.3], ['bell', 20.6], ['pop', 21.8], ['grow', 24.2], ['ding', 25.6], ['pop', 26.0], ['pop', 28.1], ['ding', 28.6]],
+  // 封面：车门全开的街景铺满，左上纸色标题块，右下吓一跳的李财
+  cover: (key, w, h) => {
+    const im = IMG['bg:车门全开'], vert = h > w, u = Math.min(w, h) / 1080;
+    if (vert) { const s = Math.max(w / 1080, h / 1920), dw = 1080 * s, dh = 1920 * s; g.drawImage(im, (w - dw) / 2, (h - dh) / 2, dw, dh); }
+    else { paper(); const x0 = w * .42, s = (w - x0) / 860, cx = 590, cy = 850; g.save(); g.beginPath(); g.rect(x0, 0, w - x0, h); g.clip();
+      g.drawImage(im, x0 + (w - x0) / 2 - cx * s, h * .5 - cy * s, 1080 * s, 1920 * s); g.restore(); }
+    const pw = vert ? w - 120 * u : w * .42 - 60 * u, px = 60 * u, py = 60 * u, ph = 470 * u;
+    g.fillStyle = 'rgba(255,253,246,.93)'; g.beginPath(); g.roundRect(px, py, pw, ph, 36 * u); g.fill();
+    txt('李财爱骑行 · 安全篇', px + 50 * u, py + 70 * u, 44 * u, C.sub);
+    const f = Math.min(1, (pw - 90 * u) / textW('骑车最怕的', 110 * u));
+    txt('骑车最怕的', px + 50 * u, py + 175 * u, 110 * u * f, C.ink);
+    txt('开门杀！', px + 50 * u, py + 315 * u, 140 * u * f, C.red);
+    txt('离停着的车至少 1 米', px + 50 * u, py + 425 * u, 52 * u, C.ink);
+    cat('被吓一跳', vert ? w - 320 * u : w * .21, vert ? h - 330 * u : h - 250 * u, (vert ? 600 : 480) * u, 1, { noPop: true, bob: false });
+  }
+});
+const PI_ = Math.PI;
+
+})();
+</script>
+</body>
+</html>

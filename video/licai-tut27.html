@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行小课堂 · 被狗追</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;max-width:100vw;aspect-ratio:9/16;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/吓一跳.js"></script>
+<script src="licai-seq/打招呼.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script src="shortkit.js"></script>
+<script src="tutkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财骑行小课堂 · 竖版教程 26《骑车被狗追怎么办》：手绘 + Mixkit 实拍（见 video/素材/被狗追/素材清单.md）
+// 实拍的小狗是在草地上跑向主人，不是在追人，只作“狗爱追跑动的东西”的示意；应对方法是常见建议，被咬伤一定要就医
+// 公共件里用到的动作（splitseq 按名字加载）：'打招呼' '叉腰得意'
+const k01 = tk01;
+const SHOTS = [
+  [0.0, 2.6, 'W', ''],
+  [10.0, 14.4, 'W', '示意：狗爱追跑动的东西'],
+  [41.3, 45.2, 'W', '平平安安骑回家']
+];
+const withShots = tutFrames(SHOTS);
+const LINES = [
+  [0.1, 2.6, '骑着车，突然一条狗冲过来？'],
+  [2.7, 5.4, '别慌，记住这几步。'],
+  [5.8, 9.8, '{o}别拼命加速逃{/}，狗跑得比你想的快，还容易摔车。'],
+  [10.0, 14.4, '很多狗追的是“跑动的东西”，你一慌，它更来劲。'],
+  [14.6, 18.8, '{o}慢下来，下车{/}，把车挡在你和狗中间。'],
+  [19.2, 23.4, '{o}面对着它{/}，别背对着跑，也别一直瞪它的眼睛。'],
+  [23.5, 27.8, '{o}大声、低沉地喝止{/}：“走开！”'],
+  [28.2, 32.4, '然后推着车，慢慢往后退，离开它的地盘。'],
+  [32.5, 36.8, '平时经过有狗的地方，提前减速，绕开一点。'],
+  [37.0, 41.2, '万一被咬：先冲洗伤口 15 分钟，尽快去医院。'],
+  [41.3, 45.2, '平平安安，比快点骑过去更重要。'],
+  [45.6, 50.4, '口诀：{o}别逃跑、车挡前、慢慢退{/}。'],
+  [50.8, 54.6, '你骑车被狗追过吗？'],
+  [54.7, 57.8, '评论区说说。']
+];
+// 站着的人（面朝左）
+function person(x, y, s, armUp) { stick({ head: [x, y - 230 * s], neck: [x, y - 190 * s], hip: [x, y - 60 * s], el1: [x - 40 * s, y - 140 * s], h1: armUp ? [x - 90 * s, y - 200 * s] : [x - 80 * s, y - 100 * s], el2: [x + 30 * s, y - 130 * s], h2: [x + 20 * s, y - 70 * s], k1: [x - 20 * s, y], f1: [x - 30 * s, y + 60 * s], k2: [x + 20 * s, y], f2: [x + 30 * s, y + 60 * s] }, C.blue, 12 * s); }
+function ground(y) { hline(60, y, 1020, y, 2601, C.ink, 5, 1); }
+shortRun({ src: SRC, seed: 986, lines: LINES, bgm: 'lofi',
+  title: { text: '骑车被狗追{r}怎么办{/}', t: 0, small: '李财骑行小课堂' },
+  scenes: withShots([
+    [0, 5.7, (lt, t) => { if (t >= 2.6) tutPreview(t, 2.8, ['别逃跑', '下车挡住', '面对它', '慢慢退'], '吓一跳'); }],
+    [5.7, 10.0, (lt, t) => {
+      ground(1000); const k = (t - 5.8) * 120;
+      g.save(); g.translate(700 + Math.min(k, 120), 908); bike(0, 0, 1.5, t * 8, C.ink); g.restore();
+      for (let i = 0; i < 4; i++) hline(420 + Math.min(k, 120) - i * 10, 820 + i * 40, 520 + Math.min(k, 120) - i * 10, 820 + i * 40, 2602 + i, C.sub, 4, 1);
+      dog(260 + Math.min(k, 160), 920, 1.1, t, 1, true);
+      txt('拼命加速逃', 540, 520, 58, C.red, { align: 'center', a: k01(t, 5.9, 6.2) }); bigX(880, 520, 40, k01(t, 6.6, 6.9));
+      txt('容易摔车', 540, 1120, 52, C.red, { align: 'center', a: k01(t, 7.6, 7.9) });
+    }],
+    [10.0, 14.5, () => {}],
+    [14.5, 28.0, (lt, t) => {
+      ground(1060);
+      g.save(); g.translate(540, 968); bike(0, 0, 1.4, 0, C.ink); g.restore();
+      person(800, 1000, 1.3, t > 23.5);
+      dog(130, 990, .85, t, 1, false);
+      if (t < 19.2) { txt('车挡在中间', 540, 520, 58, C.green, { align: 'center', a: k01(t, 14.8, 15.1) }); hcircle(540, 940, 220, 120, 2606, C.green, 5, k01(t, 15.4, 16.0)); return; }
+      if (t < 23.5) { txt('面对它', 540, 520, 58, C.green, { align: 'center', a: k01(t, 19.3, 19.6) }); txt('别背对着跑', 540, 600, 46, C.red, { align: 'center', a: k01(t, 20.0, 20.3) }); txt('别一直瞪眼睛', 540, 670, 46, C.red, { align: 'center', a: k01(t, 21.0, 21.3) }); return; }
+      const a = k01(t, 23.7, 24.0); g.save(); g.globalAlpha = a; g.fillStyle = '#fff'; g.strokeStyle = C.red; g.lineWidth = 6; g.beginPath(); g.roundRect(560, 470, 340, 140, 50); g.fill(); g.stroke(); g.restore();
+      txt('走开！', 730, 540, 72, C.red, { align: 'center', a: a });
+      txt('大声、低沉', 540, 1160, 50, C.ink, { align: 'center', a: k01(t, 24.6, 24.9) });
+    }],
+    [28.0, 41.3, (lt, t) => {
+      if (t < 32.5) {
+        ground(1060); const k = eout(k01(t, 28.6, 31.6)) * 160;
+        g.save(); g.translate(540 + k, 968); bike(0, 0, 1.4, 0, C.ink); g.restore(); person(800 + k, 1000, 1.3, false); dog(130, 990, .85, t, 1, false);
+        harrow(620, 560, 720, 540, 820, 560, C.green, k01(t, 28.4, 28.8), 7); txt('推着车，慢慢退', 540, 480, 56, C.green, { align: 'center', a: k01(t, 28.3, 28.6) });
+        return;
+      }
+      if (t < 37.0) {
+        g.save(); g.fillStyle = '#e6dcc8'; g.fillRect(380, 460, 320, 760); g.restore();
+        g.save(); g.globalAlpha = .25; g.fillStyle = C.red; g.beginPath(); g.arc(300, 820, 160, 0, 6.283); g.fill(); g.restore(); dog(260, 840, .6, t, 1, false); txt('有狗的地方', 260, 1030, 40, C.red, { align: 'center' });
+        const k = eout(k01(t, 33.0, 35.0)); g.save(); g.strokeStyle = C.green; g.lineWidth = 8; g.setLineDash([16, 10]); g.beginPath(); g.moveTo(480, 1200); g.quadraticCurveTo(660, 820, 480, 470 + 730 * (1 - k)); g.stroke(); g.restore();
+        txt('提前减速', 850, 700, 50, C.green, { align: 'center', a: k01(t, 32.8, 33.1) }); txt('绕开一点', 850, 790, 50, C.green, { align: 'center', a: k01(t, 34.0, 34.3) });
+        return;
+      }
+      tutList(t, [['肥皂水 + 清水冲 15 分钟', 37.2, C.red], ['尽快去医院', 38.2, C.red], ['按医生说的打疫苗', 39.2, C.red]], { x: 90, w: 900, dy: 160 });
+      txt('被咬伤了：', 540, 470, 50, C.red, { align: 'center', a: k01(t, 37.1, 37.4) });
+    }],
+    [41.3, 45.4, () => {}],
+    [45.4, 50.6, (lt, t) => tutSlogan(t, 46.4, ['别逃跑', '车挡前', '慢慢退'])],
+    [50.6, 58.4, (lt, t) => tutEnd(lt, t, 50.6, '被追过吗？')]
+  ]),
+  cues: [['whoosh', .05], ['pop', 2.8], ['pop', 3.3], ['pop', 3.8], ['pop', 4.3], ['whoosh', 5.9], ['wrong', 6.6], ['whoosh', 10.0], ['pop', 14.8], ['ding', 15.4], ['pop', 19.3], ['pop', 20.0], ['stamp', 23.7],
+    ['whoosh', 28.6], ['pop', 32.8], ['pop', 34.0], ['pop', 37.2], ['pop', 38.2], ['pop', 39.2], ['whoosh', 41.3], ['stamp', 46.4], ['stamp', 47.3], ['stamp', 48.2], ['pop', 50.8], ['ding', 51.2]],
+  cover: (key, w, h) => epCover(key, w, h, { tag: '李财骑行小课堂', l1: '骑车被狗追？', l2: '别逃跑，这样做', sub: '别逃跑 · 车挡前 · 慢慢退', emo: '被吓一跳', emoScale: .8,
+    art: (x, y, s) => { dog(x, y + 50 * s, .5 * s, 0, 1, false); } })
+});
+
+})();
+</script>
+</body>
+</html>

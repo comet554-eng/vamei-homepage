@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行小课堂 · 冬天怎么穿</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;max-width:100vw;aspect-ratio:9/16;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/开车灯.js"></script>
+<script src="licai-seq/打哈欠.js"></script>
+<script src="licai-seq/打招呼.js"></script>
+<script src="licai-seq/骑车开心.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script src="shortkit.js"></script>
+<script src="tutkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财骑行小课堂 · 竖版教程 15《冬天骑车怎么穿》：手绘 + Mixkit 实拍（见 video/素材/冬天怎么穿/素材清单.md）
+// 雪景实拍只当“冬天、路面结冰”的环境画面，画面里没有人在雪地骑车
+// 公共件里用到的动作（splitseq 按名字加载）：'打招呼' '叉腰得意'
+const k01 = tk01;
+const SHOTS = [
+  [0.0, 2.6, 'W', ''],
+  [28.2, 32.4, 'W', '手套带上'],
+  [41.3, 45.2, 'W', '有冰有霜：慢下来']
+];
+const withShots = tutFrames(SHOTS);
+const LINES = [
+  [0.1, 2.6, '冬天骑车，穿多出汗，穿少冻透？'],
+  [2.7, 5.4, '记住“洋葱穿法”，三层就够。'],
+  [5.8, 9.8, '{o}贴身层{/}：穿排汗的速干衣，别穿纯棉的。'],
+  [10.0, 14.4, '棉衣吸了汗就不干，一停下来就冷。'],
+  [14.6, 18.8, '{o}中间层{/}：抓绒或者薄羽绒，负责保暖。'],
+  [19.2, 23.4, '{o}外层{/}：防风外套，挡住迎面的冷风。'],
+  [23.5, 27.8, '出门时觉得{o}有点冷{/}正好，骑起来身体会热。'],
+  [28.2, 32.4, '最怕冷的是手、耳朵和脚：手套、护耳、厚袜子都带上。'],
+  [32.5, 36.8, '下坡最冷，多带一件薄外套，停下来马上穿。'],
+  [37.0, 41.2, '冬天天黑得早，车灯记得充好电。'],
+  [41.3, 45.2, '路上有冰、有霜的地方，慢下来，别急刹、别急转。'],
+  [45.6, 50.4, '口诀：{o}三层穿、有点冷、护手脚{/}。'],
+  [50.8, 54.6, '你冬天还骑车吗？'],
+  [54.7, 57.8, '评论区说说你怎么穿。']
+];
+// 一件上衣（正面）：w 宽度，col 颜色
+function shirt(x, y, w, col, a) {
+  if (a <= 0) return; const h = w * 1.05, sl = w * .32;
+  g.save(); g.globalAlpha = a; g.fillStyle = col; g.strokeStyle = C.ink; g.lineWidth = 5; g.lineJoin = 'round';
+  g.beginPath(); g.moveTo(x - w / 2, y - h / 2); g.lineTo(x - w / 2 - sl, y - h / 2 + sl * .9); g.lineTo(x - w / 2 - sl * .55, y - h / 2 + sl * 1.5); g.lineTo(x - w / 2, y - h / 2 + sl * 1.1);
+  g.lineTo(x - w / 2, y + h / 2); g.lineTo(x + w / 2, y + h / 2); g.lineTo(x + w / 2, y - h / 2 + sl * 1.1); g.lineTo(x + w / 2 + sl * .55, y - h / 2 + sl * 1.5); g.lineTo(x + w / 2 + sl, y - h / 2 + sl * .9); g.lineTo(x + w / 2, y - h / 2);
+  g.lineTo(x + w * .14, y - h / 2 - 10); g.quadraticCurveTo(x, y - h / 2 + 30, x - w * .14, y - h / 2 - 10); g.closePath(); g.fill(); g.stroke(); g.restore();
+}
+function layers(t, n) {
+  shirt(540, 800, 520, '#9cc0e4', n >= 3 ? 1 : 0); shirt(540, 810, 420, '#f2b46b', n >= 2 ? 1 : 0); shirt(540, 820, 320, '#8fd4a8', 1);
+  const L = [['贴身：速干排汗', '#3c9a62'], ['中间：抓绒保暖', '#c97a1e'], ['外层：防风', '#3b6fb6']];
+  txt(L[n - 1][0], 540, 470, 56, L[n - 1][1], { align: 'center' });
+}
+shortRun({ src: SRC, seed: 975, lines: LINES, bgm: 'lofi',
+  title: { text: '冬天骑车{r}怎么穿{/}', t: 0, small: '李财骑行小课堂' },
+  scenes: withShots([
+    [0, 5.7, (lt, t) => { if (t >= 2.6) tutPreview(t, 2.8, ['贴身排汗', '中间保暖', '外层防风', '护手脚'], '打哈欠'); }],
+    [5.7, 14.5, (lt, t) => {
+      if (t < 10.0) { layers(t, 1); tick(820, 640, 40, k01(t, 6.4, 6.7)); txt('速干衣', 540, 1100, 50, C.green, { align: 'center', a: k01(t, 6.6, 6.9) }); return; }
+      shirt(540, 800, 380, '#e9e1cf', 1); for (let i = 0; i < 9; i++) { const dx = 420 + (i % 3) * 120, dy = 720 + Math.floor(i / 3) * 90 + ((t * 60 + i * 20) % 30); g.save(); g.fillStyle = '#5b8dd6'; g.beginPath(); g.ellipse(dx, dy, 9, 14, 0, 0, 6.283); g.fill(); g.restore(); }
+      txt('纯棉：吸汗不干', 540, 470, 56, C.red, { align: 'center', a: k01(t, 10.2, 10.5) }); bigX(800, 600, 46, k01(t, 10.8, 11.1)); txt('一停下来就冷', 540, 1100, 50, C.ink, { align: 'center', a: k01(t, 11.6, 11.9) });
+    }],
+    [14.5, 23.5, (lt, t) => {
+      if (t < 19.2) { layers(t, 2); return; }
+      layers(t, 3); for (let i = 0; i < 4; i++) { const y = 650 + i * 70, x = 120 + ((t * 300 + i * 80) % 120); harrow(x, y, x + 20, y, x + 40, y, '#5b8dd6', 1, 5); }
+      txt('冷风挡在外面', 540, 1100, 50, C.blue, { align: 'center', a: k01(t, 20.0, 20.3) });
+    }],
+    [23.5, 28.0, (lt, t) => {
+      // 温度计：出门“有点冷”
+      g.save(); g.fillStyle = '#fff'; g.strokeStyle = C.ink; g.lineWidth = 5; g.beginPath(); g.roundRect(500, 520, 80, 440, 40); g.fill(); g.stroke(); g.beginPath(); g.arc(540, 980, 60, 0, 6.283); g.fill(); g.stroke();
+      const h = 120 + 40 * Math.sin(t * 2); g.fillStyle = C.red; g.fillRect(522, 980 - h - 20, 36, h + 20); g.beginPath(); g.arc(540, 980, 44, 0, 6.283); g.fill(); g.restore();
+      txt('出门：有点冷 ✓', 760, 760, 46, C.green, { align: 'center', a: k01(t, 23.8, 24.1) }); txt('骑起来就热了', 760, 840, 40, C.ink, { align: 'center', a: k01(t, 24.8, 25.1) });
+      cat('骑车开心', 250, 760, 240, t - 25.2);
+    }],
+    [28.0, 41.3, (lt, t) => {
+      if (t < 32.4) return;
+      if (t < 37.0) { shirt(540, 790, 360, '#9cc0e4', k01(t, 32.6, 32.9)); txt('下坡最冷', 540, 480, 60, C.blue, { align: 'center', a: k01(t, 32.8, 33.1) }); txt('多带一件薄外套', 540, 1090, 54, C.ink, { align: 'center', a: k01(t, 33.6, 33.9) }); return; }
+      cat('开车灯', 540, 820, 440, t - 37.0); txt('天黑得早：车灯充好电', 540, 500, 52, C.ink, { align: 'center', a: k01(t, 37.2, 37.5) });
+    }],
+    [41.3, 45.4, () => {}],
+    [45.4, 50.6, (lt, t) => tutSlogan(t, 46.4, ['三层穿', '有点冷', '护手脚'])],
+    [50.6, 58.4, (lt, t) => tutEnd(lt, t, 50.6, '冬天骑吗？')]
+  ]),
+  cues: [['whoosh', .05], ['pop', 2.8], ['pop', 3.3], ['pop', 3.8], ['pop', 4.3], ['pop', 5.8], ['ding', 6.4], ['wrong', 10.8], ['pop', 14.6], ['pop', 19.2], ['whoosh', 19.8], ['pop', 23.8], ['ding', 24.8],
+    ['whoosh', 28.2], ['pop', 32.6], ['pop', 37.0], ['whoosh', 41.3], ['stamp', 46.4], ['stamp', 47.3], ['stamp', 48.2], ['pop', 50.8], ['ding', 51.2]],
+  cover: (key, w, h) => epCover(key, w, h, { tag: '李财骑行小课堂', l1: '冬天骑车冻透？', l2: '洋葱三层穿法', sub: '三层穿 · 有点冷 · 护手脚', emo: '揉眼犯困', emoScale: .85,
+    art: (x, y, s) => { g.save(); g.translate(x - 540 * .3 * s, y - 800 * .3 * s); g.scale(.3 * s, .3 * s); shirt(540, 800, 520, '#9cc0e4', 1); shirt(540, 810, 420, '#f2b46b', 1); shirt(540, 820, 320, '#8fd4a8', 1); g.restore(); } })
+});
+
+})();
+</script>
+</body>
+</html>

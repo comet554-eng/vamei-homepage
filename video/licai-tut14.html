@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行小课堂 · 头盔戴法</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;max-width:100vw;aspect-ratio:9/16;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/戴头盔.js"></script>
+<script src="licai-seq/打招呼.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script src="shortkit.js"></script>
+<script src="tutkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财骑行小课堂 · 竖版教程 13《头盔怎么戴才对》：手绘 + Mixkit 实拍（见 video/素材/头盔戴法/素材清单.md）
+// 公共件里用到的动作（splitseq 按名字加载）：'打招呼' '叉腰得意'
+const k01 = tk01;
+const SHOTS = [
+  [0.0, 2.6, 'V', ''],
+  [5.8, 9.8, 'W', '先选大小合适的头盔'],
+  [28.2, 32.4, 'V', ''],
+  [41.3, 45.2, 'W', '小朋友也要戴好']
+];
+const withShots = tutFrames(SHOTS);
+const LINES = [
+  [0.1, 2.6, '头盔戴了，可能白戴？'],
+  [2.7, 5.4, '对照这四点，三秒检查。'],
+  [5.8, 9.8, '先选{o}大小{/}：戴上摇摇头，头盔不晃才合适。'],
+  [10.0, 14.4, '{o}戴正{/}：前沿在眉毛上面两指宽，别往后仰露出额头。'],
+  [14.6, 18.8, '{o}侧带{/}：两根带子在耳朵下面合成一个 V 字。'],
+  [19.2, 23.4, '{o}下巴带{/}：扣好以后，下面刚好塞进一根手指。'],
+  [23.5, 27.8, '太松了一摔就掉，太紧了勒得难受。'],
+  [28.2, 32.4, '最后拧紧后脑的调节旋钮，低头抬头都不晃。'],
+  [32.5, 36.8, '摔过、撞过的头盔，外面看着没事，里面可能已经坏了。'],
+  [37.0, 41.2, '该换就换，别心疼。'],
+  [41.3, 45.2, '小朋友骑车，也一样要戴好。'],
+  [45.6, 50.4, '口诀：{o}两指、V 字、一指{/}。'],
+  [50.8, 54.6, '你骑车戴头盔吗？'],
+  [54.7, 57.8, '评论区说说。']
+];
+// 正面的头 + 头盔；tilt 头盔往后仰的程度（0 = 戴正）
+function head(x, y, s, tilt, show) {
+  g.save(); g.translate(x, y); g.scale(s, s);
+  g.fillStyle = '#f6dcc4'; g.strokeStyle = C.ink; g.lineWidth = 5;
+  g.beginPath(); g.ellipse(-150, 20, 26, 40, 0, 0, 6.283); g.fill(); g.stroke(); g.beginPath(); g.ellipse(150, 20, 26, 40, 0, 0, 6.283); g.fill(); g.stroke();
+  g.beginPath(); g.ellipse(0, 0, 150, 185, 0, 0, 6.283); g.fill(); g.stroke();
+  g.fillStyle = C.ink; g.beginPath(); g.arc(-55, -10, 12, 0, 6.283); g.fill(); g.beginPath(); g.arc(55, -10, 12, 0, 6.283); g.fill();
+  g.lineWidth = 6; g.beginPath(); g.moveTo(-85, -55); g.lineTo(-30, -60); g.moveTo(30, -60); g.lineTo(85, -55); g.stroke();
+  g.beginPath(); g.arc(0, 70, 40, .2, Math.PI - .2); g.stroke();
+  // 头盔：前沿高度 = 眉毛上两指（约 -100），往后仰时前沿上移
+  const edge = -100 - tilt * 70;
+  g.fillStyle = C.red; g.beginPath(); g.moveTo(-175, edge); g.quadraticCurveTo(-180, -300 - tilt * 40, 0, -305 - tilt * 60); g.quadraticCurveTo(180, -300 - tilt * 40, 175, edge); g.closePath(); g.fill(); g.lineWidth = 5; g.stroke();
+  g.strokeStyle = '#fff'; g.lineWidth = 8; [-90, 0, 90].forEach(dx => { g.beginPath(); g.moveTo(dx, edge - 30); g.lineTo(dx * .7, -250 - tilt * 50); g.stroke(); });
+  if (show.v) { g.strokeStyle = C.ink; g.lineWidth = 7; [-1, 1].forEach(sd => { g.beginPath(); g.moveTo(sd * 168, edge + 10); g.lineTo(sd * 150, 75); g.lineTo(sd * 115, edge + 20); g.stroke(); g.beginPath(); g.moveTo(sd * 150, 75); g.lineTo(sd * 60, 185); g.stroke(); }); }
+  if (show.chin) { g.strokeStyle = C.ink; g.lineWidth = 7; g.beginPath(); g.moveTo(-60, 185); g.quadraticCurveTo(0, 215, 60, 185); g.stroke(); }
+  g.restore();
+}
+shortRun({ src: SRC, seed: 973, lines: LINES, bgm: 'lofi',
+  title: { text: '头盔{r}怎么戴{/}才对', t: 0, small: '李财骑行小课堂' },
+  scenes: withShots([
+    [0, 5.7, (lt, t) => {
+      if (t < 2.6) { txt('戴了', 770, 640, 64, C.ink, { align: 'center' }); txt('≠ 戴对', 770, 760, 64, C.red, { align: 'center' }); return; }
+      tutPreview(t, 2.8, ['大小合适', '前沿两指', '侧带 V 字', '下巴一指'], '戴头盔');
+    }],
+    [5.7, 28.0, (lt, t) => {
+      if (t < 9.8) return;
+      const sv = { v: t > 14.6, chin: t > 19.2 }, tilt = t < 14.4 ? (t < 12.0 ? 1 - k01(t, 10.6, 11.6) : 0) : 0;
+      head(540, 830, 1.05, tilt, sv);
+      if (t < 14.5) {
+        if (t < 12.0) { bigX(860, 560, 46, k01(t, 10.2, 10.5)); txt('往后仰：露额头', 540, 1110, 48, C.red, { align: 'center', a: k01(t, 10.2, 10.5) }); }
+        else { tick(860, 560, 44, k01(t, 12.0, 12.3)); const y1 = 830 - 1.05 * 100, y2 = 830 - 1.05 * 60; g.save(); g.strokeStyle = C.orange; g.lineWidth = 5; g.beginPath(); g.moveTo(760, y1); g.lineTo(760, y2); g.moveTo(745, y1); g.lineTo(775, y1); g.moveTo(745, y2); g.lineTo(775, y2); g.stroke(); g.restore(); txt('两指', 820, (y1 + y2) / 2, 48, C.orange, { a: k01(t, 12.2, 12.5) }); txt('前沿在眉毛上两指', 540, 1110, 48, C.green, { align: 'center', a: k01(t, 12.4, 12.7) }); }
+        return;
+      }
+      if (t < 19.2) { hcircle(540 + 1.05 * 150, 830 + 1.05 * 75, 60, 60, 1301, C.orange, 5, k01(t, 15.0, 15.4)); txt('耳朵下面：V 字', 540, 1110, 52, C.orange, { align: 'center', a: k01(t, 15.2, 15.5) }); return; }
+      hcircle(540, 830 + 1.05 * 200, 90, 45, 1302, C.orange, 5, k01(t, 19.6, 20.0)); txt('塞进一根手指', 540, 1110, 52, C.orange, { align: 'center', a: k01(t, 19.8, 20.1) });
+      if (t > 23.5) { txt('太松：一摔就掉', 250, 470, 42, C.red, { align: 'center', a: k01(t, 23.6, 23.9) }); txt('太紧：勒得难受', 830, 470, 42, C.red, { align: 'center', a: k01(t, 24.6, 24.9) }); }
+    }],
+    [28.0, 41.3, (lt, t) => {
+      if (t < 32.4) { txt('拧紧', 770, 600, 60, C.ink, { align: 'center', a: k01(t, 28.6, 28.9) }); txt('后脑旋钮', 770, 700, 56, C.orange, { align: 'center', a: k01(t, 29.2, 29.5) }); txt('低头抬头不晃', 770, 840, 46, C.green, { align: 'center', a: k01(t, 30.2, 30.5) }); return; }
+      head(540, 830, .9, 0, { v: true, chin: true });
+      g.save(); g.strokeStyle = C.ink; g.lineWidth = 6; g.beginPath(); g.moveTo(420, 600); g.lineTo(500, 680); g.lineTo(470, 720); g.lineTo(560, 790); g.stroke(); g.restore();
+      txt('摔过、撞过', 540, 500, 56, C.red, { align: 'center', a: k01(t, 32.6, 32.9) }); if (t < 37.0) txt('里面可能已经坏了', 540, 1080, 50, C.ink, { align: 'center', a: k01(t, 33.6, 33.9) });
+      if (t > 37.0) stamp('该换就换', 540, 1170 - 80, 70, t - 37.2, -.05);
+    }],
+    [41.3, 45.4, () => {}],
+    [45.4, 50.6, (lt, t) => tutSlogan(t, 46.4, ['两指', 'V 字', '一指'])],
+    [50.6, 58.4, (lt, t) => tutEnd(lt, t, 50.6, '戴头盔吗？')]
+  ]),
+  cues: [['whoosh', .05], ['pop', 2.8], ['pop', 3.3], ['pop', 3.8], ['pop', 4.3], ['whoosh', 5.8], ['wrong', 10.2], ['ding', 12.0], ['pop', 15.0], ['pop', 19.6], ['pop', 23.6], ['pop', 24.6], ['whoosh', 28.2],
+    ['pop', 32.6], ['stamp', 37.2], ['whoosh', 41.3], ['stamp', 46.4], ['stamp', 47.3], ['stamp', 48.2], ['pop', 50.8], ['ding', 51.2]],
+  cover: (key, w, h) => epCover(key, w, h, { tag: '李财骑行小课堂', l1: '头盔戴了白戴？', l2: '三秒检查四点', sub: '两指 · V 字 · 一指', emo: '叉腰自信', emoScale: .85,
+    art: (x, y, s) => { head(x, y + 40 * s, .4 * s, 0, { v: true, chin: true }); } })
+});
+
+})();
+</script>
+</body>
+</html>

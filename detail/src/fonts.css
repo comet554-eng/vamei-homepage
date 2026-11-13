@@ -1,0 +1,14 @@
+/* 本地渲染用 fontsource 字体（npm i 后可用）；发布到网页时换成 Google Fonts 同名字体 */
+@import url("../node_modules/@fontsource/noto-serif-sc/400.css");
+@import url("../node_modules/@fontsource/noto-serif-sc/600.css");
+@import url("../node_modules/@fontsource/noto-serif-sc/900.css");
+@import url("../node_modules/@fontsource/noto-sans-sc/300.css");
+@import url("../node_modules/@fontsource/noto-sans-sc/400.css");
+@import url("../node_modules/@fontsource/noto-sans-sc/500.css");
+@import url("../node_modules/@fontsource/noto-sans-sc/700.css");
+@import url("../node_modules/@fontsource/cormorant-garamond/300-italic.css");
+@import url("../node_modules/@fontsource/cormorant-garamond/400-italic.css");
+@import url("../node_modules/@fontsource/cormorant-garamond/500.css");
+@import url("../node_modules/@fontsource/inter/400.css");
+@import url("../node_modules/@fontsource/inter/500.css");
+@import url("../node_modules/@fontsource/inter/600.css");

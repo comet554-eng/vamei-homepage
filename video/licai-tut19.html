@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行小课堂 · 路口安全</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;max-width:100vw;aspect-ratio:9/16;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/打招呼.js"></script>
+<script src="licai-seq/骑车挥手.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script src="shortkit.js"></script>
+<script src="tutkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财骑行小课堂 · 竖版教程 18《路口骑车怎么才安全》：手绘 + Mixkit 实拍（见 video/素材/路口安全/素材清单.md）
+// 手势、大车盲区、左转两次过街都是手绘示意；实拍只是城市街道和路口的环境画面
+// 公共件里用到的动作（splitseq 按名字加载）：'打招呼' '叉腰得意'
+const k01 = tk01;
+const SHOTS = [
+  [0.0, 2.6, 'W', ''],
+  [28.2, 32.4, 'W', '路口：慢下来，看清楚再走'],
+  [41.3, 45.2, 'W', '慢一点，路口最该小心']
+];
+const withShots = tutFrames(SHOTS);
+const LINES = [
+  [0.1, 2.6, '路口最容易出事，你会过吗？'],
+  [2.7, 5.4, '记住四件事，过路口稳稳的。'],
+  [5.8, 9.8, '{o}打手势{/}：左转，左手平伸；右转，右手平伸。'],
+  [10.0, 14.4, '要减速或者停车，手往下斜着伸，掌心朝后。'],
+  [14.6, 18.8, '打完手势，双手扶好车把，再慢慢转弯。'],
+  [19.2, 23.4, '{o}躲开大车盲区{/}：大货车、公交车右转时，司机看不见右边。'],
+  [23.5, 27.8, '别停在大车右前方，停到它后面，让它先走。'],
+  [28.2, 32.4, '{o}和司机对上眼{/}：确定司机看见你了，再走。'],
+  [32.5, 36.8, '{o}左转别抢{/}：先直行到对面停下，再直行过去，分两次过。'],
+  [37.0, 41.2, '红灯停，别闯；绿灯刚亮，也先左右看一看。'],
+  [41.3, 45.2, '慢一点，路口才是最该小心的地方。'],
+  [45.6, 50.4, '口诀：{o}打手势、躲盲区、对上眼{/}。'],
+  [50.8, 54.6, '你过路口最怕什么？'],
+  [54.7, 57.8, '评论区说说。']
+];
+// 背面的骑车人：mode 'left' 'right' 'stop' 'hold'
+function backRider(x, y, mode, a) {
+  if (a <= 0) return; g.save(); g.globalAlpha = a; g.translate(x, y); g.lineCap = 'round'; g.lineJoin = 'round';
+  g.strokeStyle = C.ink; g.lineWidth = 10; g.beginPath(); g.ellipse(0, 250, 26, 120, 0, 0, 6.283); g.stroke();
+  g.lineWidth = 8; g.beginPath(); g.moveTo(-150, -10); g.lineTo(150, -10); g.moveTo(0, -10); g.lineTo(0, 140); g.stroke();
+  g.strokeStyle = C.blue; g.lineWidth = 26;
+  g.beginPath(); g.moveTo(0, -150); g.lineTo(0, 70); g.stroke();
+  g.lineWidth = 22; g.beginPath(); g.moveTo(-14, 70); g.lineTo(-40, 190); g.moveTo(14, 70); g.lineTo(40, 190); g.stroke();
+  const arm = (sd, pose) => { g.beginPath(); g.moveTo(sd * 20, -130); if (pose === 'out') { g.lineTo(sd * 140, -130); g.lineTo(sd * 250, -130); } else if (pose === 'down') { g.lineTo(sd * 110, -60); g.lineTo(sd * 190, 10); } else { g.lineTo(sd * 90, -70); g.lineTo(sd * 140, -14); } g.stroke(); };
+  arm(-1, mode === 'left' ? 'out' : mode === 'stop' ? 'down' : 'bar'); arm(1, mode === 'right' ? 'out' : 'bar');
+  g.fillStyle = C.ink; g.beginPath(); g.arc(0, -200, 54, 0, 6.283); g.fill(); g.fillStyle = C.red; g.beginPath(); g.arc(0, -214, 58, Math.PI, 0); g.fill();
+  g.restore();
+}
+// 路口俯视
+function crossroad() {
+  g.save(); g.fillStyle = '#e6dcc8'; g.fillRect(380, 460, 320, 760); g.fillRect(60, 640, 960, 300);
+  g.strokeStyle = '#fffdf6'; g.lineWidth = 5; g.setLineDash([24, 18]); g.beginPath(); g.moveTo(540, 460); g.lineTo(540, 640); g.moveTo(540, 940); g.lineTo(540, 1220); g.moveTo(60, 790); g.lineTo(380, 790); g.moveTo(700, 790); g.lineTo(1020, 790); g.stroke(); g.restore();
+}
+function truck(x, y) { g.save(); g.fillStyle = '#9aa5ad'; g.strokeStyle = C.ink; g.lineWidth = 5; g.beginPath(); g.roundRect(x - 40, y + 70, 80, 220, 8); g.fill(); g.stroke(); g.fillStyle = C.orange; g.beginPath(); g.roundRect(x - 40, y, 80, 64, 10); g.fill(); g.stroke(); g.restore(); }
+function you(x, y, col, label) { g.save(); g.fillStyle = col; g.beginPath(); g.arc(x, y, 22, 0, 6.283); g.fill(); g.restore(); txt(label || '你', x + 34, y, 40, col); }
+shortRun({ src: SRC, seed: 978, lines: LINES, bgm: 'lofi',
+  title: { text: '路口{r}怎么过{/}才安全', t: 0, small: '李财骑行小课堂' },
+  scenes: withShots([
+    [0, 5.7, (lt, t) => { if (t >= 2.6) tutPreview(t, 2.8, ['打手势', '躲盲区', '对上眼', '左转分两次'], '骑车挥手'); }],
+    [5.7, 19.0, (lt, t) => {
+      const mode = t < 7.8 ? 'left' : t < 10.0 ? 'right' : t < 14.5 ? 'stop' : 'hold';
+      backRider(540, 830, mode, k01(t, 5.8, 6.1));
+      const L = { left: ['左转：左手平伸', C.blue], right: ['右转：右手平伸', C.orange], stop: ['减速停车：手往下斜', C.red], hold: ['双手扶好，再转弯', C.green] }[mode];
+      txt(L[0], 540, 465, 56, L[1], { align: 'center' });
+      txt('从后面看', 900, 1150, 34, C.sub, { align: 'center', font: BODY });
+      if (mode === 'stop') txt('掌心朝后', 220, 930, 40, C.red, { align: 'center', a: k01(t, 11.0, 11.3) });
+      if (mode === 'hold') tick(880, 600, 44, k01(t, 15.2, 15.5));
+    }],
+    [19.0, 28.0, (lt, t) => {
+      crossroad(); truck(620, 860);
+      const turn = k01(t, 19.6, 20.2); harrow(620, 840, 640, 760, 760, 730, C.ink, turn, 6);
+      g.save(); g.globalAlpha = .28 * k01(t, 20.4, 20.9); g.fillStyle = C.red; g.beginPath(); g.moveTo(662, 870); g.lineTo(830, 820); g.lineTo(830, 1120); g.lineTo(662, 1150); g.closePath(); g.fill(); g.restore();
+      txt('盲区', 760, 1180, 44, C.red, { align: 'center', a: k01(t, 20.6, 20.9) });
+      if (t < 23.5) { you(740, 940, C.red); txt('司机看不见右边', 540, 520, 54, C.red, { align: 'center', a: k01(t, 21.0, 21.3) }); bigX(900, 520, 34, k01(t, 21.6, 21.9)); return; }
+      const k = eout(k01(t, 23.8, 25.0)); you(740 - 90 * k, 940 + 260 * k, C.green); txt('停到它后面，让它先走', 540, 520, 52, C.green, { align: 'center', a: k01(t, 24.2, 24.5) }); tick(940, 520, 34, k01(t, 25.0, 25.3));
+    }],
+    [28.0, 41.3, (lt, t) => {
+      if (t < 32.4) return;
+      if (t < 37.0) {
+        crossroad();
+        const k1 = eout(k01(t, 33.0, 34.2)), k2 = eout(k01(t, 34.8, 36.0)), x = 640 - 400 * k2, y = 1160 - 460 * k1;
+        g.save(); g.strokeStyle = C.green; g.lineWidth = 6; g.setLineDash([14, 10]); g.beginPath(); g.moveTo(640, 1160); g.lineTo(640, 1160 - 460 * k1); if (k2 > 0) g.lineTo(x, 700); g.stroke(); g.restore();
+        you(x, y, C.green, '');
+        txt('① 先直行', 760, 1060, 44, C.green, { a: k01(t, 33.0, 33.3) }); if (t > 34.2) txt('停下等', 720, 620, 40, C.orange, { a: k01(t, 34.2, 34.5) });
+        txt('② 再直行', 150, 600, 44, C.green, { a: k01(t, 34.8, 35.1) });
+        txt('左转：分两次过', 540, 490, 50, C.ink, { align: 'center', a: k01(t, 32.6, 32.9) });
+        return;
+      }
+      // 红绿灯
+      g.save(); g.fillStyle = C.ink; g.beginPath(); g.roundRect(220, 520, 180, 420, 40); g.fill();
+      const red = t < 39.0; g.fillStyle = red ? C.red : '#5a524b'; g.beginPath(); g.arc(310, 620, 60, 0, 6.283); g.fill(); g.fillStyle = red ? '#5a524b' : C.green; g.beginPath(); g.arc(310, 830, 60, 0, 6.283); g.fill(); g.restore();
+      txt('红灯：停，别闯', 700, 620, 52, C.red, { align: 'center', a: k01(t, 37.2, 37.5) });
+      if (!red) { txt('绿灯刚亮', 700, 800, 52, C.green, { align: 'center', a: k01(t, 39.0, 39.3) }); txt('也先左右看一看', 700, 880, 46, C.ink, { align: 'center', a: k01(t, 39.4, 39.7) }); }
+    }],
+    [41.3, 45.4, () => {}],
+    [45.4, 50.6, (lt, t) => tutSlogan(t, 46.4, ['打手势', '躲盲区', '对上眼'])],
+    [50.6, 58.4, (lt, t) => tutEnd(lt, t, 50.6, '最怕什么？')]
+  ]),
+  cues: [['whoosh', .05], ['pop', 2.8], ['pop', 3.3], ['pop', 3.8], ['pop', 4.3], ['pop', 5.9], ['pop', 7.8], ['pop', 10.1], ['ding', 15.2], ['whoosh', 19.6], ['wrong', 21.6], ['whoosh', 23.8], ['ding', 25.0],
+    ['whoosh', 28.2], ['pop', 33.0], ['pop', 34.8], ['pop', 37.2], ['ding', 39.0], ['whoosh', 41.3], ['stamp', 46.4], ['stamp', 47.3], ['stamp', 48.2], ['pop', 50.8], ['ding', 51.2]],
+  cover: (key, w, h) => epCover(key, w, h, { tag: '李财骑行小课堂', l1: '路口最容易出事', l2: '过路口记四件事', sub: '打手势 · 躲盲区 · 对上眼', emo: '歪头疑问', emoScale: .85,
+    art: (x, y, s) => { g.save(); g.translate(x, y + 20 * s); g.scale(.22 * s, .22 * s); backRider(0, 0, 'left', 1); g.restore(); } })
+});
+
+})();
+</script>
+</body>
+</html>

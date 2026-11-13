@@ -1,0 +1,9 @@
+{
+  "name": "vamei-boot",
+  "private": true,
+  "description": "Vamei 双扣雪鞋配色稿：由 TP 线稿生成白灰配色 PDF",
+  "dependencies": {
+    "@fontsource/inter": "^5.3.0",
+    "@fontsource/noto-sans-sc": "^5.3.1"
+  }
+}

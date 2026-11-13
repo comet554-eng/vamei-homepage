@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行小课堂 · 起步停车</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;max-width:100vw;aspect-ratio:9/16;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/下车推车.js"></script>
+<script src="licai-seq/举手欢迎.js"></script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/打招呼.js"></script>
+<script src="licai-seq/骑车开心2.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script src="shortkit.js"></script>
+<script src="tutkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财骑行小课堂 · 竖版教程 12《起步停车不晃》：手绘 + Mixkit 实拍（见 video/素材/起步停车/素材清单.md）
+// 公共件里用到的动作（splitseq 按名字加载）：'打招呼' '叉腰得意'
+const k01 = tk01;
+const SHOTS = [
+  [0.0, 2.6, 'W', ''],
+  [5.8, 9.8, 'W', '先把踏板转到前上方'],
+  [19.2, 23.4, 'V', ''],
+  [41.3, 45.2, 'W', '空地上多练几次']
+];
+const withShots = tutFrames(SHOTS);
+const LINES = [
+  [0.1, 2.6, '一起步就晃，一停车就慌？'],
+  [2.7, 5.4, '新手按这几步，稳稳的。'],
+  [5.8, 9.8, '{o}起步{/}：先捏住刹车，把一只踏板转到前上方。'],
+  [10.0, 14.4, '大概钟表两点钟的位置，这一脚最好发力。'],
+  [14.6, 18.8, '松开刹车，用力踩下去，同时坐上坐垫。'],
+  [19.2, 23.4, '眼睛看前面几米远，别盯着脚下，车自然就稳了。'],
+  [23.5, 27.8, '{o}停车{/}：提前减速，两只手一起慢慢捏刹车。'],
+  [28.2, 32.4, '快停的时候，屁股往前滑下坐垫。'],
+  [32.5, 36.8, '一只脚踩在低处的踏板上，另一只脚先落地。'],
+  [37.0, 41.2, '车停稳了再下车，别边走边跳。'],
+  [41.3, 45.2, '在空地上多练几次，起步停车就不慌了。'],
+  [45.6, 50.4, '口诀：{o}两点钟起步，先刹后落脚{/}。'],
+  [50.8, 54.6, '你刚学车的时候摔过吗？'],
+  [54.7, 57.8, '评论区说说。']
+];
+// 钟面 + 曲柄：pos 曲柄指向的“钟点”
+function clockCrank(x, y, r, pos, col) {
+  g.save(); g.strokeStyle = C.ink; g.lineWidth = 4; g.beginPath(); g.arc(x, y, r, 0, 6.283); g.stroke();
+  for (let h = 1; h <= 12; h++) { const a = h / 12 * 6.283 - Math.PI / 2; txt(String(h), x + Math.cos(a) * (r - 36), y + Math.sin(a) * (r - 36), 30, h === 2 ? C.orange : C.sub, { align: 'center' }); }
+  const a = pos / 12 * 6.283 - Math.PI / 2, px = x + Math.cos(a) * (r - 80), py = y + Math.sin(a) * (r - 80);
+  g.strokeStyle = col; g.lineWidth = 16; g.lineCap = 'round'; g.beginPath(); g.moveTo(x, y); g.lineTo(px, py); g.stroke();
+  g.fillStyle = C.ink; g.fillRect(px - 34, py - 10, 68, 20); g.beginPath(); g.arc(x, y, 14, 0, 6.283); g.fill(); g.restore();
+}
+shortRun({ src: SRC, seed: 972, lines: LINES, bgm: 'lofi',
+  title: { text: '起步停车{r}不晃{/}', t: 0, small: '李财骑行小课堂' },
+  scenes: withShots([
+    [0, 5.7, (lt, t) => { if (t >= 2.6) tutPreview(t, 2.8, ['两点钟起步', '眼看前方', '先刹车', '后落脚'], '骑车开心2'); }],
+    [5.7, 19.0, (lt, t) => {
+      if (t < 10.0) return;
+      if (t < 14.5) { const pos = 6 - 4 * eout(k01(t, 10.2, 11.4)); clockCrank(540, 760, 260, pos, pos < 2.2 ? C.green : C.gray); if (t > 11.6) { hcircle(540 + Math.cos(-Math.PI / 6) * 180, 760 + Math.sin(-Math.PI / 6) * 180, 70, 60, 991, C.orange, 5, k01(t, 11.6, 12.0)); txt('这里最好发力', 540, 1080, 54, C.orange, { align: 'center', a: k01(t, 12.0, 12.3) }); } return; }
+      const k = k01(t, 15.0, 16.0); clockCrank(300, 760, 200, 2 + 4 * eout(k), C.green); harrow(300 + 120, 600, 300 + 160, 700, 300 + 120, 840, C.red, k01(t, 15.0, 15.4), 8);
+      txt('松刹车', 760, 600, 54, C.ink, { align: 'center', a: k01(t, 14.8, 15.1) }); txt('用力踩下', 760, 700, 54, C.red, { align: 'center', a: k01(t, 15.2, 15.5) }); txt('坐上坐垫', 760, 800, 54, C.ink, { align: 'center', a: k01(t, 16.0, 16.3) });
+      cat('骑车开心2', 760, 1020, 220, t - 16.4);
+    }],
+    [19.0, 23.5, (lt, t) => {
+      txt('眼睛看', 770, 600, 56, C.ink, { align: 'center', a: k01(t, 19.6, 19.9) }); txt('前面几米', 770, 700, 64, C.green, { align: 'center', a: k01(t, 20.2, 20.5) });
+      txt('别盯脚下', 770, 840, 52, C.red, { align: 'center', a: k01(t, 21.2, 21.5) });
+    }],
+    [23.5, 37.0, (lt, t) => {
+      [['① 提前减速，两手慢慢捏', 23.6], ['② 屁股往前滑下坐垫', 28.3], ['③ 低处踏板踩住，另一只脚落地', 32.6]].forEach((s, i) => {
+        const a = k01(t, s[1], s[1] + .3); if (a <= 0) return; boxNote(70, 480 + i * 130, 940, 100, 760 + i, i === 2 ? C.green : C.orange, a); txt(s[0], 110, 530 + i * 130, 44, C.ink, { a: a }); });
+      cat('下车推车', 540, 1000, 300, t - 24.0);
+    }],
+    [37.0, 45.4, (lt, t) => { if (t < 41.3) tutCompare(t, 37.0, '边走边跳下车', '车还在动，最容易摔', '车停稳了再下', '两脚踩实再离开车'); }],
+    [45.4, 50.6, (lt, t) => tutSlogan(t, 46.4, ['两点钟起步', '先刹后落脚'])],
+    [50.6, 58.4, (lt, t) => tutEnd(lt, t, 50.6, '摔过吗？')]
+  ]),
+  cues: [['whoosh', .05], ['pop', 2.8], ['pop', 3.3], ['pop', 3.8], ['pop', 4.3], ['whoosh', 5.8], ['grow', 10.2], ['ding', 11.6], ['pop', 14.8], ['whoosh', 15.2], ['pop', 16.0], ['whoosh', 19.2], ['pop', 20.2], ['wrong', 21.2],
+    ['pop', 23.6], ['pop', 28.3], ['pop', 32.6], ['pop', 37.0], ['wrong', 38.0], ['ding', 39.8], ['whoosh', 41.3], ['stamp', 46.4], ['stamp', 47.3], ['pop', 50.8], ['ding', 51.2]],
+  cover: (key, w, h) => epCover(key, w, h, { tag: '李财骑行小课堂', l1: '起步就晃？', l2: '新手稳稳起停', sub: '两点钟起步 · 先刹后落脚', emo: '握拳加油', emoScale: .85,
+    art: (x, y, s) => { g.save(); g.translate(x, y + 20 * s); g.scale(.45 * s, .45 * s); clockCrank(0, 0, 200, 2, C.green); g.restore(); } })
+});
+
+})();
+</script>
+</body>
+</html>

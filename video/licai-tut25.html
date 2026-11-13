@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>李财骑行小课堂 · 一起骑</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#2b2621;overflow:hidden}
+  body{display:flex;align-items:center;justify-content:center}
+  canvas{display:block;height:100vh;max-width:100vw;aspect-ratio:9/16;object-fit:contain;cursor:pointer}
+  body.render canvas{width:1080px;height:1920px;max-width:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="snowkit.js"></script>
+<script src="licai-assets.js"></script>
+<script src="licai-emo.js"></script>
+<!-- seq:begin -->
+<script>var LICAI_SEQ = {};</script>
+<script src="licai-seq/叉腰得意.js"></script>
+<script src="licai-seq/打招呼.js"></script>
+<script src="licai-seq/拍手.js"></script>
+<script src="licai-seq/骑车挥手.js"></script>
+<!-- seq:end -->
+<script src="licaikit.js"></script>
+<script src="licai-move.js"></script>
+<script src="shortkit.js"></script>
+<script src="tutkit.js"></script>
+<script>
+(() => {
+'use strict';
+const SRC = document.currentScript.textContent;
+// 李财骑行小课堂 · 竖版教程 24《一起骑车的规矩》：手绘 + Mixkit 实拍（见 video/素材/一起骑/素材清单.md）
+// 俯视队形、手势、喊话都是手绘示意；实拍里的车队只当“一群人骑车”的画面
+// 公共件里用到的动作（splitseq 按名字加载）：'打招呼' '叉腰得意'
+const k01 = tk01;
+const SHOTS = [
+  [0.0, 2.6, 'W', ''],
+  [5.8, 9.8, 'W', '排成一列，前后留距离'],
+  [41.3, 45.2, 'W', '一起骑，安全第一']
+];
+const withShots = tutFrames(SHOTS);
+const LINES = [
+  [0.1, 2.6, '一群人骑车，最怕前面突然急刹。'],
+  [2.7, 5.4, '一起骑，记住这几条规矩。'],
+  [5.8, 9.8, '{o}排成一列{/}，别并排占路，前后留一两个车身。'],
+  [10.0, 14.4, '新手别贴太近，前车一刹，你就来不及。'],
+  [14.6, 18.8, '{o}前车报路况{/}：有坑、有石头，手往下指一指。'],
+  [19.2, 23.4, '要减速、要停，先喊一声，别突然急刹。'],
+  [23.5, 27.8, '{o}别突然变线{/}，超车从左边，先打个招呼。'],
+  [28.2, 32.4, '{o}照顾最慢的人{/}：速度按最慢的来，路口等一等。'],
+  [32.5, 36.8, '有人掉队、扎胎，大家一起停下来。'],
+  [37.0, 41.2, '出发前约好路线、集合点，各自带好修车工具。'],
+  [41.3, 45.2, '一起骑，安全第一，开心第二，速度最后。'],
+  [45.6, 50.4, '口诀：{o}一列走、先喊话、等等人{/}。'],
+  [50.8, 54.6, '你喜欢一个人骑，还是一群人骑？'],
+  [54.7, 57.8, '评论区说说。']
+];
+// 俯视骑车人（车头朝上）
+function topRider(x, y, col, a) { if (a === 0) return; g.save(); g.globalAlpha = a == null ? 1 : a; g.strokeStyle = C.ink; g.lineWidth = 8; g.lineCap = 'round'; g.beginPath(); g.moveTo(x, y - 70); g.lineTo(x, y + 70); g.stroke(); g.lineWidth = 6; g.beginPath(); g.moveTo(x - 30, y - 50); g.lineTo(x + 30, y - 50); g.stroke(); g.fillStyle = col; g.beginPath(); g.ellipse(x, y, 30, 22, 0, 0, 6.283); g.fill(); g.beginPath(); g.arc(x, y - 22, 17, 0, 6.283); g.fill(); g.restore(); }
+function road(x0, x1) { g.save(); g.fillStyle = '#e6dcc8'; g.fillRect(x0, 460, x1 - x0, 760); g.strokeStyle = '#fffdf6'; g.lineWidth = 5; g.setLineDash([24, 18]); g.beginPath(); g.moveTo((x0 + x1) / 2, 460); g.lineTo((x0 + x1) / 2, 1220); g.stroke(); g.restore(); }
+function bubble(text, x, y, col, a) { if (a <= 0) return; g.save(); g.globalAlpha = a; g.fillStyle = '#fff'; g.strokeStyle = col; g.lineWidth = 5; const w = textW(text, 50) + 60; g.beginPath(); g.roundRect(x - w / 2, y - 50, w, 100, 40); g.fill(); g.stroke(); g.restore(); txt(text, x, y, 50, col, { align: 'center', a: a }); }
+shortRun({ src: SRC, seed: 984, lines: LINES, bgm: 'lofi',
+  title: { text: '一起骑车的{r}规矩{/}', t: 0, small: '李财骑行小课堂' },
+  scenes: withShots([
+    [0, 5.7, (lt, t) => { if (t >= 2.6) tutPreview(t, 2.8, ['排成一列', '先喊再刹', '左边超车', '等等慢的'], '骑车挥手'); }],
+    [5.7, 14.5, (lt, t) => {
+      if (t < 10.0) return;
+      road(580, 1000);
+      const gap = 230 - 140 * eout(k01(t, 11.0, 12.6)), y0 = 600;
+      topRider(790, y0, C.blue); topRider(790, y0 + gap + 140, C.orange);
+      hline(870, y0 + 70, 870, y0 + gap + 70, 2401, gap < 120 ? C.red : C.green, 5, 1);
+      txt(gap < 120 ? '太近了！' : '留一两个车身', 330, 700, 52, gap < 120 ? C.red : C.green, { align: 'center' });
+      if (gap < 120) { txt('前车一刹', 330, 800, 46, C.ink, { align: 'center' }); txt('来不及', 330, 870, 46, C.red, { align: 'center' }); bigX(330, 980, 40, k01(t, 12.6, 12.9)); }
+    }],
+    [14.5, 23.5, (lt, t) => {
+      road(240, 840);
+      if (t < 19.2) {
+        g.save(); g.fillStyle = '#7a6a58'; g.beginPath(); g.ellipse(420, 560, 70, 34, 0, 0, 6.283); g.fill(); g.restore(); txt('坑', 420, 500, 44, C.red, { align: 'center' });
+        topRider(420, 820, C.blue); topRider(420, 1080, C.orange);
+        g.save(); g.strokeStyle = C.blue; g.lineWidth = 10; g.lineCap = 'round'; g.globalAlpha = k01(t, 15.0, 15.3); g.beginPath(); g.moveTo(400, 800); g.lineTo(310, 830); g.lineTo(290, 900); g.stroke(); g.restore();
+        txt('手往下指一指', 640, 860, 46, C.blue, { align: 'center', a: k01(t, 15.4, 15.7) }); txt('后面的人就知道', 640, 930, 40, C.ink, { align: 'center', a: k01(t, 16.2, 16.5) });
+        return;
+      }
+      topRider(420, 700, C.blue); topRider(420, 960, C.orange);
+      bubble('要停了！', 640, 640, C.red, k01(t, 19.4, 19.7)); txt('先喊一声', 640, 780, 50, C.green, { align: 'center', a: k01(t, 20.0, 20.3) }); txt('别突然急刹', 640, 860, 50, C.red, { align: 'center', a: k01(t, 20.8, 21.1) });
+    }],
+    [23.5, 28.0, (lt, t) => {
+      road(240, 840);
+      const k = eout(k01(t, 24.2, 26.2)); topRider(640, 760, C.blue);
+      topRider(640 - 200 * Math.sin(k * Math.PI), 1000 - 480 * k, C.orange);
+      harrow(640, 920, 400, 760, 640, 560, C.orange, k01(t, 23.8, 24.2), 6);
+      bubble('左边过～', 330, 520, C.orange, k01(t, 24.0, 24.3)); txt('超车从左边', 540, 1150, 50, C.green, { align: 'center', a: k01(t, 24.6, 24.9) });
+    }],
+    [28.0, 41.3, (lt, t) => {
+      if (t < 32.5) {
+        road(380, 700); g.save(); g.fillStyle = '#e6dcc8'; g.fillRect(60, 560, 960, 220); g.restore();
+        [[460, 880], [620, 880], [460, 1040]].forEach(p => topRider(p[0], p[1], C.blue));
+        topRider(620, 1240 - 200 * eout(k01(t, 28.6, 30.4)), C.orange);
+        txt('路口等一等', 540, 500, 52, C.green, { align: 'center', a: k01(t, 28.4, 28.7) }); txt('最慢的', 860, 1060, 44, C.orange, { align: 'center', a: k01(t, 29.4, 29.7) });
+        return;
+      }
+      if (t < 37.0) {
+        tireFlat(330, 800, 170, 70, C.red); txt('有人扎胎', 330, 1060, 50, C.red, { align: 'center', a: k01(t, 32.6, 32.9) });
+        [[700, 640], [820, 700], [700, 860], [840, 900]].forEach((p, i) => topRider(p[0], p[1], [C.blue, C.green, C.orange, C.purple][i], k01(t, 33.2 + i * .2, 33.5 + i * .2)));
+        txt('一起停下来', 760, 1060, 50, C.green, { align: 'center', a: k01(t, 34.0, 34.3) });
+        return;
+      }
+      tutList(t, [['约好路线', 37.2, C.blue, 'tick'], ['约好集合点', 38.0, C.blue, 'tick'], ['各带修车工具', 38.8, C.blue, 'tick']], { x: 140, w: 600, dy: 160 });
+      cat('拍手', 860, 1000, 260, t - 37.4);
+    }],
+    [41.3, 45.4, () => {}],
+    [45.4, 50.6, (lt, t) => tutSlogan(t, 46.4, ['一列走', '先喊话', '等等人'])],
+    [50.6, 58.4, (lt, t) => tutEnd(lt, t, 50.6, '一起骑吗？')]
+  ]),
+  cues: [['whoosh', .05], ['pop', 2.8], ['pop', 3.3], ['pop', 3.8], ['pop', 4.3], ['whoosh', 5.8], ['pop', 10.1], ['wrong', 12.6], ['pop', 15.0], ['pop', 16.2], ['pop', 19.4], ['wrong', 20.8], ['whoosh', 24.2], ['ding', 24.6],
+    ['pop', 28.4], ['ding', 29.4], ['pop', 32.6], ['pop', 33.2], ['ding', 34.0], ['pop', 37.2], ['pop', 38.0], ['pop', 38.8], ['whoosh', 41.3], ['stamp', 46.4], ['stamp', 47.3], ['stamp', 48.2], ['pop', 50.8], ['ding', 51.2]],
+  cover: (key, w, h) => epCover(key, w, h, { tag: '李财骑行小课堂', l1: '一群人骑车', l2: '记住这几条规矩', sub: '一列走 · 先喊话 · 等等人', emo: '拍手叫好', emoScale: .8,
+    art: (x, y, s) => { [-1, 0, 1].forEach(i => topRider(x, y + (40 + i * 60) * s, [C.blue, C.orange, C.green][i + 1])); } })
+});
+
+})();
+</script>
+</body>
+</html>
